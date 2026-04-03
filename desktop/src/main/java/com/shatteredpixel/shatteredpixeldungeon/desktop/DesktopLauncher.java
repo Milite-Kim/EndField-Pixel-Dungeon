@@ -118,12 +118,14 @@ public class DesktopLauncher {
 		Game.version = DesktopLauncher.class.getPackage().getSpecificationVersion();
 		if (Game.version == null) {
 			Game.version = System.getProperty("Specification-Version");
+			if (Game.version == null) Game.version = "0.0.0";
 		}
 		
 		try {
 			Game.versionCode = Integer.parseInt(DesktopLauncher.class.getPackage().getImplementationVersion());
 		} catch (NumberFormatException e) {
-			Game.versionCode = Integer.parseInt(System.getProperty("Implementation-Version"));
+			String implVersion = System.getProperty("Implementation-Version");
+			Game.versionCode = implVersion != null ? Integer.parseInt(implVersion) : 0;
 		}
 
 		if (UpdateImpl.supportsUpdates()){
@@ -144,6 +146,7 @@ public class DesktopLauncher {
 		if (vendor == null) {
 			vendor = System.getProperty("Implementation-Title");
 		}
+		if (vendor == null) vendor = "com.shatteredpixel.shatteredpixeldungeon";
 		vendor = vendor.split("\\.")[1];
 
 		String basePath = "";
