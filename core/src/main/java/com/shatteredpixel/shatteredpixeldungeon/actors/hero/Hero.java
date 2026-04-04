@@ -79,6 +79,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
+import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CheckedCell;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
@@ -177,6 +178,7 @@ import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.noosa.tweeners.Delayer;
 import com.watabou.utils.BArray;
+import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Callback;
 import com.watabou.utils.GameMath;
@@ -207,6 +209,11 @@ public class Hero extends Char {
 	public HeroClass heroClass = HeroClass.ROGUE;
 	public HeroSubClass subClass = HeroSubClass.NONE;
 	public ArmorAbility armorAbility = null;
+
+	// 팀 오퍼레이터 슬롯 (최대 3명)
+	public static final int MAX_TEAM_SIZE = 3;
+	public ArrayList<TeamOperator> teamOperators = new ArrayList<>();
+
 	public ArrayList<LinkedHashMap<Talent, Integer>> talents = new ArrayList<>();
 	public LinkedHashMap<Talent, Talent> metamorphedTalents = new LinkedHashMap<>();
 	
@@ -285,9 +292,10 @@ public class Hero extends Char {
 		return STR + strBonus;
 	}
 
-	private static final String CLASS       = "class";
-	private static final String SUBCLASS    = "subClass";
-	private static final String ABILITY     = "armorAbility";
+	private static final String CLASS           = "class";
+	private static final String SUBCLASS        = "subClass";
+	private static final String ABILITY         = "armorAbility";
+	private static final String TEAM_OPERATORS  = "teamOperators";
 
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
@@ -304,6 +312,7 @@ public class Hero extends Char {
 		bundle.put( CLASS, heroClass );
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
+		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
 		Talent.storeTalentsInBundle( bundle, this );
 		
 		bundle.put( ATTACK, attackSkill );
@@ -332,6 +341,10 @@ public class Hero extends Char {
 		heroClass = bundle.getEnum( CLASS, HeroClass.class );
 		subClass = bundle.getEnum( SUBCLASS, HeroSubClass.class );
 		armorAbility = (ArmorAbility)bundle.get( ABILITY );
+		teamOperators = new ArrayList<>();
+		for (Bundlable op : bundle.getCollection( TEAM_OPERATORS )) {
+			teamOperators.add( (TeamOperator) op );
+		}
 		Talent.restoreTalentsFromBundle( bundle, this );
 		
 		attackSkill = bundle.getInt( ATTACK );
