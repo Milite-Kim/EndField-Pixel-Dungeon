@@ -82,6 +82,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.OperatorRegistry;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
@@ -225,10 +226,19 @@ public class Hero extends Char {
 	public Ultimate activeUltimate = null;
 
 	/**
+	 * 현재 런의 메인 오퍼레이터.
+	 * 게임 시작 시 1회 설정되며 이후 교체 불가.
+	 *
+	 * 설정 시 {@link #syncFromMainOperator()} 를 통해
+	 * activeWeaponType / activeBattleSkill / activeUltimate 가 자동으로 동기화된다.
+	 */
+	public Operator activeMainOperator = null;
+
+	/**
 	 * 현재 운용 중인 메인 오퍼레이터의 무기 유형.
 	 * null = 메인 오퍼레이터 미장착 (SPD 기본 무기 시스템 사용).
 	 *
-	 * TODO: 메인 오퍼레이터 시스템 완성 후 activeMainOperator.weaponType()으로 대체
+	 * TODO: 메인 오퍼레이터 시스템 완성 후 항상 activeMainOperator.weaponType()으로 참조
 	 */
 	public Operator.WeaponType activeWeaponType = null;
 
@@ -314,9 +324,10 @@ public class Hero extends Char {
 	private static final String SUBCLASS        = "subClass";
 	private static final String ABILITY          = "armorAbility";
 	private static final String TEAM_OPERATORS   = "teamOperators";
-	private static final String ACTIVE_BATTLE_SKILL = "activeBattleSkill";
-	private static final String ACTIVE_ULTIMATE     = "activeUltimate";
-	private static final String ACTIVE_WEAPON_TYPE  = "activeWeaponType";
+	private static final String ACTIVE_MAIN_OPERATOR = "activeMainOperator";
+	private static final String ACTIVE_BATTLE_SKILL  = "activeBattleSkill";
+	private static final String ACTIVE_ULTIMATE      = "activeUltimate";
+	private static final String ACTIVE_WEAPON_TYPE   = "activeWeaponType";
 
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
@@ -334,6 +345,7 @@ public class Hero extends Char {
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
 		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
+		if (activeMainOperator != null) bundle.put( ACTIVE_MAIN_OPERATOR, activeMainOperator );
 		bundle.put( ACTIVE_BATTLE_SKILL, activeBattleSkill );
 		bundle.put( ACTIVE_ULTIMATE, activeUltimate );
 		if (activeWeaponType != null) bundle.put( ACTIVE_WEAPON_TYPE, activeWeaponType );
@@ -369,6 +381,8 @@ public class Hero extends Char {
 		for (Bundlable op : bundle.getCollection( TEAM_OPERATORS )) {
 			teamOperators.add( (TeamOperator) op );
 		}
+		if (bundle.contains( ACTIVE_MAIN_OPERATOR ))
+			activeMainOperator = (Operator) bundle.get( ACTIVE_MAIN_OPERATOR );
 		activeBattleSkill = (BattleSkill) bundle.get( ACTIVE_BATTLE_SKILL );
 		activeUltimate    = (Ultimate)    bundle.get( ACTIVE_ULTIMATE );
 		if (bundle.contains( ACTIVE_WEAPON_TYPE ))
@@ -2424,6 +2438,69 @@ public class Hero extends Char {
 		super.onAttackComplete();
 	}
 	
+	/**
+	 * 메인 오퍼레이터를 설정하고 관련 필드를 동기화한다.
+	 *
+	 * 게임 시작 시 단 한 번 호출. 이후 재호출 불가 (activeMainOperator != null 체크).
+	 * 팀 오퍼레이터 편성 이력에 따른 해금도 이 시점에 함께 처리.
+	 *
+	 * @param op 선택한 메인 오퍼레이터 인스턴스
+	 */
+	public void setMainOperator(Operator op) {
+		if (activeMainOperator != null) return; // 이미 설정됨 → 무시
+		activeMainOperator  = op;
+		syncFromMainOperator();
+	}
+
+	/**
+	 * activeMainOperator 에서 파생 필드를 동기화.
+	 * 세이브 로드 후에도 호출해 일관성 유지.
+	 */
+	public void syncFromMainOperator() {
+		if (activeMainOperator == null) return;
+		activeWeaponType  = activeMainOperator.weaponType();
+		activeBattleSkill = activeMainOperator.battleSkill();
+		activeUltimate    = activeMainOperator.ultimate();
+	}
+
+	/**
+	 * 팀 오퍼레이터를 편성한다.
+	 * 슬롯 3개 초과 시 추가 불가. 중복 불가.
+	 * 편성 시 OperatorRegistry에 메인 해금 기록.
+	 *
+	 * @param op 추가할 팀 오퍼레이터
+	 * @return 추가 성공 여부
+	 */
+	public boolean addTeamOperator(TeamOperator op) {
+		if (teamOperators.size() >= MAX_TEAM_SIZE) return false;
+		for (TeamOperator existing : teamOperators) {
+			if (existing.getClass() == op.getClass()) return false; // 중복 불가
+		}
+		teamOperators.add(op);
+		OperatorRegistry.unlockAsMain(op.getClass()); // 해금 기록
+		return true;
+	}
+
+	/**
+	 * 팀 오퍼레이터를 교체한다.
+	 * 교체된 오퍼레이터는 영구 삭제됨.
+	 *
+	 * @param oldOp 교체될 기존 오퍼레이터
+	 * @param newOp 새로 편성할 오퍼레이터
+	 * @return 교체 성공 여부
+	 */
+	public boolean replaceTeamOperator(TeamOperator oldOp, TeamOperator newOp) {
+		int index = teamOperators.indexOf(oldOp);
+		if (index < 0) return false;
+		// 중복 체크 (newOp 가 이미 다른 슬롯에 있으면 불가)
+		for (TeamOperator existing : teamOperators) {
+			if (existing != oldOp && existing.getClass() == newOp.getClass()) return false;
+		}
+		teamOperators.set(index, newOp);
+		OperatorRegistry.unlockAsMain(newOp.getClass());
+		return true;
+	}
+
 	/**
 	 * 강력한 일격 적중 시 호출되는 훅.
 	 *
