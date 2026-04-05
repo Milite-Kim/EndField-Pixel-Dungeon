@@ -81,6 +81,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CheckedCell;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
@@ -218,6 +219,9 @@ public class Hero extends Char {
 	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
 	public BattleSkill activeBattleSkill = null;
 
+	// 메인 오퍼레이터의 궁극기 (장착 시 설정)
+	public Ultimate activeUltimate = null;
+
 	public ArrayList<LinkedHashMap<Talent, Integer>> talents = new ArrayList<>();
 	public LinkedHashMap<Talent, Talent> metamorphedTalents = new LinkedHashMap<>();
 	
@@ -301,6 +305,7 @@ public class Hero extends Char {
 	private static final String ABILITY          = "armorAbility";
 	private static final String TEAM_OPERATORS   = "teamOperators";
 	private static final String ACTIVE_BATTLE_SKILL = "activeBattleSkill";
+	private static final String ACTIVE_ULTIMATE     = "activeUltimate";
 
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
@@ -319,6 +324,7 @@ public class Hero extends Char {
 		bundle.put( ABILITY, armorAbility );
 		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
 		bundle.put( ACTIVE_BATTLE_SKILL, activeBattleSkill );
+		bundle.put( ACTIVE_ULTIMATE, activeUltimate );
 		Talent.storeTalentsInBundle( bundle, this );
 		
 		bundle.put( ATTACK, attackSkill );
@@ -352,6 +358,7 @@ public class Hero extends Char {
 			teamOperators.add( (TeamOperator) op );
 		}
 		activeBattleSkill = (BattleSkill) bundle.get( ACTIVE_BATTLE_SKILL );
+		activeUltimate    = (Ultimate)    bundle.get( ACTIVE_ULTIMATE );
 		Talent.restoreTalentsFromBundle( bundle, this );
 		
 		attackSkill = bundle.getInt( ATTACK );

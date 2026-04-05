@@ -15,6 +15,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
  * 진천우 (Jincheonwoo)
@@ -107,5 +108,28 @@ public class Jincheonwoo extends TeamOperator {
         DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH);
 
         resetCooldown();
+    }
+
+    // ─────────────────────────────────────────────
+    // 궁극기: 7회 연속 대량 물리 피해
+    // ─────────────────────────────────────────────
+
+    @Override
+    public Ultimate ultimate() {
+        return new Ultimate() {
+
+            @Override
+            public int maxCharge() {
+                return 100; // TODO: 수치 확정
+            }
+
+            @Override
+            protected void activate(Hero hero, Char target) {
+                if (target == null || !target.isAlive()) return;
+
+                // TODO: 7회 연속 물리 피해 처리 (히트 시퀀스 시스템 완성 후)
+                // TODO: 승급 확장 - 궁극기 도중 적 처치 시 주변 적으로 연장 / 처치 비례 충전 반환
+            }
+        };
     }
 }

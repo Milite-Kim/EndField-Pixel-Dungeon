@@ -63,6 +63,9 @@ public abstract class Operator implements Bundlable {
     // 배틀스킬 (메인 오퍼레이터로 운용 시 사용 가능)
     public abstract BattleSkill battleSkill();
 
+    // 궁극기 (메인 오퍼레이터로 운용 시 사용 가능)
+    public abstract Ultimate ultimate();
+
     // 저장/불러오기 (현재는 비어있음, 서브클래스에서 필요 시 확장)
     @Override
     public void storeInBundle(Bundle bundle) {
