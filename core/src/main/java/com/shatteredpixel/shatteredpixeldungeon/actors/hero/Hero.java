@@ -81,6 +81,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainQueue;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.OperatorRegistry;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
@@ -219,6 +220,9 @@ public class Hero extends Char {
 	public static final int MAX_TEAM_SIZE = 3;
 	public ArrayList<TeamOperator> teamOperators = new ArrayList<>();
 
+	// 연계기 큐: 조건이 충족된 팀 오퍼레이터를 순서대로 관리
+	public ChainQueue chainQueue = new ChainQueue();
+
 	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
 	public BattleSkill activeBattleSkill = null;
 
@@ -323,7 +327,8 @@ public class Hero extends Char {
 	private static final String CLASS           = "class";
 	private static final String SUBCLASS        = "subClass";
 	private static final String ABILITY          = "armorAbility";
-	private static final String TEAM_OPERATORS   = "teamOperators";
+	private static final String TEAM_OPERATORS        = "teamOperators";
+	private static final String CHAIN_QUEUE           = "chainQueue";
 	private static final String ACTIVE_MAIN_OPERATOR = "activeMainOperator";
 	private static final String ACTIVE_BATTLE_SKILL  = "activeBattleSkill";
 	private static final String ACTIVE_ULTIMATE      = "activeUltimate";
@@ -345,6 +350,9 @@ public class Hero extends Char {
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
 		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
+		Bundle cqBundle = new Bundle();
+		chainQueue.storeInBundle(cqBundle);
+		bundle.put( CHAIN_QUEUE, cqBundle );
 		if (activeMainOperator != null) bundle.put( ACTIVE_MAIN_OPERATOR, activeMainOperator );
 		bundle.put( ACTIVE_BATTLE_SKILL, activeBattleSkill );
 		bundle.put( ACTIVE_ULTIMATE, activeUltimate );
@@ -380,6 +388,10 @@ public class Hero extends Char {
 		teamOperators = new ArrayList<>();
 		for (Bundlable op : bundle.getCollection( TEAM_OPERATORS )) {
 			teamOperators.add( (TeamOperator) op );
+		}
+		chainQueue = new ChainQueue();
+		if (bundle.contains( CHAIN_QUEUE )) {
+			chainQueue.restoreFromBundle(bundle.getBundle( CHAIN_QUEUE ), teamOperators);
 		}
 		if (bundle.contains( ACTIVE_MAIN_OPERATOR ))
 			activeMainOperator = (Operator) bundle.get( ACTIVE_MAIN_OPERATOR );
@@ -1002,7 +1014,7 @@ public class Hero extends Char {
 			Barkskin.conditionallyAppend(this, (lvl*pointsInTalent(Talent.BARKSKIN))/2, 1 );
 		}
 
-		// 행동을 실제로 완료한 턴에만 쿨타임 감소
+		// 행동을 실제로 완료한 턴에만 쿨타임/큐 갱신
 		if (actResult) {
 			// 메인 오퍼레이터 배틀스킬 쿨타임
 			if (activeBattleSkill != null) {
@@ -1012,6 +1024,8 @@ public class Hero extends Char {
 			for (TeamOperator op : teamOperators) {
 				op.reduceCooldown();
 			}
+			// 연계기 큐 타이머 차감 (만료된 항목 자동 폐기)
+			chainQueue.tick();
 		}
 
 		return actResult;
@@ -2503,20 +2517,42 @@ public class Hero extends Char {
 
 	/**
 	 * 강력한 일격 적중 시 호출되는 훅.
-	 *
-	 * 이벤트형 연계기 조건("강력한 일격 적중 시")을 가진 팀 오퍼레이터에게
-	 * chainReady 플래그를 세팅한다. 유효 시간: 3턴.
-	 *
-	 * 추후 "배틀스킬 적중 시" 등 다른 이벤트 훅도 동일한 패턴으로 추가.
-	 *
-	 * TODO: UI 연동 후 체인 버튼 표시 로직 추가
+	 * 조건이 충족된 팀 오퍼레이터를 연계기 큐에 추가한다.
 	 */
 	private void onFinishingBlowLanded(Char target) {
+		checkChainTriggers(target);
+	}
+
+	/**
+	 * 특정 이벤트 발생 시 호출 — 쿨다운이 완료된 팀 오퍼레이터 중
+	 * chainCondition()이 true인 오퍼레이터를 ChainQueue에 추가한다.
+	 *
+	 * 파티 순서대로 순회하므로, 같은 타이밍에 조건이 충족된 경우
+	 * 파티 순서가 빠른 오퍼레이터가 큐 앞에 위치한다.
+	 *
+	 * @param target 이벤트가 발생한 대상 (없으면 null)
+	 */
+	public void checkChainTriggers(Char target) {
 		for (TeamOperator op : teamOperators) {
-			if (op.isReady()) {
-				op.markChainReady(3); // 3턴 유효. TODO: 수치 확정
+			if (op.isReady() && op.chainCondition(this, target)) {
+				chainQueue.enqueue(op); // 이미 큐에 있으면 타이머만 갱신
 			}
 		}
+	}
+
+	/**
+	 * 플레이어가 연계기 UI 버튼을 눌렀을 때 호출.
+	 * 큐 헤드의 연계기를 발동하고 해당 오퍼레이터의 쿨타임을 초기화한다.
+	 *
+	 * @param target 공격 대상 (없으면 null)
+	 * @return 발동 성공 여부 (큐가 비어있으면 false)
+	 */
+	public boolean activateFrontChain(Char target) {
+		TeamOperator op = chainQueue.consume();
+		if (op == null) return false;
+		op.activateChain(this, target);
+		op.resetCooldown();
+		return true;
 	}
 
 	@Override
