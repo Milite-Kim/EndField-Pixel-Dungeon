@@ -72,6 +72,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Speed;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Stamina;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -500,6 +501,11 @@ public abstract class Char extends Actor {
 				//vulnerable specifically applies after armor reductions
 				if (enemy.buff(Vulnerable.class) != null) {
 					effectiveDamage *= 1.33f;
+				}
+
+				// 갑옷 파괴 상태: 물리 피해 증가 (소모 스택 비례)
+				if (enemy.buff(ArmorBreaked.class) != null) {
+					effectiveDamage *= enemy.buff(ArmorBreaked.class).damageMult();
 				}
 
 				effectiveDamage = attackProc(enemy, effectiveDamage);

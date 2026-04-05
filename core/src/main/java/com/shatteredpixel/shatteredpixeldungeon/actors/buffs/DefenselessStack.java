@@ -11,6 +11,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
@@ -107,7 +108,8 @@ public class DefenselessStack extends Buff {
 
     private static void triggerArmorBreak(Char enemy, int consumedStacks) {
         // TODO: consumedStacks 비례 약한 물리 피해 구현
-        // TODO: 물리 피해 증가 디버프(물리 취약) 적용
+        // 갑옷 파괴 디버프 적용 (Vulnerable과 별개, 소모 스택 수 전달)
+        ArmorBreaked.apply(enemy, consumedStacks);
     }
 
     // ─────────────────────────────────────────────
