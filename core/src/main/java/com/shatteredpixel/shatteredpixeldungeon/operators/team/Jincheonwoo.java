@@ -70,7 +70,7 @@ public class Jincheonwoo extends TeamOperator {
                 // target.damage(calculateDamage(hero), this);
 
                 // 띄우기 적용 (DefenselessStack 시스템 연동)
-                DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH);
+                DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH, hero);
             }
         };
     }
@@ -105,7 +105,7 @@ public class Jincheonwoo extends TeamOperator {
         // TODO: 관통 이동 처리 (이동 시스템 연동 후 구현)
 
         // 띄우기 적용
-        DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH);
+        DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH, hero);
 
         resetCooldown();
     }
