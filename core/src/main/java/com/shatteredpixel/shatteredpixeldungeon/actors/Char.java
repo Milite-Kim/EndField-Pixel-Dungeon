@@ -73,6 +73,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Stamina;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsCorrosion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Electrified;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
@@ -526,6 +527,14 @@ public abstract class Char extends Actor {
 			}
 
 			enemy.damage( effectiveDamage, this );
+
+			// 부식(ArtsCorrosion): 공격 적중 시 공격자 소량 회복
+			ArtsCorrosion corrosion = enemy.buff(ArtsCorrosion.class);
+			if (enemy.isAlive() && corrosion != null) {
+				int heal = corrosion.healOnHit();
+				HP = Math.min(HP + heal, HT);
+				// TODO: 회복 플로팅 텍스트 표시
+			}
 
 			if (buff(FireImbue.class) != null)  buff(FireImbue.class).proc(enemy);
 			if (buff(FrostImbue.class) != null) buff(FrostImbue.class).proc(enemy);

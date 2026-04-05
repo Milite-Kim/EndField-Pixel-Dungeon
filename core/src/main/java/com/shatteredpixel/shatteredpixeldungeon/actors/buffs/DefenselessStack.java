@@ -8,6 +8,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frozen;
 import com.watabou.utils.Bundle;
 
 /**
@@ -55,6 +56,13 @@ public class DefenselessStack extends Buff {
      * @param attacker 물리 이상을 유발한 공격자 (피해 계산 기준)
      */
     public static void apply(Char enemy, PhysicalAbnormality type, Char attacker) {
+        // 쇄빙: 동결 상태의 적에게 물리 이상 적용 시 동결 소모 + 대량 물리 피해
+        Frozen frozen = enemy.buff(Frozen.class);
+        if (frozen != null && frozen.isFrozen()) {
+            frozen.detach();
+            triggerShattering(enemy, attacker);
+        }
+
         DefenselessStack buff = enemy.buff(DefenselessStack.class);
 
         if (buff == null) {
@@ -150,6 +158,20 @@ public class DefenselessStack extends Buff {
         int damage = Math.round(attacker.damageRoll() * consumedStacks * ARMOR_BREAK_DMG_MULT);
         enemy.damage(damage, attacker, DamageType.PHYSICAL);
         ArmorBreaked.apply(enemy, consumedStacks);
+    }
+
+    /**
+     * 쇄빙 (Shattering): 동결 상태의 적에게 물리 이상을 가했을 때 발동.
+     * 동결을 소모하고 대량의 물리 피해를 준다.
+     * 이후 normal DefenselessStack 처리는 계속 진행된다.
+     *
+     * TODO: 수치 확정 — 현재 임시 배율 3.0f 사용
+     */
+    private static final float SHATTERING_DMG_MULT = 3.0f; // TODO: 수치 확정
+
+    private static void triggerShattering(Char enemy, Char attacker) {
+        int damage = Math.round(attacker.damageRoll() * SHATTERING_DMG_MULT);
+        enemy.damage(damage, attacker, DamageType.PHYSICAL);
     }
 
     // ─────────────────────────────────────────────

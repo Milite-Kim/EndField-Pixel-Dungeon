@@ -11,6 +11,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
@@ -32,7 +33,7 @@ import com.watabou.utils.Bundle;
  *   ELECTRIC → 감전 (Electrified) : 받는 아츠 피해 증가
  *
  * 사용법:
- *   ArtsAttachment.apply(enemy, ArtsAttachment.ArtsType.HEAT);
+ *   ArtsAttachment.apply(enemy, ArtsAttachment.ArtsType.HEAT, attacker);
  */
 public class ArtsAttachment extends Buff {
 
@@ -64,10 +65,11 @@ public class ArtsAttachment extends Buff {
     /**
      * 아츠 부착을 적에게 적용한다.
      *
-     * @param enemy 대상 적
-     * @param type  부착할 아츠 속성
+     * @param enemy    대상 적
+     * @param type     부착할 아츠 속성
+     * @param attacker 아츠를 부착하는 공격자 (폭발 피해 계산 기준)
      */
-    public static void apply(Char enemy, ArtsType type) {
+    public static void apply(Char enemy, ArtsType type, Char attacker) {
         ArtsAttachment existing = enemy.buff(ArtsAttachment.class);
 
         if (existing == null) {
@@ -79,7 +81,7 @@ public class ArtsAttachment extends Buff {
         } else if (existing.currentType == type) {
             // 동일 속성 재부착: 아츠 폭발
             if (existing.stacks < MAX_STACKS) existing.stacks++;
-            triggerArtsExplosion(enemy, type, existing.stacks);
+            triggerArtsExplosion(enemy, type, existing.stacks, attacker);
 
         } else {
             // 다른 속성 부착: 아츠 반응
@@ -94,12 +96,29 @@ public class ArtsAttachment extends Buff {
     // ─────────────────────────────────────────────
 
     /**
-     * 아츠 폭발: 해당 속성 피해 + 스택 +1 (스택 유지)
+     * 아츠 폭발: 해당 속성 피해 + 스택 +1 (스택 유지).
+     * 동일 속성 재부착 시 발동.
      *
-     * @param stacks 폭발 시점의 현재 스택 수 (피해 계산에 활용 가능)
+     * 피해 = attacker.damageRoll() × stacks × EXPLOSION_MULT
+     * TODO: 수치 확정 필요
      */
-    private static void triggerArtsExplosion(Char enemy, ArtsType type, int stacks) {
-        // TODO: type에 따라 해당 속성 피해 구현 (피해량 수치 미확정)
+    private static final float EXPLOSION_MULT = 0.5f; // TODO: 수치 확정
+
+    private static void triggerArtsExplosion(Char enemy, ArtsType type, int stacks, Char attacker) {
+        DamageType damageType = toDamageType(type);
+        int damage = Math.round(attacker.damageRoll() * stacks * EXPLOSION_MULT);
+        enemy.damage(damage, attacker, damageType);
+    }
+
+    /** ArtsType → DamageType 변환 */
+    private static DamageType toDamageType(ArtsType type) {
+        switch (type) {
+            case HEAT:     return DamageType.HEAT;
+            case CRYO:     return DamageType.COLD;
+            case NATURE:   return DamageType.NATURE;
+            case ELECTRIC: return DamageType.ELECTRIC;
+            default:       return DamageType.HEAT;
+        }
     }
 
     // ─────────────────────────────────────────────
