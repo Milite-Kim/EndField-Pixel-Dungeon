@@ -79,6 +79,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mimic;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
+import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CheckedCell;
@@ -214,6 +215,9 @@ public class Hero extends Char {
 	public static final int MAX_TEAM_SIZE = 3;
 	public ArrayList<TeamOperator> teamOperators = new ArrayList<>();
 
+	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
+	public BattleSkill activeBattleSkill = null;
+
 	public ArrayList<LinkedHashMap<Talent, Integer>> talents = new ArrayList<>();
 	public LinkedHashMap<Talent, Talent> metamorphedTalents = new LinkedHashMap<>();
 	
@@ -294,8 +298,9 @@ public class Hero extends Char {
 
 	private static final String CLASS           = "class";
 	private static final String SUBCLASS        = "subClass";
-	private static final String ABILITY         = "armorAbility";
-	private static final String TEAM_OPERATORS  = "teamOperators";
+	private static final String ABILITY          = "armorAbility";
+	private static final String TEAM_OPERATORS   = "teamOperators";
+	private static final String ACTIVE_BATTLE_SKILL = "activeBattleSkill";
 
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
@@ -313,6 +318,7 @@ public class Hero extends Char {
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
 		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
+		bundle.put( ACTIVE_BATTLE_SKILL, activeBattleSkill );
 		Talent.storeTalentsInBundle( bundle, this );
 		
 		bundle.put( ATTACK, attackSkill );
@@ -345,6 +351,7 @@ public class Hero extends Char {
 		for (Bundlable op : bundle.getCollection( TEAM_OPERATORS )) {
 			teamOperators.add( (TeamOperator) op );
 		}
+		activeBattleSkill = (BattleSkill) bundle.get( ACTIVE_BATTLE_SKILL );
 		Talent.restoreTalentsFromBundle( bundle, this );
 		
 		attackSkill = bundle.getInt( ATTACK );
@@ -937,7 +944,19 @@ public class Hero extends Char {
 		if(hasTalent(Talent.BARKSKIN) && Dungeon.level.map[pos] == Terrain.FURROWED_GRASS){
 			Barkskin.conditionallyAppend(this, (lvl*pointsInTalent(Talent.BARKSKIN))/2, 1 );
 		}
-		
+
+		// 행동을 실제로 완료한 턴에만 쿨타임 감소
+		if (actResult) {
+			// 메인 오퍼레이터 배틀스킬 쿨타임
+			if (activeBattleSkill != null) {
+				activeBattleSkill.reduceCooldown();
+			}
+			// 팀 오퍼레이터 연계기 쿨타임
+			for (TeamOperator op : teamOperators) {
+				op.reduceCooldown();
+			}
+		}
+
 		return actResult;
 	}
 	
