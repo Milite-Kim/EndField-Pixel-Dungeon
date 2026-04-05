@@ -73,6 +73,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Stamina;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Electrified;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -507,6 +508,12 @@ public abstract class Char extends Actor {
 				if (enemy.buff(ArmorBreaked.class) != null) {
 					effectiveDamage *= enemy.buff(ArmorBreaked.class).damageMult();
 				}
+
+				// TODO: 감전(Electrified) - 아츠 피해에만 적용
+				// 물리/아츠 피해 구분 시스템 완성 후 아래 코드 활성화
+				// if (isArtsDamage && enemy.buff(Electrified.class) != null) {
+				//     effectiveDamage *= enemy.buff(Electrified.class).artsDamageMult();
+				// }
 
 				effectiveDamage = attackProc(enemy, effectiveDamage);
 			}
