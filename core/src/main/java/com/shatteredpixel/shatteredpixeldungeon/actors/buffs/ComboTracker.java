@@ -6,6 +6,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
@@ -105,9 +106,27 @@ public class ComboTracker extends Buff {
     // ─────────────────────────────────────────────
 
     private float[] getPattern(Hero hero) {
-        // TODO: 메인 오퍼레이터 시스템 연동 후
+        // TODO: 메인 오퍼레이터 시스템 완성 후
         //       hero.activeMainOperator.comboMultipliers() 로 교체
-        // 임시 기본값: 한손검 3단계
+
+        // activeWeaponType 이 설정되어 있으면 무기 유형별 기본 패턴 사용
+        if (hero.activeWeaponType != null) {
+            switch (hero.activeWeaponType) {
+                case TWO_HANDED_SWORD:
+                    return new float[]{ 1.0f, 1.4f };    // 2단계: 중 → 강력한 일격
+                case POLEARM:
+                    return new float[]{ 0.8f, 1.0f, 1.3f };
+                case HANDGUN:
+                    return new float[]{ 0.8f, 0.9f, 1.2f };
+                case ARTS_UNIT:
+                    return new float[]{ 0.7f, 0.8f, 1.1f };
+                case ONE_HANDED_SWORD:
+                default:
+                    return new float[]{ 0.8f, 0.9f, 1.2f };
+            }
+        }
+
+        // 기본값 (activeWeaponType 미설정 시): 한손검 3단계
         return new float[]{ 0.8f, 0.9f, 1.2f };
     }
 

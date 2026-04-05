@@ -81,6 +81,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Monk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
@@ -223,6 +224,14 @@ public class Hero extends Char {
 	// 메인 오퍼레이터의 궁극기 (장착 시 설정)
 	public Ultimate activeUltimate = null;
 
+	/**
+	 * 현재 운용 중인 메인 오퍼레이터의 무기 유형.
+	 * null = 메인 오퍼레이터 미장착 (SPD 기본 무기 시스템 사용).
+	 *
+	 * TODO: 메인 오퍼레이터 시스템 완성 후 activeMainOperator.weaponType()으로 대체
+	 */
+	public Operator.WeaponType activeWeaponType = null;
+
 	public ArrayList<LinkedHashMap<Talent, Integer>> talents = new ArrayList<>();
 	public LinkedHashMap<Talent, Talent> metamorphedTalents = new LinkedHashMap<>();
 	
@@ -307,6 +316,7 @@ public class Hero extends Char {
 	private static final String TEAM_OPERATORS   = "teamOperators";
 	private static final String ACTIVE_BATTLE_SKILL = "activeBattleSkill";
 	private static final String ACTIVE_ULTIMATE     = "activeUltimate";
+	private static final String ACTIVE_WEAPON_TYPE  = "activeWeaponType";
 
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
@@ -326,6 +336,7 @@ public class Hero extends Char {
 		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
 		bundle.put( ACTIVE_BATTLE_SKILL, activeBattleSkill );
 		bundle.put( ACTIVE_ULTIMATE, activeUltimate );
+		if (activeWeaponType != null) bundle.put( ACTIVE_WEAPON_TYPE, activeWeaponType );
 		Talent.storeTalentsInBundle( bundle, this );
 		
 		bundle.put( ATTACK, attackSkill );
@@ -360,6 +371,8 @@ public class Hero extends Char {
 		}
 		activeBattleSkill = (BattleSkill) bundle.get( ACTIVE_BATTLE_SKILL );
 		activeUltimate    = (Ultimate)    bundle.get( ACTIVE_ULTIMATE );
+		if (bundle.contains( ACTIVE_WEAPON_TYPE ))
+			activeWeaponType = bundle.getEnum( ACTIVE_WEAPON_TYPE, Operator.WeaponType.class );
 		Talent.restoreTalentsFromBundle( bundle, this );
 		
 		attackSkill = bundle.getInt( ATTACK );
@@ -807,10 +820,15 @@ public class Hero extends Char {
 			return 0;
 		}
 
+		// 엔픽던 무기 유형 시스템 (메인 오퍼레이터 장착 시 SPD 무기 딜레이 대신 적용)
+		if (activeWeaponType != null) {
+			return operatorAttackDelay();
+		}
+
 		float delay = 1f;
 
 		if (!RingOfForce.fightingUnarmed(this)) {
-			
+
 			return delay * belongings.attackingWeapon().delayFactor( this );
 			
 		} else {
@@ -830,6 +848,23 @@ public class Hero extends Char {
 			}
 
 			return delay/speed;
+		}
+	}
+
+	/**
+	 * 엔픽던 무기 유형별 공격 딜레이.
+	 * activeWeaponType 이 설정되어 있을 때만 호출됨.
+	 *
+	 * TODO: 수치 확정 및 추가 무기 특성 구현
+	 *   - POLEARM: 사거리 +1칸 (별도 처리 필요)
+	 *   - HANDGUN: 거리 비례 피해 변동 (별도 처리 필요)
+	 */
+	private float operatorAttackDelay() {
+		switch (activeWeaponType) {
+			case TWO_HANDED_SWORD:
+				return 2.0f; // 양손검: 1회 공격에 2턴 소모
+			default:
+				return 1.0f; // 한손검/장병기/권총/아츠유닛: 기본 1턴
 		}
 	}
 
