@@ -66,6 +66,37 @@ public abstract class Operator implements Bundlable {
     // 궁극기 (메인 오퍼레이터로 운용 시 사용 가능)
     public abstract Ultimate ultimate();
 
+    /**
+     * 기본 공격 콤보 배율 배열.
+     * 배열 길이 = 콤보 단계 수, 마지막 원소 = 강력한 일격.
+     *
+     * 오퍼레이터별로 오버라이드해 고유한 콤보 리듬을 정의.
+     * ex) [0.8f, 0.8f, 1.3f]  →  약 → 약 → 강력한 일격
+     *     [1.0f, 1.4f]        →  중 → 강력한 일격 (양손검 2단계)
+     *
+     * TODO: 각 오퍼레이터 파일에서 개별 수치 확정 필요
+     */
+    public float[] comboMultipliers() {
+        switch (weaponType()) {
+            case TWO_HANDED_SWORD:
+                // 2단계: 중 → 강력한 일격
+                return new float[]{ 1.0f, 1.4f };
+            case POLEARM:
+                // 3단계: 약 → 중 → 강력한 일격
+                return new float[]{ 0.8f, 1.0f, 1.3f };
+            case HANDGUN:
+                // 3단계: 약 → 약 → 강력한 일격
+                return new float[]{ 0.8f, 0.9f, 1.2f };
+            case ARTS_UNIT:
+                // 3단계: 약 → 약 → 강력한 일격 (자체 데미지 낮음)
+                return new float[]{ 0.7f, 0.8f, 1.1f };
+            case ONE_HANDED_SWORD:
+            default:
+                // 3단계: 약 → 약 → 강력한 일격
+                return new float[]{ 0.8f, 0.9f, 1.2f };
+        }
+    }
+
     // 저장/불러오기 (현재는 비어있음, 서브클래스에서 필요 시 확장)
     @Override
     public void storeInBundle(Bundle bundle) {
