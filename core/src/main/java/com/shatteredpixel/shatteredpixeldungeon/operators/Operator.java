@@ -13,6 +13,7 @@ package com.shatteredpixel.shatteredpixeldungeon.operators;
 import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 
+
 /**
  * 오퍼레이터 기본 추상 클래스.
  * 메인 오퍼레이터와 팀 오퍼레이터 모두 이 클래스를 상속받습니다.
@@ -58,6 +59,9 @@ public abstract class Operator implements Bundlable {
 
     // 속성
     public abstract Attribute attribute();
+
+    // 배틀스킬 (메인 오퍼레이터로 운용 시 사용 가능)
+    public abstract BattleSkill battleSkill();
 
     // 저장/불러오기 (현재는 비어있음, 서브클래스에서 필요 시 확장)
     @Override
