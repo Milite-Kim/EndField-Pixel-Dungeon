@@ -29,6 +29,35 @@ public abstract class TeamOperator extends Operator {
     // 연계기 현재 쿨타임 (0이면 발동 가능)
     private int cooldown = 0;
 
+    /**
+     * 이벤트형 연계기 트리거 플래그.
+     *
+     * Hero에서 특정 이벤트(강력한 일격, 배틀스킬 적중 등) 발생 시
+     * {@link #markChainReady(int)} 로 세팅된다.
+     *
+     * 이 플래그를 쓰는지 여부는 오퍼레이터별 {@code chainCondition()} 에서 결정.
+     * (상태형 연계기는 이 플래그를 무시하고 게임 상태를 직접 체크)
+     */
+    private boolean chainReady      = false;
+    private int     chainReadyTimer = 0;   // 남은 유효 턴 (0 되면 자동 소멸)
+
+    /** 이벤트 발생 시 호출. validTurns 턴 동안 chainReady = true 유지. */
+    public void markChainReady(int validTurns) {
+        chainReady      = true;
+        chainReadyTimer = validTurns;
+    }
+
+    /** 연계기 발동 후 또는 만료 시 플래그 해제. */
+    public void clearChainReady() {
+        chainReady      = false;
+        chainReadyTimer = 0;
+    }
+
+    /** 이벤트형 연계기가 현재 유효한지 여부 (chainCondition 내부에서 사용). */
+    public boolean isChainReady() {
+        return chainReady;
+    }
+
     // ─────────────────────────────────────────────
     // 서브클래스에서 반드시 구현해야 하는 것들
     // ─────────────────────────────────────────────
@@ -66,9 +95,13 @@ public abstract class TeamOperator extends Operator {
         return cooldown == 0;
     }
 
-    /** 매 턴 호출 - 쿨타임 1씩 감소 */
+    /** 매 턴 호출 - 쿨타임 1씩 감소, chainReady 유효 턴 차감 */
     public void reduceCooldown() {
         if (cooldown > 0) cooldown--;
+        if (chainReady) {
+            chainReadyTimer--;
+            if (chainReadyTimer <= 0) clearChainReady();
+        }
     }
 
     /** 연계기 사용 후 쿨타임 초기화 */
@@ -80,17 +113,23 @@ public abstract class TeamOperator extends Operator {
     // 저장/불러오기
     // ─────────────────────────────────────────────
 
-    private static final String COOLDOWN = "cooldown";
+    private static final String COOLDOWN          = "cooldown";
+    private static final String CHAIN_READY       = "chainReady";
+    private static final String CHAIN_READY_TIMER = "chainReadyTimer";
 
     @Override
     public void storeInBundle(Bundle bundle) {
         super.storeInBundle(bundle);
-        bundle.put(COOLDOWN, cooldown);
+        bundle.put(COOLDOWN,          cooldown);
+        bundle.put(CHAIN_READY,       chainReady);
+        bundle.put(CHAIN_READY_TIMER, chainReadyTimer);
     }
 
     @Override
     public void restoreFromBundle(Bundle bundle) {
         super.restoreFromBundle(bundle);
-        cooldown = bundle.getInt(COOLDOWN);
+        cooldown        = bundle.getInt(COOLDOWN);
+        chainReady      = bundle.getBoolean(CHAIN_READY);
+        chainReadyTimer = bundle.getInt(CHAIN_READY_TIMER);
     }
 }

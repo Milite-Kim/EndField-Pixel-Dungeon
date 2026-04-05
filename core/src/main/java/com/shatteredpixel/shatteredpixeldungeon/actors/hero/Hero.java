@@ -2363,9 +2363,15 @@ public class Hero extends Char {
 		// 콤보 트래커: 현재 단계 배율 적용
 		ComboTracker comboTracker = Buff.affect(this, ComboTracker.class);
 		float comboMult = comboTracker.currentMultiplier(this);
+		boolean wasFinishing = comboTracker.isFinishingBlow(this);
 		boolean hit = attack(attackTarget, comboMult, 0, 1f);
 		comboTracker.advanceStep(this);
-		
+
+		// 강력한 일격 적중 시 → 이벤트형 연계기 트리거
+		if (wasFinishing && hit && wasEnemy) {
+			onFinishingBlowLanded(attackTarget);
+		}
+
 		Invisibility.dispel();
 		spend( attackDelay() );
 
@@ -2383,6 +2389,24 @@ public class Hero extends Char {
 		super.onAttackComplete();
 	}
 	
+	/**
+	 * 강력한 일격 적중 시 호출되는 훅.
+	 *
+	 * 이벤트형 연계기 조건("강력한 일격 적중 시")을 가진 팀 오퍼레이터에게
+	 * chainReady 플래그를 세팅한다. 유효 시간: 3턴.
+	 *
+	 * 추후 "배틀스킬 적중 시" 등 다른 이벤트 훅도 동일한 패턴으로 추가.
+	 *
+	 * TODO: UI 연동 후 체인 버튼 표시 로직 추가
+	 */
+	private void onFinishingBlowLanded(Char target) {
+		for (TeamOperator op : teamOperators) {
+			if (op.isReady()) {
+				op.markChainReady(3); // 3턴 유효. TODO: 수치 확정
+			}
+		}
+	}
+
 	@Override
 	public void onMotionComplete() {
 		GameScene.checkKeyHold();
