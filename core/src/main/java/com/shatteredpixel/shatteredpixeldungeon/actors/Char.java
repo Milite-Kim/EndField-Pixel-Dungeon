@@ -75,6 +75,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Electrified;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
@@ -509,11 +510,6 @@ public abstract class Char extends Actor {
 					effectiveDamage *= enemy.buff(ArmorBreaked.class).damageMult();
 				}
 
-				// TODO: 감전(Electrified) - 아츠 피해에만 적용
-				// 물리/아츠 피해 구분 시스템 완성 후 아래 코드 활성화
-				// if (isArtsDamage && enemy.buff(Electrified.class) != null) {
-				//     effectiveDamage *= enemy.buff(Electrified.class).artsDamageMult();
-				// }
 
 				effectiveDamage = attackProc(enemy, effectiveDamage);
 			}
@@ -822,8 +818,13 @@ public abstract class Char extends Actor {
 		return cachedShield;
 	}
 	
+	/** 기존 호출용 오버로드 — 물리 피해로 위임 */
 	public void damage( int dmg, Object src ) {
-		
+		damage( dmg, src, DamageType.PHYSICAL );
+	}
+
+	public void damage( int dmg, Object src, DamageType type ) {
+
 		if (!isAlive() || dmg < 0) {
 			return;
 		}
@@ -845,7 +846,7 @@ public abstract class Char extends Actor {
 			for (LifeLink link : links){
 				Char ch = (Char)Actor.findById(link.object);
 				if (ch != null) {
-					ch.damage(dmg, link);
+					ch.damage(dmg, link, type);
 					if (!ch.isAlive()) {
 						link.detach();
 						if (ch == Dungeon.hero){
@@ -901,6 +902,11 @@ public abstract class Char extends Actor {
 		}
 		if (alignment != Alignment.ALLY && this.buff(DeathMark.DeathMarkTracker.class) != null){
 			damage *= 1.25f;
+		}
+
+		// 감전(Electrified): 아츠 피해에만 배율 적용
+		if (type.isArts() && buff(Electrified.class) != null) {
+			damage *= buff(Electrified.class).artsDamageMult();
 		}
 
 		if (buff(Sickle.HarvestBleedTracker.class) != null){
@@ -1027,6 +1033,12 @@ public abstract class Char extends Actor {
 			if (src instanceof Viscosity.DeferedDamage)                 icon = FloatingText.DEFERRED;
 			if (src instanceof Corruption)                              icon = FloatingText.CORRUPTION;
 			if (src instanceof AscensionChallenge)                      icon = FloatingText.AMULET;
+
+			// 엔픽던 아츠 피해 아이콘 (type 기반, src 기반 아이콘보다 우선 적용)
+			if (type == DamageType.HEAT)     icon = FloatingText.BURNING;
+			if (type == DamageType.COLD)     icon = FloatingText.FROST;
+			if (type == DamageType.NATURE)   icon = FloatingText.TOXIC;   // TODO: 자연 전용 아이콘
+			if (type == DamageType.ELECTRIC) icon = FloatingText.SHOCKING;
 
 			if ((icon == FloatingText.PHYS_DMG || icon == FloatingText.PHYS_DMG_NO_BLOCK) && hitMissIcon != -1){
 				if (icon == FloatingText.PHYS_DMG_NO_BLOCK) hitMissIcon += 18; //extra row
