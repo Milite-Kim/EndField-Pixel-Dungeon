@@ -325,8 +325,8 @@ public class OperatorSelectScene extends PixelScene {
 
     private void onProceed() {
         if (selectedOpClass == null) return;
-        // TODO: selectedOpClass를 TeamSelectScene으로 전달 (Phase 3)
-        // ShatteredPixelDungeon.switchScene(TeamSelectScene.class);
+        TeamSelectScene.selectedMain = selectedOpClass;
+        ShatteredPixelDungeon.switchNoFade(TeamSelectScene.class);
     }
 
     @Override

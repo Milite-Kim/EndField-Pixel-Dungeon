@@ -61,6 +61,12 @@ public class Endministrator extends TeamOperator {
             }
 
             @Override
+            public String name() { return "강타"; }
+
+            @Override
+            public String description() { return "강타(HEAVY_ATTACK) 물리 피해.\nTODO: 피해 수치 확정"; }
+
+            @Override
             protected void activate(Hero hero, Char target) {
                 if (target == null || !target.isAlive()) return;
 
@@ -77,6 +83,14 @@ public class Endministrator extends TeamOperator {
     @Override
     public int baseCooldown() {
         return 3; // TODO: 수치 확정
+    }
+
+    @Override
+    public String chainName() { return "오리지늄 아츠 투척"; }
+
+    @Override
+    public String chainDescription() {
+        return "조건: 아군 연계기 적중 시\n효과: 물리 피해 + 오리지늄 아츠 결정 부여";
     }
 
     /**
@@ -115,6 +129,12 @@ public class Endministrator extends TeamOperator {
             public int maxCharge() {
                 return 100; // TODO: 수치 확정
             }
+
+            @Override
+            public String name() { return "오리지늄 폭풍"; }
+
+            @Override
+            public String description() { return "대량 물리 피해. 오리지늄 아츠 결정 보유 시 추가 피해.\nTODO: 피해 수치 확정"; }
 
             @Override
             protected void activate(Hero hero, Char target) {

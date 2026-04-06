@@ -66,6 +66,18 @@ public abstract class BattleSkill implements Bundlable {
     public abstract int baseCooldown();
 
     /**
+     * 배틀스킬 이름 (UI 표시용).
+     * 예) "강타", "섬광 베기"
+     */
+    public abstract String name();
+
+    /**
+     * 배틀스킬 설명 (UI 표시용).
+     * 효과, 수치, 조건 등을 간략히 서술.
+     */
+    public abstract String description();
+
+    /**
      * 스킬 실제 효과.
      * use()에서 내부적으로 호출됨.
      *

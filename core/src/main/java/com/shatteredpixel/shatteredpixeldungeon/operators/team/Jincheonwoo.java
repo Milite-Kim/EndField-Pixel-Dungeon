@@ -63,6 +63,12 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
+            public String name() { return "섬광 베기"; }
+
+            @Override
+            public String description() { return "물리 피해 + 띄우기(LAUNCH).\nTODO: 피해 수치 확정"; }
+
+            @Override
             protected void activate(Hero hero, Char target) {
                 if (target == null || !target.isAlive()) return;
 
@@ -83,6 +89,14 @@ public class Jincheonwoo extends TeamOperator {
     @Override
     public int baseCooldown() {
         return 3; // TODO: 수치 확정
+    }
+
+    @Override
+    public String chainName() { return "관통 베기"; }
+
+    @Override
+    public String chainDescription() {
+        return "조건: 적 방어불능 스택 누적 시\n효과: 물리 피해 + 관통 이동";
     }
 
     /**
@@ -122,6 +136,12 @@ public class Jincheonwoo extends TeamOperator {
             public int maxCharge() {
                 return 100; // TODO: 수치 확정
             }
+
+            @Override
+            public String name() { return "절공"; }
+
+            @Override
+            public String description() { return "7회 연속 대량 물리 피해.\nTODO: 피해 수치 확정"; }
 
             @Override
             protected void activate(Hero hero, Char target) {

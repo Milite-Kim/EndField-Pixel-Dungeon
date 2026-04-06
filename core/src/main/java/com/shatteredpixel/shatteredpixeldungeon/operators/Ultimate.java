@@ -55,6 +55,17 @@ public abstract class Ultimate implements Bundlable {
     public abstract int maxCharge();
 
     /**
+     * 궁극기 이름 (UI 표시용).
+     */
+    public abstract String name();
+
+    /**
+     * 궁극기 설명 (UI 표시용).
+     * 효과, 수치, 조건 등을 간략히 서술.
+     */
+    public abstract String description();
+
+    /**
      * 궁극기 실제 효과.
      * use()에서 내부적으로 호출됨.
      *
