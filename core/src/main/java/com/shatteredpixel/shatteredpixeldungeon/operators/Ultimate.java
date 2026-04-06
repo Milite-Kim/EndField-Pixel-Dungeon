@@ -59,9 +59,10 @@ public abstract class Ultimate implements Bundlable {
      * use()에서 내부적으로 호출됨.
      *
      * @param hero   메인 오퍼레이터 (플레이어)
-     * @param target 공격 대상 (범위기/자기 강화형은 null 가능)
+     * @param target 공격 대상 (selfTarget/범위형은 null 가능)
+     * @param cell   타겟 셀 위치 (지면 배치형에서 사용)
      */
-    protected abstract void activate(Hero hero, Char target);
+    protected abstract void activate(Hero hero, Char target, int cell);
 
     // ─────────────────────────────────────────────
     // 이벤트별 충전량 (선택적 오버라이드)
@@ -93,6 +94,55 @@ public abstract class Ultimate implements Bundlable {
      */
     public int chargePerChain() {
         return 0;
+    }
+
+    // ─────────────────────────────────────────────
+    // 타겟팅 특성 (선택적 오버라이드) — BattleSkill과 동일한 패턴
+    // ─────────────────────────────────────────────
+
+    /**
+     * 궁극기 사거리 (셀 거리 기준, max(|Δx|,|Δy|) 방식).
+     * 기본값 1 = 근접. 원거리 궁극기는 오버라이드.
+     */
+    public int range() {
+        return 1;
+    }
+
+    /**
+     * 발동 시 소모하는 게임 시간.
+     * 기본값 1f = 표준 1턴.
+     * 라스트 라이트처럼 시전 중 피해 면역 등 특수 연출이 있는 경우 오버라이드.
+     * 버프/장판형의 지속시간은 별도로 activate() 내에서 처리.
+     */
+    public float castTime() {
+        return 1f;
+    }
+
+    /**
+     * 사거리 초과 시 자동 접근 여부.
+     * true  → 대상에게 이동 후 자동 발동
+     * false → "대상이 너무 멀리 떨어져 있습니다" 후 취소 (기본값)
+     */
+    public boolean autoApproach() {
+        return false;
+    }
+
+    /**
+     * 빈 지면 타겟팅 가능 여부.
+     * false → Char 타겟 전용 (기본값)
+     * true  → 장판/설치형 궁극기 또는 미래 추가 오퍼레이터용
+     */
+    public boolean canTargetCell() {
+        return false;
+    }
+
+    /**
+     * 자기 자신(또는 자기 위치)을 대상으로 하는 궁극기 여부.
+     * true → 타겟팅 모드 스킵, 즉시 발동.
+     * 자기 강화형(이본/자이히/레바테인/안탈) 및 자기 위치 기준 장판형(탕탕).
+     */
+    public boolean selfTarget() {
+        return false;
     }
 
     // ─────────────────────────────────────────────
@@ -143,10 +193,15 @@ public abstract class Ultimate implements Bundlable {
     /**
      * 궁극기 사용.
      * 충전 미완료 시 아무것도 하지 않음.
+     * Hero.actUltimate()에서 범위 체크 후 호출됨.
+     *
+     * @param hero   플레이어
+     * @param target 타겟 Char (selfTarget/지면 타겟팅 시 null)
+     * @param cell   타겟 셀
      */
-    public void use(Hero hero, Char target) {
+    public void use(Hero hero, Char target, int cell) {
         if (!isReady()) return;
-        activate(hero, target);
+        activate(hero, target, cell);
         charge = 0;
     }
 
