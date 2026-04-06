@@ -44,6 +44,12 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
+import com.shatteredpixel.shatteredpixeldungeon.items.Food;
+import com.shatteredpixel.shatteredpixeldungeon.items.Waterskin;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.ClothArmor;
+import com.shatteredpixel.shatteredpixeldungeon.items.bags.VelvetPouch;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -280,10 +286,42 @@ public class Dungeon {
 
 		hero = new Hero();
 		hero.live();
-		
+
 		Badges.reset();
-		
-		GamesInProgress.selectedClass.initHero( hero );
+
+		if (GamesInProgress.selectedMainOp != null) {
+			// ── 엔픽던 오퍼레이터 기반 초기화 ──────────────
+			try {
+				Operator mainOp = GamesInProgress.selectedMainOp.newInstance();
+				TeamOperator teamOp = null;
+				if (GamesInProgress.selectedTeamOp != null) {
+					teamOp = (TeamOperator) GamesInProgress.selectedTeamOp.newInstance();
+				}
+
+				// 공통 시작 아이템 지급 (모든 오퍼레이터 동일)
+				Item armor = new ClothArmor().identify();
+				if (!Challenges.isItemBlocked(armor)) hero.belongings.armor = (ClothArmor) armor;
+
+				Item food = new Food();
+				if (!Challenges.isItemBlocked(food)) food.collect();
+
+				new VelvetPouch().collect();
+				LimitedDrops.VELVET_POUCH.drop();
+
+				new Waterskin().collect();
+
+				// 오퍼레이터 무기 + 오퍼레이터 등록
+				hero.initFromOperator(mainOp, teamOp);
+
+			} catch (Exception e) {
+				ShatteredPixelDungeon.reportException(e);
+				// 오퍼레이터 초기화 실패 시 SPD 기본으로 폴백
+				GamesInProgress.selectedClass.initHero(hero);
+			}
+		} else {
+			// ── SPD 기본 초기화 (폴백) ──────────────────────
+			GamesInProgress.selectedClass.initHero(hero);
+		}
 	}
 
 	public static boolean isChallenged( int mask ) {

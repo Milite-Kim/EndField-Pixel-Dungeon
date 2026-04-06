@@ -10,8 +10,18 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Glaive;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Longsword;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Quarterstaff;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
 import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -95,6 +105,31 @@ public abstract class Operator implements Bundlable {
                 // 3단계: 약 → 약 → 강력한 일격
                 return new float[]{ 0.8f, 0.9f, 1.2f };
         }
+    }
+
+    /**
+     * 게임 시작 시 장착할 무기.
+     * 무기 타입별 SPD placeholder 무기를 반환.
+     * TODO: 오퍼레이터별 전용 무기 클래스 구현 후 각 서브클래스에서 오버라이드
+     */
+    public MeleeWeapon startingWeapon() {
+        switch (weaponType()) {
+            case TWO_HANDED_SWORD: return new Longsword();   // TODO: 전용 양손검으로 교체
+            case POLEARM:          return new Glaive();      // TODO: 전용 장병기로 교체
+            case HANDGUN:          return new Crossbow();    // TODO: 전용 권총으로 교체
+            case ARTS_UNIT:        return new Quarterstaff();// TODO: 전용 아츠유닛으로 교체
+            case ONE_HANDED_SWORD:
+            default:               return new WornShortsword(); // TODO: 전용 한손검으로 교체
+        }
+    }
+
+    /**
+     * 게임 시작 시 소지할 오퍼레이터 고유 아이템 목록.
+     * 기본값: 빈 목록 (공통 아이템은 Hero.initFromOperator()에서 지급).
+     * TODO: 각 오퍼레이터 아이템 데이터 확정 후 서브클래스에서 오버라이드
+     */
+    public List<Item> startingItems() {
+        return new ArrayList<>();
     }
 
     // 저장/불러오기 (현재는 비어있음, 서브클래스에서 필요 시 확장)

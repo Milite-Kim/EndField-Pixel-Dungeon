@@ -6,8 +6,11 @@
 package com.shatteredpixel.shatteredpixeldungeon.scenes;
 
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.ui.ActionIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.OperatorRegistry;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Button;
@@ -352,12 +355,20 @@ public class TeamSelectScene extends PixelScene {
     // 진행
     // ─────────────────────────────────────────────
 
+    @SuppressWarnings("unchecked")
     private void onProceed() {
-        // TODO: Hero에 메인 오퍼레이터 + 팀 오퍼레이터 세팅 후 던전 진입 (Phase 3)
-        // Dungeon.hero.setMainOperator(selectedMain.newInstance());
-        // if (selectedOp != null) Dungeon.hero.addTeamOperator(selectedOp.newInstance());
-        // InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
-        // Game.switchScene(InterlevelScene.class);
+        // GamesInProgress에 선택 정보 저장 → Dungeon.init()에서 읽음
+        GamesInProgress.selectedMainOp = (Class<? extends Operator>) selectedMain;
+        GamesInProgress.selectedTeamOp = selectedOp;
+        GamesInProgress.curSlot = 1; // 슬롯 고정 (추후 멀티슬롯 지원 시 수정)
+
+        Dungeon.hero = null;
+        Dungeon.daily = Dungeon.dailyReplay = false;
+        Dungeon.initSeed();
+        ActionIndicator.clearAction();
+        InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
+
+        Game.switchScene(InterlevelScene.class);
     }
 
     @Override

@@ -2704,6 +2704,33 @@ public class Hero extends Char {
 	 *
 	 * @param op 선택한 메인 오퍼레이터 인스턴스
 	 */
+	/**
+	 * 오퍼레이터 기반 히어로 초기화.
+	 * Dungeon.init()에서 selectedClass.initHero() 대신 호출된다.
+	 *
+	 * 처리 순서:
+	 * 1. 기본 스탯 (HP/STR은 Hero 생성자에서 이미 설정됨)
+	 * 2. 메인 오퍼레이터 무기 장착
+	 * 3. 메인/팀 오퍼레이터 등록
+	 * 4. 공통 시작 아이템은 HeroClass.initHero() 대신 호출부에서 처리
+	 *
+	 * @param mainOp  선택한 메인 오퍼레이터 인스턴스
+	 * @param teamOp  선택한 팀 오퍼레이터 인스턴스 (null = 솔로)
+	 */
+	public void initFromOperator(Operator mainOp, TeamOperator teamOp) {
+		// 오퍼레이터 무기 장착
+		belongings.weapon = mainOp.startingWeapon();
+		belongings.weapon.identify();
+
+		// TODO: 기질(Disposition) 아이템 지급 (Phase 3)
+		// TODO: 오퍼레이터 고유 아이템 지급 (Phase 3)
+		// for (Item item : mainOp.startingItems()) { item.collect(); }
+
+		// 오퍼레이터 등록
+		setMainOperator(mainOp);
+		if (teamOp != null) addTeamOperator(teamOp);
+	}
+
 	public void setMainOperator(Operator op) {
 		if (activeMainOperator != null) return; // 이미 설정됨 → 무시
 		activeMainOperator  = op;

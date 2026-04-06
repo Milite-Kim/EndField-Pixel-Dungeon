@@ -24,6 +24,8 @@ package com.shatteredpixel.shatteredpixeldungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.FileUtils;
 
@@ -43,6 +45,12 @@ public class GamesInProgress {
 	
 	public static HeroClass selectedClass;
 	public static boolean randomizedClass = false;
+
+	// ─── 엔픽던 오퍼레이터 선택 ───────────────────────
+	/** 던전 시작 시 선택된 메인 오퍼레이터 클래스. null이면 SPD 기본 초기화 사용 */
+	public static Class<? extends Operator> selectedMainOp = null;
+	/** 던전 시작 시 선택된 팀 오퍼레이터 클래스 (1번 슬롯). null = 솔로 */
+	public static Class<? extends TeamOperator> selectedTeamOp = null;
 	
 	private static final String GAME_FOLDER = "game%d";
 	private static final String GAME_FILE	= "game.dat";
