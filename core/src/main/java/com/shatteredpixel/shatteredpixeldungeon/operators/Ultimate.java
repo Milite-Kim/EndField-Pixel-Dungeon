@@ -64,6 +64,38 @@ public abstract class Ultimate implements Bundlable {
     protected abstract void activate(Hero hero, Char target);
 
     // ─────────────────────────────────────────────
+    // 이벤트별 충전량 (선택적 오버라이드)
+    // 기본값 0 = 해당 이벤트로 충전되지 않음
+    // 나중에 특성(Talent) 시스템에서 보정량을 addCharge()로 추가 가능
+    // ─────────────────────────────────────────────
+
+    /**
+     * 강력한 일격 적중 시 충전량.
+     * 기본 공격 콤보의 마지막 타격에서 발생.
+     */
+    public int chargePerFinishingBlow() {
+        return 0;
+    }
+
+    /**
+     * 배틀스킬 사용 시 충전량.
+     * actBattleSkill()에서 스킬 발동 직후 호출.
+     * 스킬 내부에서 상태 조건에 따라 충전하는 경우(포그라니치니크 등)는
+     * activate() 안에서 addChargeInternal()로 별도 처리.
+     */
+    public int chargePerBattleSkill() {
+        return 0;
+    }
+
+    /**
+     * 연계기 발동 시 충전량.
+     * activateFrontChain()에서 연계기 발동 직후 호출.
+     */
+    public int chargePerChain() {
+        return 0;
+    }
+
+    // ─────────────────────────────────────────────
     // 외부 충전 차단 여부 (기본값: 허용)
     // ─────────────────────────────────────────────
 

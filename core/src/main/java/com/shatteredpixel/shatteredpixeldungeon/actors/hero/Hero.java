@@ -1642,6 +1642,7 @@ public class Hero extends Char {
 		if (activeBattleSkill.selfTarget()) {
 			activeBattleSkill.use(this, this, pos);
 			spend(activeBattleSkill.castTime());
+			chargeUltimateFromBattleSkill();
 			return true;
 		}
 
@@ -1658,6 +1659,7 @@ public class Hero extends Char {
 			// ── 사거리 내: 발동
 			activeBattleSkill.use(this, targetChar, targetCell);
 			spend(activeBattleSkill.castTime());
+			chargeUltimateFromBattleSkill();
 			return true;
 
 		} else if (activeBattleSkill.autoApproach()) {
@@ -1675,6 +1677,13 @@ public class Hero extends Char {
 			GLog.w(Messages.get(Hero.class, "battle_skill_too_far"));
 			ready();
 			return false;
+		}
+	}
+
+	/** 배틀스킬 발동 성공 시 궁극기 충전. 나중에 특성 보정이 생기면 여기에 추가. */
+	private void chargeUltimateFromBattleSkill() {
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerBattleSkill());
 		}
 	}
 
@@ -2647,6 +2656,11 @@ public class Hero extends Char {
 	 */
 	private void onFinishingBlowLanded(Char target) {
 		checkChainTriggers(target);
+
+		// 강력한 일격 적중 시 궁극기 충전
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerFinishingBlow());
+		}
 	}
 
 	/**
@@ -2678,6 +2692,11 @@ public class Hero extends Char {
 		if (op == null) return false;
 		op.activateChain(this, target);
 		op.resetCooldown();
+
+		// 연계기 발동 시 궁극기 충전
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerChain());
+		}
 		return true;
 	}
 
