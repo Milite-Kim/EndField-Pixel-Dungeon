@@ -115,6 +115,15 @@ public abstract class BattleSkill implements Bundlable {
         return false;
     }
 
+    /**
+     * 자기 자신을 대상으로 하는 스킬 여부.
+     * true → 타겟팅 모드를 스킵하고 즉시 발동 (카치크/스노우샤인의 방어 버프, 자이히 자기 버프 등)
+     * false → 타겟 지정 필요 (기본값)
+     */
+    public boolean selfTarget() {
+        return false;
+    }
+
     // ─────────────────────────────────────────────
     // 스킬 사용 (외부에서 이것만 호출)
     // ─────────────────────────────────────────────

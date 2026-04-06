@@ -1580,6 +1580,12 @@ public class Hero extends Char {
 	public void enterBattleSkillTargeting() {
 		if (activeBattleSkill == null || !activeBattleSkill.isReady()) return;
 
+		if (activeBattleSkill.selfTarget()) {
+			// 자기 대상 스킬: 타겟팅 모드 스킵, 즉시 자신의 셀로 발동
+			confirmBattleSkillTarget(pos);
+			return;
+		}
+
 		if (battleSkillTargeting && attackTarget != null) {
 			// 더블클릭: 현재 공격 대상으로 즉시 발동
 			confirmBattleSkillTarget(attackTarget.pos);
@@ -1631,6 +1637,13 @@ public class Hero extends Char {
 
 		// 해당 셀의 Char 탐색
 		Char targetChar = Actor.findChar(targetCell);
+
+		// 자기 대상 스킬: 사거리/타겟 체크 없이 즉시 발동
+		if (activeBattleSkill.selfTarget()) {
+			activeBattleSkill.use(this, this, pos);
+			spend(activeBattleSkill.castTime());
+			return true;
+		}
 
 		// 지면 타겟팅 불가 스킬인데 빈 셀을 선택한 경우
 		if (targetChar == null && !activeBattleSkill.canTargetCell()) {
