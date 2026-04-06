@@ -7,6 +7,7 @@ package com.shatteredpixel.shatteredpixeldungeon.operators;
 
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.operators.team.Endministrator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Jincheonwoo;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.FileUtils;
@@ -27,9 +28,9 @@ import java.util.List;
  * Badges.java 방식과 동일하게 전역 Bundle 파일로 관리.
  *
  * [첫 번째 런 정책]
- * unlockedAsMain 이 비어있으면 (처음 게임) 전체 오퍼레이터를
- * 메인 선택 가능으로 간주한다. 이후 팀 오퍼레이터 편성 이력이
- * 쌓이면서 자연스럽게 해금 풀이 확장된다.
+ * 저장 파일이 없으면 (첫 실행) DEFAULT_UNLOCKED 목록을 자동 해금한다.
+ * 기본 해금 오퍼레이터: 관리자 (Endministrator)
+ * 이후 팀 오퍼레이터 편성 이력이 쌓이면서 해금 풀이 확장된다.
  */
 public class OperatorRegistry {
 
@@ -43,11 +44,26 @@ public class OperatorRegistry {
     public static final List<Class<? extends Operator>> ALL_OPERATORS = new ArrayList<>();
 
     static {
+        ALL_OPERATORS.add(Endministrator.class);
         ALL_OPERATORS.add(Jincheonwoo.class);
         // TODO: 오퍼레이터 구현 완료 시 순서대로 추가
         // ALL_OPERATORS.add(Paginchik.class);
         // ALL_OPERATORS.add(Lasturait.class);
         // ... (25명 전체)
+    }
+
+    // ─────────────────────────────────────────────
+    // 기본 해금 오퍼레이터
+    // ─────────────────────────────────────────────
+
+    /**
+     * 기본 해금 오퍼레이터 목록.
+     * 처음 게임을 시작할 때 자동으로 해금된다.
+     */
+    private static final List<Class<? extends Operator>> DEFAULT_UNLOCKED = new ArrayList<>();
+
+    static {
+        DEFAULT_UNLOCKED.add(Endministrator.class);
     }
 
     // ─────────────────────────────────────────────
@@ -71,7 +87,13 @@ public class OperatorRegistry {
                 Bundle bundle = FileUtils.bundleFromFile(REGISTRY_FILE);
                 unlockedAsMain = restoreUnlocked(bundle);
             } catch (IOException e) {
+                // 저장 파일 없음 = 첫 실행 → 기본 오퍼레이터 해금
                 unlockedAsMain = new HashSet<>();
+                for (Class<? extends Operator> opClass : DEFAULT_UNLOCKED) {
+                    unlockedAsMain.add(opClass.getSimpleName());
+                }
+                saveNeeded = true;
+                saveGlobal();
             }
         }
     }
@@ -123,13 +145,9 @@ public class OperatorRegistry {
 
     /**
      * 해당 오퍼레이터가 메인으로 해금되어 있는지 여부.
-     *
-     * 첫 게임(해금 목록이 비어있음)인 경우 모든 오퍼레이터를 허용한다.
      */
     public static boolean isUnlockedAsMain(Class<? extends Operator> opClass) {
         loadGlobal();
-        // 첫 런 정책: 해금 목록이 비어있으면 전체 허용
-        if (unlockedAsMain.isEmpty()) return true;
         return unlockedAsMain.contains(opClass.getSimpleName());
     }
 
