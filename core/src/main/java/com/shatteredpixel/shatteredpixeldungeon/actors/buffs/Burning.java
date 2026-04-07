@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Thief;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Combustion;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ElmoParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -83,8 +84,14 @@ public class Burning extends Buff implements Hero.Doom {
 
 	@Override
 	public boolean attachTo(Char target) {
-		Buff.detach( target, Chill.class);
+		// 엔픽던: 영웅 이외의 대상(몹)에게는 Combustion으로 리다이렉트
+		if (!(target instanceof Hero)) {
+			Buff.detach(target, Chill.class);
+			Combustion.apply(target, 1); // 기본 1스택 연소
+			return false; // Burning 자체는 붙이지 않음
+		}
 
+		Buff.detach( target, Chill.class);
 		return super.attachTo(target);
 	}
 

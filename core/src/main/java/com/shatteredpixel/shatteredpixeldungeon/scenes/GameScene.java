@@ -90,6 +90,7 @@ import com.shatteredpixel.shatteredpixeldungeon.tiles.RaisedTerrainTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.TerrainFeaturesTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.WallBlockingTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ActionIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.ui.CombatHUD;
 import com.shatteredpixel.shatteredpixeldungeon.ui.AttackIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Banner;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar;
@@ -202,6 +203,8 @@ public class GameScene extends PixelScene {
 
 	private Toolbar toolbar;
 	private Toast prompt;
+
+	private CombatHUD combatHUD;
 
 	private AttackIndicator attack;
 	private LootIndicator loot;
@@ -530,6 +533,14 @@ public class GameScene extends PixelScene {
 			blocker.camera = uiCamera;
 			add(blocker);
 		}
+
+		// 전투 HUD (배틀스킬 / 궁극기 / 연계기 버튼)
+		combatHUD = new CombatHUD();
+		combatHUD.camera = uiCamera;
+		float hudW = CombatHUD.BTN_SIZE * 3 + CombatHUD.GAP * 2;
+		float hudY = toolbar.top() - CombatHUD.BTN_SIZE - 4;
+		combatHUD.setRect( (uiCamera.width - hudW) / 2f, hudY, hudW, CombatHUD.BTN_SIZE );
+		add(combatHUD);
 
 		layoutTags();
 

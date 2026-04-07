@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Thief;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frozen;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.FrozenCarpaccio;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.MysteryMeat;
@@ -49,6 +50,13 @@ public class Frost extends FlavourBuff {
 	
 	@Override
 	public boolean attachTo( Char target ) {
+		// 엔픽던: 영웅 이외의 대상(몹)에게는 Frozen으로 리다이렉트
+		if (!(target instanceof Hero)) {
+			Buff.detach(target, Burning.class);
+			Frozen.apply(target, 2); // 기본 2스택 → 2턴 이동 불가
+			return false; // Frost 자체는 붙이지 않음
+		}
+
 		Buff.detach( target, Burning.class );
 
 		if (super.attachTo( target )) {

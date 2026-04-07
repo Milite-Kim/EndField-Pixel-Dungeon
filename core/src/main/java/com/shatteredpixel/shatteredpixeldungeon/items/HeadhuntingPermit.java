@@ -8,8 +8,10 @@ package com.shatteredpixel.shatteredpixeldungeon.items;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.OperatorRegistry;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndHeadhunting;
 import com.watabou.utils.Random;
 
 import java.util.ArrayList;
@@ -74,18 +76,7 @@ public class HeadhuntingPermit extends Item {
         // 후보 4명 랜덤 선발
         List<Class<? extends Operator>> candidates = pickCandidates(pool, CANDIDATES);
 
-        // TODO: 헤드헌팅 선택 UI 호출
-        //   HeadhuntingScene.show(hero, candidates, MAX_REROLLS, this);
-        //   → 플레이어가 선택하면 hero.addTeamOperator(op) 또는 hero.replaceTeamOperator(old, new) 호출
-        //   → 사용된 허가증 소모: detach(hero.belongings)
-
-        // 현재는 UI 미구현이므로 로그만 출력
-        StringBuilder sb = new StringBuilder("[헤드헌팅 허가증] 후보 오퍼레이터:\n");
-        for (Class<? extends Operator> c : candidates) {
-            sb.append("  - ").append(c.getSimpleName()).append("\n");
-        }
-        GLog.i(sb.toString());
-        GLog.w("TODO: 헤드헌팅 UI가 아직 구현되지 않았습니다.");
+        GameScene.show(new WndHeadhunting(hero, this, candidates));
     }
 
     /**

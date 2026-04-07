@@ -260,6 +260,9 @@ public class Hero extends Char {
 	//reference to the enemy the hero is currently in the process of attacking
 	private Char attackTarget;
 
+	/** 현재 공격 대상 조회 (연계기 발동 등 외부 시스템에서 참조용). */
+	public Char getAttackTarget() { return attackTarget; }
+
 	/**
 	 * 배틀스킬 타겟팅 모드 상태.
 	 * true일 때 다음 셀 클릭이 배틀스킬 타겟으로 확정됨.
