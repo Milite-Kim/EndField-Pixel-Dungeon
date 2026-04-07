@@ -42,6 +42,19 @@ public abstract class TeamOperator extends Operator {
     public abstract int baseCooldown();
 
     /**
+     * 연계기 이름 (UI 표시용).
+     * 예) "관통 베기", "아츠 결정 투척"
+     */
+    public abstract String chainName();
+
+    /**
+     * 연계기 설명 (UI 표시용).
+     * 조건 및 효과를 포함해서 서술.
+     * 예) "조건: 적 방어불능 스택 누적 시\n효과: 물리 피해 + 관통 이동"
+     */
+    public abstract String chainDescription();
+
+    /**
      * 연계기 큐 진입 조건 체크.
      * 특정 게임 이벤트(강력한 일격, DefenselessStack 부여 등) 발생 시
      * Hero가 이 메서드를 호출하여 조건이 충족됐는지 확인합니다.

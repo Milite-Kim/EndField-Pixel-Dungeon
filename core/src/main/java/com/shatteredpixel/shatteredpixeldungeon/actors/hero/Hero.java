@@ -259,6 +259,20 @@ public class Hero extends Char {
 
 	//reference to the enemy the hero is currently in the process of attacking
 	private Char attackTarget;
+
+	/**
+	 * 배틀스킬 타겟팅 모드 상태.
+	 * true일 때 다음 셀 클릭이 배틀스킬 타겟으로 확정됨.
+	 * UI 버튼 첫 클릭 → enterBattleSkillTargeting() 으로 세팅.
+	 * TODO: UI 연동 시 타겟 하이라이트 갱신 추가
+	 */
+	private boolean battleSkillTargeting = false;
+
+	/**
+	 * 궁극기 타겟팅 모드 상태. battleSkillTargeting과 동일한 방식으로 동작.
+	 * TODO: UI 연동 시 타겟 하이라이트 갱신 추가
+	 */
+	private boolean ultimateTargeting = false;
 	
 	public boolean resting = false;
 	
@@ -1001,7 +1015,13 @@ public class Hero extends Char {
 				
 			} else if (curAction instanceof HeroAction.Attack) {
 				actResult = actAttack( (HeroAction.Attack)curAction );
-				
+
+			} else if (curAction instanceof HeroAction.UseBattleSkill) {
+				actResult = actBattleSkill( (HeroAction.UseBattleSkill)curAction );
+
+			} else if (curAction instanceof HeroAction.UseUltimate) {
+				actResult = actUltimate( (HeroAction.UseUltimate)curAction );
+
 			} else if (curAction instanceof HeroAction.Alchemy) {
 				actResult = actAlchemy( (HeroAction.Alchemy)curAction );
 				
@@ -1549,6 +1569,230 @@ public class Hero extends Char {
 				return false;
 			}
 
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────────
+	// 배틀스킬 타겟팅 & 발동
+	// ─────────────────────────────────────────────────────────────────
+
+	/**
+	 * UI 버튼 클릭 시 호출되는 진입점.
+	 *
+	 * - 타겟팅 모드가 아닌 경우 → 타겟팅 모드 진입
+	 *   (현재 공격 대상이 있으면 그 대상이 기본 선택 상태)
+	 * - 이미 타겟팅 모드이고 attackTarget이 있는 경우 → 더블클릭 즉시 발동
+	 * - 쿨타임 중이면 아무것도 하지 않음
+	 *
+	 * TODO: UI 연동 시 타겟 하이라이트 표시 추가
+	 */
+	public void enterBattleSkillTargeting() {
+		if (activeBattleSkill == null || !activeBattleSkill.isReady()) return;
+
+		if (activeBattleSkill.selfTarget()) {
+			// 자기 대상 스킬: 타겟팅 모드 스킵, 즉시 자신의 셀로 발동
+			confirmBattleSkillTarget(pos);
+			return;
+		}
+
+		if (battleSkillTargeting && attackTarget != null) {
+			// 더블클릭: 현재 공격 대상으로 즉시 발동
+			confirmBattleSkillTarget(attackTarget.pos);
+		} else {
+			battleSkillTargeting = true;
+			// TODO: UI — 사거리 범위 하이라이트, 타겟 선택 커서 표시
+		}
+	}
+
+	/**
+	 * 타겟팅 모드에서 셀이 선택됐을 때 호출.
+	 * GameScene의 셀 클릭 핸들러 또는 버튼 재클릭에서 호출됨.
+	 *
+	 * @param cell 선택된 셀 번호
+	 */
+	public void confirmBattleSkillTarget(int cell) {
+		battleSkillTargeting = false;
+		curAction = new HeroAction.UseBattleSkill(cell);
+		resume();
+	}
+
+	/** 타겟팅 모드 취소 (ESC 등). */
+	public void cancelBattleSkillTargeting() {
+		battleSkillTargeting = false;
+		// TODO: UI — 하이라이트 해제
+	}
+
+	/** 현재 배틀스킬 타겟팅 모드 여부 (UI에서 버튼 상태 표시용). */
+	public boolean isBattleSkillTargeting() {
+		return battleSkillTargeting;
+	}
+
+	/**
+	 * 배틀스킬 발동 액션 처리.
+	 *
+	 * 1. 타겟 셀의 Char 확인 (없으면 지면 타겟팅으로 처리)
+	 * 2. 사거리 체크
+	 *    - 범위 내: 스킬 발동 + castTime() 소모
+	 *    - 범위 밖 + autoApproach(): 한 칸 접근 후 재시도 (다음 act())
+	 *    - 범위 밖 + !autoApproach(): 메시지 출력 후 취소
+	 */
+	private boolean actBattleSkill(HeroAction.UseBattleSkill action) {
+		if (activeBattleSkill == null || !activeBattleSkill.isReady()) {
+			ready();
+			return false;
+		}
+
+		int targetCell = action.dst;
+
+		// 해당 셀의 Char 탐색
+		Char targetChar = Actor.findChar(targetCell);
+
+		// 자기 대상 스킬: 사거리/타겟 체크 없이 즉시 발동
+		if (activeBattleSkill.selfTarget()) {
+			activeBattleSkill.use(this, this, pos);
+			spend(activeBattleSkill.castTime());
+			chargeUltimateFromBattleSkill();
+			return true;
+		}
+
+		// 지면 타겟팅 불가 스킬인데 빈 셀을 선택한 경우
+		if (targetChar == null && !activeBattleSkill.canTargetCell()) {
+			GLog.w(Messages.get(Hero.class, "battle_skill_no_target"));
+			ready();
+			return false;
+		}
+
+		int dist = Dungeon.level.distance(pos, targetCell);
+
+		if (dist <= activeBattleSkill.range()) {
+			// ── 사거리 내: 발동
+			activeBattleSkill.use(this, targetChar, targetCell);
+			spend(activeBattleSkill.castTime());
+			chargeUltimateFromBattleSkill();
+			return true;
+
+		} else if (activeBattleSkill.autoApproach()) {
+			// ── 사거리 밖 + 자동 접근
+			if (fieldOfView[targetCell] && getCloser(targetCell)) {
+				return true; // 한 칸 이동 소모, 다음 act()에서 재시도
+			} else {
+				GLog.w(Messages.get(Hero.class, "battle_skill_too_far"));
+				ready();
+				return false;
+			}
+
+		} else {
+			// ── 사거리 밖 + 자동 접근 없음
+			GLog.w(Messages.get(Hero.class, "battle_skill_too_far"));
+			ready();
+			return false;
+		}
+	}
+
+	/** 배틀스킬 발동 성공 시 궁극기 충전. 나중에 특성 보정이 생기면 여기에 추가. */
+	private void chargeUltimateFromBattleSkill() {
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerBattleSkill());
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────────
+	// 궁극기 타겟팅 & 발동 (배틀스킬과 동일한 구조)
+	// ─────────────────────────────────────────────────────────────────
+
+	/**
+	 * UI 궁극기 버튼 클릭 시 호출.
+	 * - selfTarget 궁극기 → 즉시 발동
+	 * - 타겟팅 모드 + attackTarget 존재 → 더블클릭 즉시 발동
+	 * - 그 외 → 타겟팅 모드 진입
+	 */
+	public void enterUltimateTargeting() {
+		if (activeUltimate == null || !activeUltimate.isReady()) return;
+
+		if (activeUltimate.selfTarget()) {
+			confirmUltimateTarget(pos);
+			return;
+		}
+
+		if (ultimateTargeting && attackTarget != null) {
+			confirmUltimateTarget(attackTarget.pos);
+		} else {
+			ultimateTargeting = true;
+			// TODO: UI — 사거리 범위 하이라이트
+		}
+	}
+
+	/**
+	 * 타겟팅 모드에서 셀이 선택됐을 때 호출.
+	 * @param cell 선택된 셀 번호
+	 */
+	public void confirmUltimateTarget(int cell) {
+		ultimateTargeting = false;
+		curAction = new HeroAction.UseUltimate(cell);
+		resume();
+	}
+
+	/** 타겟팅 모드 취소 (ESC 등). */
+	public void cancelUltimateTargeting() {
+		ultimateTargeting = false;
+		// TODO: UI — 하이라이트 해제
+	}
+
+	/** 현재 궁극기 타겟팅 모드 여부 (UI 버튼 상태 표시용). */
+	public boolean isUltimateTargeting() {
+		return ultimateTargeting;
+	}
+
+	/**
+	 * 궁극기 발동 액션 처리.
+	 * 배틀스킬과 동일한 흐름:
+	 * 1. selfTarget → 체크 없이 즉시 발동
+	 * 2. Char 없는 셀 + !canTargetCell → 취소
+	 * 3. 사거리 내 → 발동 + castTime() 소모
+	 * 4. 사거리 밖 + autoApproach → 접근 후 재시도
+	 * 5. 사거리 밖 + !autoApproach → 메시지 후 취소
+	 */
+	private boolean actUltimate(HeroAction.UseUltimate action) {
+		if (activeUltimate == null || !activeUltimate.isReady()) {
+			ready();
+			return false;
+		}
+
+		int targetCell = action.dst;
+		Char targetChar = Actor.findChar(targetCell);
+
+		if (activeUltimate.selfTarget()) {
+			activeUltimate.use(this, this, pos);
+			spend(activeUltimate.castTime());
+			return true;
+		}
+
+		if (targetChar == null && !activeUltimate.canTargetCell()) {
+			GLog.w(Messages.get(Hero.class, "battle_skill_no_target"));
+			ready();
+			return false;
+		}
+
+		int dist = Dungeon.level.distance(pos, targetCell);
+
+		if (dist <= activeUltimate.range()) {
+			activeUltimate.use(this, targetChar, targetCell);
+			spend(activeUltimate.castTime());
+			return true;
+
+		} else if (activeUltimate.autoApproach()) {
+			if (fieldOfView[targetCell] && getCloser(targetCell)) {
+				return true;
+			} else {
+				GLog.w(Messages.get(Hero.class, "battle_skill_too_far"));
+				ready();
+				return false;
+			}
+
+		} else {
+			GLog.w(Messages.get(Hero.class, "battle_skill_too_far"));
+			ready();
+			return false;
 		}
 	}
 
@@ -2460,6 +2704,33 @@ public class Hero extends Char {
 	 *
 	 * @param op 선택한 메인 오퍼레이터 인스턴스
 	 */
+	/**
+	 * 오퍼레이터 기반 히어로 초기화.
+	 * Dungeon.init()에서 selectedClass.initHero() 대신 호출된다.
+	 *
+	 * 처리 순서:
+	 * 1. 기본 스탯 (HP/STR은 Hero 생성자에서 이미 설정됨)
+	 * 2. 메인 오퍼레이터 무기 장착
+	 * 3. 메인/팀 오퍼레이터 등록
+	 * 4. 공통 시작 아이템은 HeroClass.initHero() 대신 호출부에서 처리
+	 *
+	 * @param mainOp  선택한 메인 오퍼레이터 인스턴스
+	 * @param teamOp  선택한 팀 오퍼레이터 인스턴스 (null = 솔로)
+	 */
+	public void initFromOperator(Operator mainOp, TeamOperator teamOp) {
+		// 오퍼레이터 무기 장착
+		belongings.weapon = mainOp.startingWeapon();
+		belongings.weapon.identify();
+
+		// TODO: 기질(Disposition) 아이템 지급 (Phase 3)
+		// TODO: 오퍼레이터 고유 아이템 지급 (Phase 3)
+		// for (Item item : mainOp.startingItems()) { item.collect(); }
+
+		// 오퍼레이터 등록
+		setMainOperator(mainOp);
+		if (teamOp != null) addTeamOperator(teamOp);
+	}
+
 	public void setMainOperator(Operator op) {
 		if (activeMainOperator != null) return; // 이미 설정됨 → 무시
 		activeMainOperator  = op;
@@ -2521,6 +2792,11 @@ public class Hero extends Char {
 	 */
 	private void onFinishingBlowLanded(Char target) {
 		checkChainTriggers(target);
+
+		// 강력한 일격 적중 시 궁극기 충전
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerFinishingBlow());
+		}
 	}
 
 	/**
@@ -2552,6 +2828,11 @@ public class Hero extends Char {
 		if (op == null) return false;
 		op.activateChain(this, target);
 		op.resetCooldown();
+
+		// 연계기 발동 시 궁극기 충전
+		if (activeUltimate != null) {
+			activeUltimate.addCharge(activeUltimate.chargePerChain());
+		}
 		return true;
 	}
 

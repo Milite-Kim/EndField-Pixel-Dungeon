@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -95,6 +96,12 @@ public class DefenselessStack extends Buff {
                     triggerArmorBreak(enemy, armorConsumed, attacker);
                     break;
             }
+        }
+
+        // 상태 변화 후 팀 오퍼레이터 연계기 조건 체크
+        // (누가 유발했든 무관하게 항상 체크 — 교란 등 미래 기능 포함)
+        if (Dungeon.hero != null && enemy.isAlive()) {
+            Dungeon.hero.checkChainTriggers(enemy);
         }
     }
 

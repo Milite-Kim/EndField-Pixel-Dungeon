@@ -1,44 +1,42 @@
 /*
  * EndField Pixel Dungeon
  * Based on Shattered Pixel Dungeon by Evan Debenham
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  */
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 진천우 (Jincheonwoo)
+ * 관리자 (Endministrator)
  *
  * 직군: 가드
  * 무기: 한손검
  * 속성: 물리
  *
- * [배틀스킬] 물리 피해 + 띄우기 (LAUNCH)
+ * [배틀스킬] 강타
  * [연계기]
- *   - 조건: 적 방어불능 스택 누적 시
- *   - 효과: 관통 베기 → 물리 피해 + 띄우기 (관통 이동 가능)
- * [궁극기] 7회 연속 대량 물리 피해
- *   ※ 승급 확장: 궁극기 도중 적 처치 시 주변 적으로 연장 / 처치 비례 충전 반환
+ *   - 조건: 아군 연계기 적중 시
+ *   - 효과: 물리 피해 + 오리지늄 아츠 결정 부여
+ * [궁극기] 대량 물리 피해. 오리지늄 아츠 결정 소모 시 추가 피해
+ * [특수] 오리지늄 아츠 결정 — 적이 물리 이상을 받을 때 소모 → 물리 피해
+ *
+ * ※ 가드임에도 방어불능 스택 직접 축적 불가.
+ *   팀 운용 시 물리 이상 전반에 반응.
+ * ※ 기본 해금 오퍼레이터 (첫 게임 시작 시 보유)
  */
-public class Jincheonwoo extends TeamOperator {
+public class Endministrator extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
     // ─────────────────────────────────────────────
 
     @Override
-    public String name() { return "진천우"; }
+    public String name() { return "관리자"; }
 
     @Override
     public OperatorClass operatorClass() { return OperatorClass.GUARD; }
@@ -50,7 +48,7 @@ public class Jincheonwoo extends TeamOperator {
     public Attribute attribute() { return Attribute.PHYSICAL; }
 
     // ─────────────────────────────────────────────
-    // 배틀스킬: 물리 피해 + 띄우기
+    // 배틀스킬: 강타
     // ─────────────────────────────────────────────
 
     @Override
@@ -63,20 +61,17 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
-            public String name() { return "섬광 베기"; }
+            public String name() { return "강타"; }
 
             @Override
-            public String description() { return "물리 피해 + 띄우기(LAUNCH).\nTODO: 피해 수치 확정"; }
+            public String description() { return "강타(HEAVY_ATTACK) 물리 피해.\nTODO: 피해 수치 확정"; }
 
             @Override
             protected void activate(Hero hero, Char target) {
                 if (target == null || !target.isAlive()) return;
 
-                // TODO: 물리 피해 처리 (피해 수치 미확정)
-                // target.damage(calculateDamage(hero), this);
-
-                // 띄우기 적용 (DefenselessStack 시스템 연동)
-                DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH, hero);
+                // TODO: 강타 (HEAVY_ATTACK) 물리 피해 처리 (Phase 3)
+                // DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.HEAVY_ATTACK, hero);
             }
         };
     }
@@ -85,47 +80,45 @@ public class Jincheonwoo extends TeamOperator {
     // 연계기 (TeamOperator 구현)
     // ─────────────────────────────────────────────
 
-    /** 연계기 기본 쿨타임 */
     @Override
     public int baseCooldown() {
         return 3; // TODO: 수치 확정
     }
 
     @Override
-    public String chainName() { return "관통 베기"; }
+    public String chainName() { return "오리지늄 아츠 투척"; }
 
     @Override
     public String chainDescription() {
-        return "조건: 적 방어불능 스택 누적 시\n효과: 물리 피해 + 관통 이동";
+        return "조건: 아군 연계기 적중 시\n효과: 물리 피해 + 오리지늄 아츠 결정 부여";
     }
 
     /**
-     * 연계기 조건: 적에게 방어불능 스택이 누적되어 있을 때
+     * 연계기 조건: 아군 연계기 적중 시
+     * — 다른 TeamOperator의 activateChain() 완료 후 checkChainTriggers() 에서 평가됨
      */
     @Override
     public boolean chainCondition(Hero hero, Char target) {
-        if (target == null || !target.isAlive()) return false;
-        return target.buff(DefenselessStack.class) != null;
+        // TODO: 아군 연계기 적중 이벤트 플래그 확인 (Phase 3)
+        // 현재는 항상 false — 실제 트리거 연결 후 구현
+        return false;
     }
 
     /**
-     * 연계기 효과: 관통 베기 → 물리 피해 + 띄우기 (관통 이동 가능)
+     * 연계기 효과: 물리 피해 + 오리지늄 아츠 결정 부여
      */
     @Override
     public void activateChain(Hero hero, Char target) {
         if (target == null || !target.isAlive()) return;
 
-        // TODO: 물리 피해 처리 (피해 수치 미확정)
-        // TODO: 관통 이동 처리 (이동 시스템 연동 후 구현)
-
-        // 띄우기 적용
-        DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.LAUNCH, hero);
+        // TODO: 물리 피해 처리 (Phase 3)
+        // TODO: 오리지늄 아츠 결정 버프 부여 (Phase 3)
 
         resetCooldown();
     }
 
     // ─────────────────────────────────────────────
-    // 궁극기: 7회 연속 대량 물리 피해
+    // 궁극기: 대량 물리 피해 + 오리지늄 아츠 결정 소모 추가 피해
     // ─────────────────────────────────────────────
 
     @Override
@@ -138,17 +131,17 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
-            public String name() { return "절공"; }
+            public String name() { return "오리지늄 폭풍"; }
 
             @Override
-            public String description() { return "7회 연속 대량 물리 피해.\nTODO: 피해 수치 확정"; }
+            public String description() { return "대량 물리 피해. 오리지늄 아츠 결정 보유 시 추가 피해.\nTODO: 피해 수치 확정"; }
 
             @Override
             protected void activate(Hero hero, Char target) {
                 if (target == null || !target.isAlive()) return;
 
-                // TODO: 7회 연속 물리 피해 처리 (히트 시퀀스 시스템 완성 후)
-                // TODO: 승급 확장 - 궁극기 도중 적 처치 시 주변 적으로 연장 / 처치 비례 충전 반환
+                // TODO: 대량 물리 피해 처리 (Phase 3)
+                // TODO: 오리지늄 아츠 결정 보유 시 추가 피해 (Phase 3)
             }
         };
     }

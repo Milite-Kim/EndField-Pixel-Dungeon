@@ -88,4 +88,28 @@ public class HeroAction {
 			this.target = target;
 		}
 	}
+
+	/**
+	 * 배틀스킬 발동 액션.
+	 *
+	 * dst = 타겟 셀 위치.
+	 * 해당 셀에 Char가 있으면 Char 타겟팅, 없으면 지면 타겟팅(canTargetCell 스킬).
+	 * 사거리 초과 시 autoApproach() 설정에 따라 접근 후 발동 or 메시지 후 취소.
+	 */
+	public static class UseBattleSkill extends HeroAction {
+		public UseBattleSkill( int cell ) {
+			this.dst = cell;
+		}
+	}
+
+	/**
+	 * 궁극기 발동 액션.
+	 * 배틀스킬과 동일한 타겟팅 방식.
+	 * dst = 타겟 셀 위치 (selfTarget 궁극기는 hero.pos, 지면형은 빈 셀 가능).
+	 */
+	public static class UseUltimate extends HeroAction {
+		public UseUltimate( int cell ) {
+			this.dst = cell;
+		}
+	}
 }

@@ -10,6 +10,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -88,6 +89,12 @@ public class ArtsAttachment extends Buff {
             int consumedStacks = existing.stacks;
             existing.detach();
             triggerArtsReaction(enemy, type, consumedStacks);
+        }
+
+        // 상태 변화 후 팀 오퍼레이터 연계기 조건 체크
+        // 반응 결과(동결/부식/감전 등)도 포함하여 체크됨
+        if (Dungeon.hero != null && enemy.isAlive()) {
+            Dungeon.hero.checkChainTriggers(enemy);
         }
     }
 
