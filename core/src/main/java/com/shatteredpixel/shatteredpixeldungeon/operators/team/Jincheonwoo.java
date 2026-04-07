@@ -91,7 +91,7 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
-            protected void activate(Hero hero, Char target) {
+            protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
 
                 int damage = Math.round(hero.damageRoll() * SKILL_MULT);
@@ -199,7 +199,7 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
-            protected void activate(Hero hero, Char target) {
+            protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
 
                 // 7회 연속 물리 피해

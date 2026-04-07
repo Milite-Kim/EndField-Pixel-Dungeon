@@ -89,7 +89,7 @@ public class Endministrator extends TeamOperator {
             }
 
             @Override
-            protected void activate(Hero hero, Char target) {
+            protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
                 DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.HEAVY_ATTACK, hero);
             }
@@ -163,7 +163,7 @@ public class Endministrator extends TeamOperator {
             }
 
             @Override
-            protected void activate(Hero hero, Char target) {
+            protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
 
                 // 기본 물리 피해
