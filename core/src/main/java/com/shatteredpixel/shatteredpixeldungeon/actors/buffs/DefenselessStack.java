@@ -99,6 +99,14 @@ public class DefenselessStack extends Buff {
             }
         }
 
+        // 오리지늄 아츠 결정 소모 훅 — 물리 이상 적중 시 결정 1스택 소모 → 물리 피해
+        if (enemy.isAlive()) {
+            OriginiumCrystal crystal = enemy.buff(OriginiumCrystal.class);
+            if (crystal != null) {
+                crystal.triggerConsumption(enemy, attacker);
+            }
+        }
+
         // 상태 변화 후 팀 오퍼레이터 연계기 조건 체크
         // (누가 유발했든 무관하게 항상 체크 — 교란 등 미래 기능 포함)
         if (Dungeon.hero != null && enemy.isAlive()) {

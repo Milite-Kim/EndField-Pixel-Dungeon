@@ -223,6 +223,14 @@ public class Hero extends Char {
 	// 연계기 큐: 조건이 충족된 팀 오퍼레이터를 순서대로 관리
 	public ChainQueue chainQueue = new ChainQueue();
 
+	/**
+	 * 가장 최근에 연계기를 발동한 팀 오퍼레이터.
+	 * activateFrontChain() 내부에서만 비-null로 설정되며,
+	 * checkChainTriggers() 호출 후 즉시 null로 초기화된다.
+	 * 관리자(Endministrator)의 "아군 연계기 적중 시" 조건 판정에 사용.
+	 */
+	public TeamOperator lastChainActivator = null;
+
 	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
 	public BattleSkill activeBattleSkill = null;
 
@@ -2836,6 +2844,13 @@ public class Hero extends Char {
 		if (activeUltimate != null) {
 			activeUltimate.addCharge(activeUltimate.chargePerChain());
 		}
+
+		// 아군 연계기 적중 이벤트 — 관리자 등 반응 트리거
+		// lastChainActivator는 checkChainTriggers 내부 chainCondition 평가에만 사용
+		lastChainActivator = op;
+		checkChainTriggers(target);
+		lastChainActivator = null;
+
 		return true;
 	}
 
