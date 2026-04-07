@@ -281,8 +281,8 @@ public class CombatHUD extends Component {
         @Override
         protected void onClick() {
             if (Dungeon.hero == null) return;
-            // target은 각 구현에서 처리 (null 허용)
-            Dungeon.hero.activateFrontChain(null);
+            // 현재 공격 대상을 연계기에 전달 (없으면 null — 각 구현에서 처리)
+            Dungeon.hero.activateFrontChain(Dungeon.hero.getAttackTarget());
         }
     }
 

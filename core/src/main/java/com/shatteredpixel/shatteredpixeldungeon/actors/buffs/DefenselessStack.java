@@ -6,6 +6,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -142,9 +143,9 @@ public class DefenselessStack extends Buff {
         int   damage = Math.round(attacker.damageRoll() * mult);
         enemy.damage(damage, attacker, DamageType.PHYSICAL);
 
-        // 넘어뜨리기 + 4스택 도달 시 넉백
+        // 넘어뜨리기 + 4스택 도달 시 넉백 1칸
         if (type == PhysicalAbnormality.KNOCKDOWN && stacks >= MAX_STACKS) {
-            // TODO: 넉백 1칸 구현 (이동 시스템 연동 후 처리)
+            knockback(enemy, attacker);
         }
     }
 
@@ -179,6 +180,28 @@ public class DefenselessStack extends Buff {
     private static void triggerShattering(Char enemy, Char attacker) {
         int damage = Math.round(attacker.damageRoll() * SHATTERING_DMG_MULT);
         enemy.damage(damage, attacker, DamageType.PHYSICAL);
+    }
+
+    /**
+     * 넉백: 공격자→적 방향으로 적을 1칸 밀어낸다.
+     * 목표 셀이 이동 불가하거나 다른 캐릭터가 있으면 넉백하지 않는다.
+     *
+     * 외부에서도 사용 가능 (예: 관통이동 등).
+     */
+    public static void knockback(Char enemy, Char attacker) {
+        int width = Dungeon.level.width();
+        int dx = Integer.signum((enemy.pos % width) - (attacker.pos % width));
+        int dy = Integer.signum((enemy.pos / width) - (attacker.pos / width));
+
+        if (dx == 0 && dy == 0) return;
+
+        int targetCell = enemy.pos + dy * width + dx;
+        if (targetCell < 0 || targetCell >= Dungeon.level.length()) return;
+        if (!Dungeon.level.passable[targetCell]) return;
+        if (Actor.findChar(targetCell) != null) return;
+
+        enemy.sprite.move(enemy.pos, targetCell);
+        enemy.move(targetCell, false);
     }
 
     // ─────────────────────────────────────────────
