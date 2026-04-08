@@ -39,6 +39,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Awareness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barkskin;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.KachirParry;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LowTempInjection;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MoltenFlame;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SnowshineParry;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SupportCrystal;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless;
@@ -1993,11 +1997,16 @@ public class Hero extends Char {
 		//we ceil this one to avoid letting the player easily take 0 dmg from tenacity early
 		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this ));
 
-		// KachirParry 패링 훅 — 카치르 배틀스킬 방어 중일 때 물리 공격 완전 차단 + 카운터
+		// 패링 훅 — KachirParry / SnowshineParry 중 하나가 있으면 물리 공격 완전 차단 + 카운터
 		if (src instanceof Char) {
-			KachirParry parry = buff(KachirParry.class);
-			if (parry != null) {
-				dmg = parry.interceptPhysical(this, (Char) src, dmg);
+			KachirParry kachirParry = buff(KachirParry.class);
+			if (kachirParry != null) {
+				dmg = kachirParry.interceptPhysical(this, (Char) src, dmg);
+				if (dmg <= 0) return;
+			}
+			SnowshineParry snowshineParry = buff(SnowshineParry.class);
+			if (snowshineParry != null) {
+				dmg = snowshineParry.interceptPhysical(this, (Char) src, dmg);
 				if (dmg <= 0) return;
 			}
 		}
@@ -2756,6 +2765,7 @@ public class Hero extends Char {
 		if (activeMainOperator != null) return; // 이미 설정됨 → 무시
 		activeMainOperator  = op;
 		syncFromMainOperator();
+		op.onBecomeMain(this); // 패시브 버프 등 메인 전용 초기화
 	}
 
 	/**
@@ -2818,6 +2828,15 @@ public class Hero extends Char {
 		if (activeUltimate != null) {
 			activeUltimate.addCharge(activeUltimate.chargePerFinishingBlow());
 		}
+
+		// 라스트 라이트 패시브: 녹아내린 불꽃 — 적 열기 부착 흡수
+		MoltenFlame.tryAbsorbHeat(this, target);
+
+		// 저온 주입 소모 훅 — 다음 강력한 일격 시 냉기 추가 피해 + 냉기 부착
+		LowTempInjection.tryConsume(this, target);
+
+		// 지원 결정체(자이히) 훅 — 강력한 일격 시 추가 냉기 피해
+		SupportCrystal.onPowerfulHit(this, target);
 	}
 
 	/**

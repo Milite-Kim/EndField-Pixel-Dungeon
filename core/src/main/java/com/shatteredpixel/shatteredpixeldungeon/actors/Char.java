@@ -79,6 +79,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WolfClaw;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PhysicalVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -919,6 +921,16 @@ public abstract class Char extends Actor {
 		if (wolfClaw != null && !(src instanceof WolfClaw)
 				&& (type == DamageType.PHYSICAL || type == DamageType.HEAT)) {
 			damage *= WolfClaw.DMG_AMP_MULT;
+		}
+
+		// 물리 취약(PhysicalVulnerable): 물리 피해에만 배율 적용
+		if (type == DamageType.PHYSICAL && buff(PhysicalVulnerable.class) != null) {
+			damage *= PhysicalVulnerable.DMG_MULT;
+		}
+
+		// 아츠 취약(ArtsVulnerable): 아츠 피해에만 배율 적용
+		if (type.isArts() && buff(ArtsVulnerable.class) != null) {
+			damage *= ArtsVulnerable.DMG_MULT;
 		}
 
 		// 감전(Electrified): 아츠 피해에만 배율 적용

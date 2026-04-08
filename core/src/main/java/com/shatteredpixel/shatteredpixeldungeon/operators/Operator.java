@@ -124,6 +124,13 @@ public abstract class Operator implements Bundlable {
     }
 
     /**
+     * 이 오퍼레이터가 메인 오퍼레이터로 설정될 때 호출 (Hero.syncActiveOperator에서 호출).
+     * 패시브 버프 부여 등 메인 전용 초기화를 수행할 때 오버라이드.
+     * 기본값: no-op
+     */
+    public void onBecomeMain(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {}
+
+    /**
      * 게임 시작 시 소지할 오퍼레이터 고유 아이템 목록.
      * 기본값: 빈 목록 (공통 아이템은 Hero.initFromOperator()에서 지급).
      * TODO: 각 오퍼레이터 아이템 데이터 확정 후 서브클래스에서 오버라이드
