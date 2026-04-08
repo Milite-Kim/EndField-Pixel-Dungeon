@@ -80,6 +80,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WolfClaw;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PhysicalVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HitCounter;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
@@ -997,6 +998,12 @@ public abstract class Char extends Actor {
 		dmg = ShieldBuff.processDamage(this, dmg, src);
 		shielded -= dmg;
 		HP -= dmg;
+
+		// 피격 횟수 카운터 (아케쿠리 연계기 조건)
+		// Hero가 살아있는 적을 타격할 때 카운트
+		if (isAlive() && src instanceof Hero && alignment == Alignment.ENEMY) {
+			HitCounter.increment(this);
+		}
 
 		if (HP > 0 && buff(Grim.GrimTracker.class) != null){
 

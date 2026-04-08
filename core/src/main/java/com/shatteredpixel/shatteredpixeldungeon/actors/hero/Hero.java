@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtifactRecharge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Awareness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barkskin;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EmberDamageReduction;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.KachirParry;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LowTempInjection;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MoltenFlame;
@@ -2016,6 +2017,12 @@ public class Hero extends Char {
 				dmg = snowshineParry.interceptPhysical(this, (Char) src, dmg);
 				if (dmg <= 0) return;
 			}
+		}
+
+		// EmberDamageReduction: 엠버 배틀스킬 후 1턴간 받는 피해 감소
+		EmberDamageReduction edr = buff(EmberDamageReduction.class);
+		if (edr != null) {
+			dmg = Math.round(dmg * (1f - EmberDamageReduction.REDUCTION));
 		}
 
 		int preHP = HP + shielding();

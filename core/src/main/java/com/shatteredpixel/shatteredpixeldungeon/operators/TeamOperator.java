@@ -93,6 +93,24 @@ public abstract class TeamOperator extends Operator {
         cooldown = baseCooldown();
     }
 
+    /**
+     * 쿨타임을 즉시 절반으로 줄인다.
+     * 아케쿠리 궁극기 "소대 집합" 즉시 효과에서 호출.
+     */
+    public void reduceCooldownByHalf() {
+        cooldown = cooldown / 2;
+    }
+
+    /**
+     * 쿨타임을 지정 값만큼 강제로 줄인다 (최솟값 0).
+     * 아케쿠리 궁극기 지속 효과(AkekuriUltimateBuff)에서 호출.
+     *
+     * @param amount 줄일 쿨타임 턴 수
+     */
+    public void forceCooldownReduction(int amount) {
+        cooldown = Math.max(0, cooldown - amount);
+    }
+
     // ─────────────────────────────────────────────
     // 저장/불러오기
     // ─────────────────────────────────────────────
