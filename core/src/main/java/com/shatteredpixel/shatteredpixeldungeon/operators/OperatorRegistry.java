@@ -21,6 +21,9 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.team.Alesh;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Estella;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Tangtang;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Zaihe;
+import com.shatteredpixel.shatteredpixeldungeon.operators.team.Gilberta;
+import com.shatteredpixel.shatteredpixeldungeon.operators.team.Adelia;
+import com.shatteredpixel.shatteredpixeldungeon.operators.team.Flurite;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.FileUtils;
 
@@ -70,6 +73,9 @@ public class OperatorRegistry {
         ALL_OPERATORS.add(Alesh.class);
         ALL_OPERATORS.add(Estella.class);
         ALL_OPERATORS.add(Tangtang.class);
+        ALL_OPERATORS.add(Gilberta.class);
+        ALL_OPERATORS.add(Adelia.class);
+        ALL_OPERATORS.add(Flurite.class);
         // TODO: 오퍼레이터 구현 완료 시 순서대로 추가
         // ... (25명 전체)
     }

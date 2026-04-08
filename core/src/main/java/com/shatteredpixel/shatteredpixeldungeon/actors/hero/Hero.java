@@ -236,6 +236,13 @@ public class Hero extends Char {
 	 */
 	public TeamOperator lastChainActivator = null;
 
+	/**
+	 * 강력한 일격(피니싱 블로우) 직후 checkChainTriggers가 호출되는 동안 true.
+	 * 아델리아 등 "강력한 일격 적중 시" 연계기 조건 판정에 사용.
+	 * checkChainTriggers 반환 직후 false로 초기화됨.
+	 */
+	public boolean finishingBlowContext = false;
+
 	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
 	public BattleSkill activeBattleSkill = null;
 
@@ -2822,7 +2829,9 @@ public class Hero extends Char {
 	 * 조건이 충족된 팀 오퍼레이터를 연계기 큐에 추가한다.
 	 */
 	private void onFinishingBlowLanded(Char target) {
+		finishingBlowContext = true;
 		checkChainTriggers(target);
+		finishingBlowContext = false;
 
 		// 강력한 일격 적중 시 궁극기 충전
 		if (activeUltimate != null) {
