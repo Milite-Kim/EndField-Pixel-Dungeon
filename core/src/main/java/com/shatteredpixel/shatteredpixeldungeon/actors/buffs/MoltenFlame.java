@@ -11,21 +11,22 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
 /**
- * 녹아내린 불꽃 (MoltenFlame) — 라스트 라이트 / 레바테인 공용 Hero 버프
+ * 녹아내린 불꽃 (MoltenFlame) — 레바테인 전용 Hero 버프
  *
  * 강력한 일격으로 적의 열기 부착을 흡수하여 스택 획득.
  * 스택은 0~4이며, 4스택 시 추가 흡수 불가.
  *
  * [획득 경로]
- *   라스트 라이트 패시브: 강력한 일격 적중 시 대상 열기 부착 전량 흡수 → +1스택
- *   레바테인 배틀스킬:    4스택 미만 → +1스택 / 4스택 → 전량 소모 → 대량 열기 피해 + 강제 연소 + 궁극기 충전
+ *   레바테인 패시브:   강력한 일격 적중 시 대상 열기 부착 전량 소모 → 소모 스택 비례 스택 획득
+ *   레바테인 배틀스킬: 4스택 미만 → +1스택 / 4스택 → 전량 소모 → 대량 열기 피해 + 강제 연소 + 궁극기 충전
  *
  * [소모]
- *   라스트 라이트 궁극기: 전량 소모 시 강화 효과
- *   레바테인 배틀스킬:    4스택 시 전량 소모
+ *   레바테인 배틀스킬: 4스택 시 전량 소모
  *
- * tryAbsorbHeat()는 라스트 라이트가 메인일 때 Hero.onFinishingBlowLanded()에서 호출됨.
+ * tryAbsorbHeat()는 레바테인이 메인일 때 Hero.onFinishingBlowLanded()에서 호출됨.
  * 해당 Hero 버프가 없으면 즉시 반환하므로 다른 오퍼레이터에게 영향 없음.
+ *
+ * ※ 라스트 라이트와 무관. 라스트 라이트는 이 시스템을 사용하지 않음.
  */
 public class MoltenFlame extends Buff {
 

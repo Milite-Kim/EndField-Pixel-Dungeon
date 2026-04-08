@@ -2829,7 +2829,8 @@ public class Hero extends Char {
 			activeUltimate.addCharge(activeUltimate.chargePerFinishingBlow());
 		}
 
-		// 라스트 라이트 패시브: 녹아내린 불꽃 — 적 열기 부착 흡수
+		// 레바테인 패시브: 녹아내린 불꽃 — 강력한 일격 시 적 열기 부착 흡수
+		// (레바테인이 메인 오퍼레이터로 설정될 때 onBecomeMain에서 MoltenFlame 버프 부여)
 		MoltenFlame.tryAbsorbHeat(this, target);
 
 		// 저온 주입 소모 훅 — 다음 강력한 일격 시 냉기 추가 피해 + 냉기 부착

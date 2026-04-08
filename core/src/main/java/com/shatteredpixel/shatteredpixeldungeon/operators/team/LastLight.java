@@ -11,7 +11,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invulnerability;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LowTempInjection;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MoltenFlame;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
@@ -24,15 +23,14 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  * 무기: 양손검
  * 속성: 냉기
  *
- * [패시브]   강력한 일격 적중 시 대상 열기 부착 흡수 → 녹아내린 불꽃 +1스택 (최대 4스택, 4스택 시 흡수 불가)
- *             → Hero에 MoltenFlame 버프가 있어야 발동 (메인 오퍼레이터로 운용 시 onBecomeMain에서 부여)
- *             → onFinishingBlowLanded에서 MoltenFlame.tryAbsorbHeat() 호출로 처리
  * [배틀스킬] 메인에게 저온 주입 부여 (턴 소모 없음).
  *             다음 강력한 일격 적중 시 소모 → 추가 냉기 피해 + 냉기 부착
  * [연계기]   조건: 적 냉기 부착 3스택 이상
  *             효과: 냉기 부착 전량 소모 → 스택 비례 대량 냉기 피해 + 궁극기 충전 (내부 충전)
  * [궁극기]   3회 대량 냉기 피해 + 시전 중 모든 피해 면역
  *             ※ 외부 궁극기 충전 불가 — 자체 연계기로만 충전
+ *
+ * ※ 녹아내린 불꽃(MoltenFlame)은 레바테인 전용 시스템. 라스트 라이트와 무관.
  */
 public class LastLight extends TeamOperator {
 
@@ -54,19 +52,6 @@ public class LastLight extends TeamOperator {
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()     { return WeaponType.TWO_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.COLD; }
-
-    // ─────────────────────────────────────────────
-    // 패시브 훅: 메인 오퍼레이터로 설정될 때 MoltenFlame 버프 부여
-    // ─────────────────────────────────────────────
-
-    /**
-     * 라스트 라이트가 메인 오퍼레이터가 될 때 호출.
-     * Hero에 MoltenFlame 버프를 부여하여 패시브(열기 흡수) 활성화.
-     */
-    @Override
-    public void onBecomeMain(Hero hero) {
-        Buff.affect(hero, MoltenFlame.class);
-    }
 
     // ─────────────────────────────────────────────
     // 배틀스킬: 저온 주입
