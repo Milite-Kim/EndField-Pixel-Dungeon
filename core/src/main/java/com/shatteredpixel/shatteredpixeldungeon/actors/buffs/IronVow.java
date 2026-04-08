@@ -13,16 +13,21 @@ import com.watabou.utils.Bundle;
 /**
  * 철의 서약 (IronVow)
  *
- * 포그라니치니크(Pogranichnik)의 궁극기로 적에게 부여되는 버프.
+ * 포그라니치니크(Pogranichnik)의 궁극기로 **메인 오퍼레이터(Hero)**에게 부여되는 버프.
  * 최초 3스택으로 부여.
  *
- * 소모 조건:
- *   - 적이 물리 이상(DefenselessStack)을 받을 때 1스택 소모
- *   - 연계기가 적에게 적중할 때 1스택 소모
+ * 소모 조건 (공격 대상이 바뀌어도 Hero 버프는 유지):
+ *   - Hero가 어떤 적에게든 물리 이상(DefenselessStack)을 가할 때 1스택 소모
+ *   - Hero의 연계기가 어떤 적에게든 적중할 때 1스택 소모
  *
- * 소모 효과:
+ * 소모 효과 (스택을 소모시킨 그 적에게 피해):
  *   - 일반: 물리 피해(×TRIGGER_DMG_MULT)
- *   - 마지막 스택(3→0): 물리 피해(×FINAL_DMG_MULT) — 대량 피해
+ *   - 마지막 스택(1→0): 물리 피해(×FINAL_DMG_MULT) — 대량 피해 후 버프 종료
+ *
+ * 흐름 예시:
+ *   A에게 물리이상 → 1스택 소모 → A에 추가피해 → A 사망
+ *   B에게 물리이상 → 1스택 소모 → B에 추가피해
+ *   B에게 물리이상 → 마지막 스택 소모 → B에 대량피해 → 버프 종료
  *
  * TODO: 피해 수치 확정
  */
@@ -37,7 +42,7 @@ public class IronVow extends Buff {
     private int stacks = 3;
 
     {
-        type = buffType.NEGATIVE;
+        type = buffType.POSITIVE;
         announced = true;
     }
 

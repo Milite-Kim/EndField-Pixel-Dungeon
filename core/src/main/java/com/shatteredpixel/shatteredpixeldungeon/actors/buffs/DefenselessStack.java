@@ -120,9 +120,9 @@ public class DefenselessStack extends Buff {
             }
         }
 
-        // 철의 서약 소모 훅 — 물리 이상 적중 시 1스택 소모 → 물리 피해
-        if (enemy.isAlive()) {
-            IronVow vow = enemy.buff(IronVow.class);
+        // 철의 서약 소모 훅 — 물리 이상 적중 시 Hero의 1스택 소모 → 해당 적에게 물리 피해
+        if (enemy.isAlive() && Dungeon.hero != null) {
+            IronVow vow = Dungeon.hero.buff(IronVow.class);
             if (vow != null) {
                 vow.trigger(enemy, attacker);
             }

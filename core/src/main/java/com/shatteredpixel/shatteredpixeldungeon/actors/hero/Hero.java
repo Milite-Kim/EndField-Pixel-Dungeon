@@ -2845,10 +2845,10 @@ public class Hero extends Char {
 			activeUltimate.addCharge(activeUltimate.chargePerChain());
 		}
 
-		// 철의 서약 소모 훅 — 연계기 적중 시 1스택 소모 → 물리 피해
+		// 철의 서약 소모 훅 — 연계기 적중 시 Hero의 1스택 소모 → 해당 적에게 물리 피해
 		if (target != null && target.isAlive()) {
 			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow vow =
-					target.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow.class);
+					this.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow.class);
 			if (vow != null) vow.trigger(target, this);
 		}
 

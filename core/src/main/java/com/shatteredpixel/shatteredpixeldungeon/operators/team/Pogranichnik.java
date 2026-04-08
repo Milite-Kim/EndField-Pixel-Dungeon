@@ -201,9 +201,9 @@ public class Pogranichnik extends TeamOperator {
                 int damage = Math.round(hero.damageRoll() * ULT_MULT);
                 target.damage(damage, hero, DamageType.PHYSICAL);
 
-                // 철의 서약 부여
+                // 철의 서약 부여 — Hero(메인 오퍼레이터)에게 부여
                 if (target.isAlive()) {
-                    IronVow.apply(target, IRON_VOW_STACKS);
+                    IronVow.apply(hero, IRON_VOW_STACKS);
                 }
             }
         };
