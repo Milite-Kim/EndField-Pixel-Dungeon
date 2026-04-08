@@ -171,8 +171,10 @@ public class Jincheonwoo extends TeamOperator {
         if (!Dungeon.level.passable[destCell]) return;
         if (Actor.findChar(destCell) != null) return;
 
+        // travelling=false: 순간이동형 이동 (발소리/Vertigo 없음)
         hero.sprite.move(hero.pos, destCell);
-        hero.move(destCell);
+        hero.move(destCell, false);
+        Dungeon.observe(); // 시야 갱신
     }
 
     // ─────────────────────────────────────────────
