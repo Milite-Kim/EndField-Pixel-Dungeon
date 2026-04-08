@@ -2845,6 +2845,13 @@ public class Hero extends Char {
 			activeUltimate.addCharge(activeUltimate.chargePerChain());
 		}
 
+		// 철의 서약 소모 훅 — 연계기 적중 시 1스택 소모 → 물리 피해
+		if (target != null && target.isAlive()) {
+			com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow vow =
+					target.buff(com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow.class);
+			if (vow != null) vow.trigger(target, this);
+		}
+
 		// 아군 연계기 적중 이벤트 — 관리자 등 반응 트리거
 		// lastChainActivator는 checkChainTriggers 내부 chainCondition 평가에만 사용
 		lastChainActivator = op;

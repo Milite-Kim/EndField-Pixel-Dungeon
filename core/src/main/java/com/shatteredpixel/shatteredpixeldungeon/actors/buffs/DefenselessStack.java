@@ -11,6 +11,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frozen;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.IronVow;
 import com.watabou.utils.Bundle;
 
 /**
@@ -44,6 +45,13 @@ public class DefenselessStack extends Buff {
 
     public static final int MAX_STACKS = 4;
 
+    /**
+     * 가장 최근 apply() 호출에서 HEAVY_ATTACK 또는 ARMOR_BREAK로 소모된 스택 수.
+     * 포그라니치니크(Pogranichnik)의 연계기 조건/효과 계산에 사용.
+     * apply() 진입 시 0으로 리셋. 소모 발생 시 해당 값으로 갱신.
+     */
+    public static int lastConsumedStacks = 0;
+
     private int stacks = 0;
 
     // ─────────────────────────────────────────────
@@ -58,6 +66,9 @@ public class DefenselessStack extends Buff {
      * @param attacker 물리 이상을 유발한 공격자 (피해 계산 기준)
      */
     public static void apply(Char enemy, PhysicalAbnormality type, Char attacker) {
+        // 매 호출 시 소모 스택 카운터 초기화
+        lastConsumedStacks = 0;
+
         // 쇄빙: 동결 상태의 적에게 물리 이상 적용 시 동결 소모 + 대량 물리 피해
         Frozen frozen = enemy.buff(Frozen.class);
         if (frozen != null && frozen.isFrozen()) {
@@ -86,6 +97,7 @@ public class DefenselessStack extends Buff {
                 case HEAVY_ATTACK:
                     // 전량 소모 + 스택 비례 강타 피해
                     int heavyConsumed = buff.stacks;
+                    lastConsumedStacks = heavyConsumed;
                     buff.detach();
                     triggerHeavyAttack(enemy, heavyConsumed, attacker);
                     break;
@@ -93,6 +105,7 @@ public class DefenselessStack extends Buff {
                 case ARMOR_BREAK:
                     // 전량 소모 + 스택 비례 약한 피해 + 갑옷파괴 디버프
                     int armorConsumed = buff.stacks;
+                    lastConsumedStacks = armorConsumed;
                     buff.detach();
                     triggerArmorBreak(enemy, armorConsumed, attacker);
                     break;
@@ -104,6 +117,14 @@ public class DefenselessStack extends Buff {
             OriginiumCrystal crystal = enemy.buff(OriginiumCrystal.class);
             if (crystal != null) {
                 crystal.triggerConsumption(enemy, attacker);
+            }
+        }
+
+        // 철의 서약 소모 훅 — 물리 이상 적중 시 1스택 소모 → 물리 피해
+        if (enemy.isAlive()) {
+            IronVow vow = enemy.buff(IronVow.class);
+            if (vow != null) {
+                vow.trigger(enemy, attacker);
             }
         }
 
