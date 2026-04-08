@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtifactRecharge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Awareness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barkskin;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.KachirParry;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless;
@@ -1991,6 +1992,15 @@ public class Hero extends Char {
 
 		//we ceil this one to avoid letting the player easily take 0 dmg from tenacity early
 		dmg = (int)Math.ceil(dmg * RingOfTenacity.damageMultiplier( this ));
+
+		// KachirParry 패링 훅 — 카치르 배틀스킬 방어 중일 때 물리 공격 완전 차단 + 카운터
+		if (src instanceof Char) {
+			KachirParry parry = buff(KachirParry.class);
+			if (parry != null) {
+				dmg = parry.interceptPhysical(this, (Char) src, dmg);
+				if (dmg <= 0) return;
+			}
+		}
 
 		int preHP = HP + shielding();
 		if (src instanceof Hunger) preHP -= shielding();

@@ -243,6 +243,21 @@ public class DefenselessStack extends Buff {
         return stacks;
     }
 
+    /**
+     * 방어불능 스택을 1 추가한다. 이상 효과(발동 피해 등)를 유발하지 않는다.
+     * 카치르 패링 카운터처럼 스택만 순수하게 쌓고 싶을 때 사용.
+     */
+    public static void addStackOnly(Char target) {
+        DefenselessStack buff = target.buff(DefenselessStack.class);
+        if (buff == null) {
+            buff = Buff.affect(target, DefenselessStack.class);
+            buff.stacks = 1;
+        } else if (buff.stacks < MAX_STACKS) {
+            buff.stacks++;
+        }
+        // MAX_STACKS 도달 시 추가 없음
+    }
+
     // ─────────────────────────────────────────────
     // 버프 유지 (턴마다 자동 소모 없음 — 소모형)
     // ─────────────────────────────────────────────
