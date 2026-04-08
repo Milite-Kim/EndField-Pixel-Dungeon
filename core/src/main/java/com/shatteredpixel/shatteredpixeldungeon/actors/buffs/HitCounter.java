@@ -24,9 +24,18 @@ import com.watabou.utils.Bundle;
  *
  *   아케쿠리의 chainCondition은 thresholdJustHit를 확인해 트리거.
  *
+ * [아비웨나 연계기 조건 연동 — 최초 공격]
+ *   hitCount가 처음으로 1이 됐을 때:
+ *   1. firstHitContext = true
+ *   2. Dungeon.hero.checkChainTriggers(this) 호출
+ *   3. firstHitContext = false
+ *
+ *   아비웨나의 chainCondition은 isFirstHitJust()를 확인해 트리거.
+ *
  * [연동 클래스]
  *   - Char.java → damage() 내부에서 HitCounter.increment(this) 호출
  *   - Akekuri.java → chainCondition에서 isThresholdJustHit() 확인
+ *   - Aviena.java  → chainCondition에서 isFirstHitJust() 확인
  *
  * 이 버프는 자동 생성·영구 지속 (적이 살아있는 동안).
  * 적 사망 시 detach는 Buff 기본 동작에 의해 자동 처리.
@@ -55,6 +64,12 @@ public class HitCounter extends Buff {
      */
     private transient boolean thresholdJustHit = false;
 
+    /**
+     * 최초 타격(hitCount가 0→1) 직후 순간적으로 true가 되는 컨텍스트 플래그.
+     * checkChainTriggers() 호출 도중에만 true. 아비웨나 연계기 조건 체크용.
+     */
+    private transient boolean firstHitContext = false;
+
     // ─────────────────────────────────────────────
     // 외부 호출 진입점
     // ─────────────────────────────────────────────
@@ -75,6 +90,16 @@ public class HitCounter extends Buff {
 
     private void addHit() {
         hitCount++;
+
+        // 최초 타격 이벤트 (0→1): 아비웨나 연계기 트리거
+        if (hitCount == 1) {
+            firstHitContext = true;
+            if (Dungeon.hero != null) {
+                Dungeon.hero.checkChainTriggers(target);
+            }
+            firstHitContext = false;
+        }
+
         if (hitCount >= THRESHOLD) {
             hitCount = 0;
             // context flag 패턴: checkChainTriggers 도중에만 true
@@ -89,6 +114,11 @@ public class HitCounter extends Buff {
     /** 임계치 도달 여부. chainCondition에서 호출. */
     public boolean isThresholdJustHit() {
         return thresholdJustHit;
+    }
+
+    /** 최초 타격 여부. 아비웨나 chainCondition에서 호출. */
+    public boolean isFirstHitJust() {
+        return firstHitContext;
     }
 
     // ─────────────────────────────────────────────

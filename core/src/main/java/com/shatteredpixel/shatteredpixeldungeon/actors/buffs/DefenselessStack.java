@@ -52,6 +52,16 @@ public class DefenselessStack extends Buff {
      */
     public static int lastConsumedStacks = 0;
 
+    /**
+     * 안탈 연계기 트리거 컨텍스트.
+     * DefenselessStack.apply() → checkChainTriggers() 호출 직전에 설정,
+     * 반환 직후 null로 초기화.
+     *
+     * 안탈의 chainCondition이 이 값을 확인해 "어떤 물리 이상이 트리거했는지" 저장.
+     * ArtsAttachment.triggerContext와 배타적으로 사용 (둘 중 하나만 non-null).
+     */
+    public static PhysicalAbnormality triggerContext = null;
+
     private int stacks = 0;
 
     // ─────────────────────────────────────────────
@@ -140,8 +150,11 @@ public class DefenselessStack extends Buff {
         }
 
         // 상태 변화 후 팀 오퍼레이터 연계기 조건 체크
+        // 안탈 트리거 컨텍스트: checkChainTriggers 도중에만 non-null
         if (Dungeon.hero != null && enemy.isAlive()) {
+            triggerContext = type;
             Dungeon.hero.checkChainTriggers(enemy);
+            triggerContext = null;
         }
     }
 

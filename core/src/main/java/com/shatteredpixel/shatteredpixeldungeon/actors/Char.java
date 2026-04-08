@@ -82,6 +82,9 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PhysicalVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HitCounter;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ElectricVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HeatVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalAmplificationBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -934,9 +937,28 @@ public abstract class Char extends Actor {
 			damage *= ArtsVulnerable.DMG_MULT;
 		}
 
+		// 전기 취약(ElectricVulnerable): 전기 피해에만 배율 적용
+		if (type == DamageType.ELECTRIC && buff(ElectricVulnerable.class) != null) {
+			damage *= ElectricVulnerable.DMG_MULT;
+		}
+
+		// 열기 취약(HeatVulnerable): 열기 피해에만 배율 적용
+		if (type == DamageType.HEAT && buff(HeatVulnerable.class) != null) {
+			damage *= HeatVulnerable.DMG_MULT;
+		}
+
 		// 감전(Electrified): 아츠 피해에만 배율 적용
 		if (type.isArts() && buff(Electrified.class) != null) {
 			damage *= buff(Electrified.class).artsDamageMult();
+		}
+
+		// 안탈 증폭 버프(AntalAmplificationBuff): 플레이어 팀의 전기·열기 피해 증폭
+		if ((type == DamageType.ELECTRIC || type == DamageType.HEAT)
+				&& src instanceof Hero && Dungeon.hero != null) {
+			AntalAmplificationBuff ampBuff = Dungeon.hero.buff(AntalAmplificationBuff.class);
+			if (ampBuff != null) {
+				damage *= ampBuff.amplMult();
+			}
 		}
 
 		if (buff(Sickle.HarvestBleedTracker.class) != null){
@@ -1003,6 +1025,15 @@ public abstract class Char extends Actor {
 		// Hero가 살아있는 적을 타격할 때 카운트
 		if (isAlive() && src instanceof Hero && alignment == Alignment.ENEMY) {
 			HitCounter.increment(this);
+		}
+
+		// 즉흥적인 천재성 회복 (안탈 궁극기 지속 중)
+		// 팀 연계기가 아닌 메인의 기본공격/배틀스킬 전기·열기 적중 시 Hero HP 회복
+		if (isAlive() && src instanceof Hero && alignment == Alignment.ENEMY
+				&& (type == DamageType.ELECTRIC || type == DamageType.HEAT)
+				&& !((Hero) src).chainActivationContext) {
+			AntalAmplificationBuff genius = ((Hero) src).buff(AntalAmplificationBuff.class);
+			if (genius != null) genius.onNonChainHit();
 		}
 
 		if (HP > 0 && buff(Grim.GrimTracker.class) != null){

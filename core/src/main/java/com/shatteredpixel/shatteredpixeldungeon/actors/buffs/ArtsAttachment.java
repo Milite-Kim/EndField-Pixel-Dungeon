@@ -56,6 +56,16 @@ public class ArtsAttachment extends Buff {
 
     public static final int MAX_STACKS = 4;
 
+    /**
+     * 안탈 연계기 트리거 컨텍스트.
+     * ArtsAttachment.apply() → checkChainTriggers() 호출 직전에 설정,
+     * 반환 직후 null로 초기화.
+     *
+     * 안탈의 chainCondition이 이 값을 확인해 "어떤 아츠 속성이 트리거했는지" 저장.
+     * DefenselessStack.triggerContext와 배타적으로 사용.
+     */
+    public static ArtsType triggerContext = null;
+
     private ArtsType currentType;
     private int stacks = 0;
 
@@ -92,9 +102,11 @@ public class ArtsAttachment extends Buff {
         }
 
         // 상태 변화 후 팀 오퍼레이터 연계기 조건 체크
-        // 반응 결과(동결/부식/감전 등)도 포함하여 체크됨
+        // 안탈 트리거 컨텍스트: checkChainTriggers 도중에만 non-null
         if (Dungeon.hero != null && enemy.isAlive()) {
+            triggerContext = type;
             Dungeon.hero.checkChainTriggers(enemy);
+            triggerContext = null;
         }
     }
 

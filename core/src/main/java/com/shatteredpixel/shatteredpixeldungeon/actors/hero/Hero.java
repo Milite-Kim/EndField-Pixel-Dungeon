@@ -244,6 +244,14 @@ public class Hero extends Char {
 	 */
 	public boolean finishingBlowContext = false;
 
+	/**
+	 * 팀 연계기 발동(activateFrontChain) 중 true.
+	 * 안탈 궁극기 "즉흥적인 천재성"이 팀 연계기 적중 시에는 발동하지 않도록
+	 * Char.damage()에서 구분하는 데 사용.
+	 * activateChain() 반환 직후 false로 초기화됨.
+	 */
+	public boolean chainActivationContext = false;
+
 	// 메인 오퍼레이터의 배틀스킬 (장착 시 설정)
 	public BattleSkill activeBattleSkill = null;
 
@@ -2883,7 +2891,9 @@ public class Hero extends Char {
 	public boolean activateFrontChain(Char target) {
 		TeamOperator op = chainQueue.consume();
 		if (op == null) return false;
+		chainActivationContext = true;
 		op.activateChain(this, target);
+		chainActivationContext = false;
 		op.resetCooldown();
 
 		// 연계기 발동 시 궁극기 충전

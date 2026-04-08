@@ -29,7 +29,8 @@ import com.watabou.utils.Bundle;
 public abstract class TeamOperator extends Operator {
 
     // 연계기 현재 쿨타임 (0이면 발동 가능)
-    private int cooldown = 0;
+    // protected: 아크라이트처럼 쿨타임 로직을 오버라이드하는 서브클래스가 직접 접근
+    protected int cooldown = 0;
 
     // ─────────────────────────────────────────────
     // 서브클래스에서 반드시 구현해야 하는 것들
