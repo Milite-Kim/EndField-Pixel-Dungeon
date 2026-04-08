@@ -77,6 +77,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsCorrosion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Electrified;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.WolfClaw;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
@@ -911,6 +912,13 @@ public abstract class Char extends Actor {
 		}
 		if (alignment != Alignment.ALLY && this.buff(DeathMark.DeathMarkTracker.class) != null){
 			damage *= 1.25f;
+		}
+
+		// 늑대의 발톱(WolfClaw): 물리/열기 피해 증폭. 버프 자신의 틱 피해는 제외 (자기 순환 방지).
+		WolfClaw wolfClaw = buff(WolfClaw.class);
+		if (wolfClaw != null && !(src instanceof WolfClaw)
+				&& (type == DamageType.PHYSICAL || type == DamageType.HEAT)) {
+			damage *= WolfClaw.DMG_AMP_MULT;
 		}
 
 		// 감전(Electrified): 아츠 피해에만 배율 적용

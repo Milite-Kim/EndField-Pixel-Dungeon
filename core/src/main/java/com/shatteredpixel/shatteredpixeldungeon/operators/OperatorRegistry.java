@@ -12,6 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.team.Jincheonwoo;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Kachir;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Pan;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Pogranichnik;
+import com.shatteredpixel.shatteredpixeldungeon.operators.team.Rosi;
 import com.shatteredpixel.shatteredpixeldungeon.operators.team.Yeofung;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.FileUtils;
@@ -54,6 +55,7 @@ public class OperatorRegistry {
         ALL_OPERATORS.add(Pogranichnik.class);
         ALL_OPERATORS.add(Pan.class);
         ALL_OPERATORS.add(Kachir.class);
+        ALL_OPERATORS.add(Rosi.class);
         // TODO: 오퍼레이터 구현 완료 시 순서대로 추가
         // ALL_OPERATORS.add(Lasturait.class);
         // ... (25명 전체)
