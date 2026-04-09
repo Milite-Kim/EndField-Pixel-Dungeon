@@ -54,7 +54,7 @@ public abstract class Operator implements Bundlable {
     // 속성
     public enum Attribute {
         PHYSICAL,   // 물리
-        FIRE,       // 열기
+        HEAT,       // 열기
         COLD,       // 냉기
         NATURE,     // 자연
         ELECTRIC    // 전기

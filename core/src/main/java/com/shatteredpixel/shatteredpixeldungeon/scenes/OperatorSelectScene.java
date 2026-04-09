@@ -58,7 +58,7 @@ public class OperatorSelectScene extends PixelScene {
     // 속성 탭 색상 (placeholder — 아이콘으로 교체 예정)
     private static final int[] ATTR_COLORS = {
         0xFF888888, // PHYSICAL  물리
-        0xFFCC4400, // FIRE      열기
+        0xFFCC4400, // HEAT      열기
         0xFF4488CC, // COLD      냉기
         0xFF44AA44, // NATURE    자연
         0xFFCCCC00, // ELECTRIC  전기
@@ -419,7 +419,7 @@ public class OperatorSelectScene extends PixelScene {
     private static String attrLabel(Operator.Attribute attr) {
         switch (attr) {
             case PHYSICAL: return "물리";
-            case FIRE:     return "열기";
+            case HEAT:     return "열기";
             case COLD:     return "냉기";
             case NATURE:   return "자연";
             case ELECTRIC: return "전기";

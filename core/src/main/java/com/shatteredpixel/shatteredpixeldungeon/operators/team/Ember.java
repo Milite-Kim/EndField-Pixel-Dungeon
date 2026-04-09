@@ -60,7 +60,7 @@ public class Ember extends TeamOperator {
     @Override public String name()               { return "엠버"; }
     @Override public OperatorClass operatorClass() { return OperatorClass.DEFENDER; }
     @Override public WeaponType weaponType()     { return WeaponType.TWO_HANDED_SWORD; }
-    @Override public Attribute attribute()       { return Attribute.FIRE; }
+    @Override public Attribute attribute()       { return Attribute.HEAT; }
 
     // ─────────────────────────────────────────────
     // 배틀스킬: 열기 강타

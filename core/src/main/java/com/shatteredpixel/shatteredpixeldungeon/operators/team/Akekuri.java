@@ -64,7 +64,7 @@ public class Akekuri extends TeamOperator {
     @Override public String name()               { return "아케쿠리"; }
     @Override public OperatorClass operatorClass() { return OperatorClass.VANGUARD; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
-    @Override public Attribute attribute()       { return Attribute.FIRE; }
+    @Override public Attribute attribute()       { return Attribute.HEAT; }
 
     // ─────────────────────────────────────────────
     // 배틀스킬: 연속 타격

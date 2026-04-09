@@ -58,7 +58,7 @@ public class Wolfguard extends TeamOperator {
     @Override public String name()               { return "울프가드"; }
     @Override public OperatorClass operatorClass() { return OperatorClass.CASTER; }
     @Override public WeaponType weaponType()     { return WeaponType.HANDGUN; }
-    @Override public Attribute attribute()       { return Attribute.FIRE; }
+    @Override public Attribute attribute()       { return Attribute.HEAT; }
 
     // ─────────────────────────────────────────────
     // 배틀스킬: 발화 사격

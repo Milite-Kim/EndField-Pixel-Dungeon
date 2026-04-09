@@ -383,7 +383,7 @@ public class TeamSelectScene extends PixelScene {
     private static String attrLabel(Operator.Attribute attr) {
         switch (attr) {
             case PHYSICAL: return "물리";
-            case FIRE:     return "열기";
+            case HEAT:     return "열기";
             case COLD:     return "냉기";
             case NATURE:   return "자연";
             case ELECTRIC: return "전기";
