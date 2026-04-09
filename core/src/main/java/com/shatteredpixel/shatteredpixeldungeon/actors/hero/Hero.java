@@ -402,7 +402,7 @@ public class Hero extends Char {
 		bundle.put( CLASS, heroClass );
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
-		bundle.put( TEAM_OPERATORS, teamOperators.toArray(new TeamOperator[0]) );
+		bundle.put( TEAM_OPERATORS, teamOperators );
 		Bundle cqBundle = new Bundle();
 		chainQueue.storeInBundle(cqBundle);
 		bundle.put( CHAIN_QUEUE, cqBundle );
@@ -779,7 +779,6 @@ public class Hero extends Char {
 		return dr;
 	}
 	
-	@Override
 	// ─────────────────────────────────────────────────────────────────
 	// 엔픽던 ATK(공격력) 시스템
 	// ─────────────────────────────────────────────────────────────────
@@ -884,7 +883,7 @@ public class Hero extends Char {
 				min = Math.max(1, Math.round(baseMin * ARTS_MIN_MULT * eff));
 				max = Math.round(baseMax * ARTS_MAX_MULT * eff);
 				break;
-			case PISTOL:
+			case HANDGUN:
 				// TODO: 권총 전용 피해 로직 구현
 				min = Math.round(baseMin * eff);
 				max = Math.round(baseMax * eff);
