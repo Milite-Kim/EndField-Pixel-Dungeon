@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
@@ -56,6 +57,9 @@ public class Endministrator extends TeamOperator {
 
     @Override
     public String name() { return "관리자"; }
+
+    @Override
+    public String illustration() { return Assets.Operators.ENDMINISTRATOR_ILLUS; }
 
     @Override
     public OperatorClass operatorClass() { return OperatorClass.GUARD; }

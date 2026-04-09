@@ -20,7 +20,10 @@ import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.Game;
+import com.watabou.noosa.Group;
+import com.watabou.noosa.Image;
 import com.watabou.noosa.PointerArea;
+import com.watabou.utils.Point;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +33,15 @@ import java.util.List;
  *
  * 레이아웃:
  *  - 상단: 속성 탭 5개
- *  - 중앙: 선택된 오퍼레이터 일러스트 (placeholder: 색상 블록 + 이름)
+ *  - 중앙: 선택된 오퍼레이터 일러스트 (fill+center crop, 없으면 placeholder 텍스트)
  *  - 하단: 초상화 행 (PORTRAITS_PER_PAGE 개씩, 페이지 이동 가능)
  *  - 일러스트 위 우하단: 진행 버튼
  *  - 좌상단: 뒤로가기 버튼
+ *
+ * 일러스트 표시 방식:
+ *  가로가 긴 원본 이미지를 세로 모드에서는 높이 기준 fill 스케일 + 좌우 중앙 크롭,
+ *  가로 모드에서는 자연스럽게 더 넓은 영역을 표시.
+ *  Camera 기반 glScissor 클리핑으로 일러스트 영역 밖 overflow 차단.
  */
 public class OperatorSelectScene extends PixelScene {
 
@@ -66,12 +74,28 @@ public class OperatorSelectScene extends PixelScene {
     // 현재 탭의 오퍼레이터 목록 (해금/미해금 모두 포함, 순서 고정)
     private List<Class<? extends Operator>> currentAttrOps = new ArrayList<>();
 
+    // ─── 일러스트 영역 ───────────────────────────
+    private float illusX, illusY, illusW, illusH;
+
+    /** glScissor 클리핑용 전용 카메라 */
+    private Camera illusCamera;
+
+    /**
+     * 일러스트 전용 Group.
+     * camera = illusCamera → 내부 Image는 이 카메라 좌표계에서 렌더링되며
+     * 카메라 바운드 밖의 픽셀은 자동으로 클리핑됨.
+     */
+    private Group illusGroup;
+
+    /** 현재 표시 중인 일러스트 Image (없으면 null) */
+    private Image currentIllus = null;
+
     // ─── UI 요소 ─────────────────────────────────
     private ColorBlock illustrationBg;
-    private RenderedTextBlock illustrationLabel;  // placeholder 텍스트
+    private RenderedTextBlock illustrationLabel;  // 일러스트 없을 때 placeholder 텍스트
 
     private ColorBlock[] tabBgs   = new ColorBlock[ATTRS.length];
-    private ColorBlock[] tabLines = new ColorBlock[ATTRS.length]; // 선택 표시 밑줄
+    private ColorBlock[] tabLines = new ColorBlock[ATTRS.length];
     private RenderedTextBlock[] tabLabels = new RenderedTextBlock[ATTRS.length];
 
     private PortraitBtn[] portraitBtns = new PortraitBtn[PORTRAITS_PER_PAGE];
@@ -123,7 +147,6 @@ public class OperatorSelectScene extends PixelScene {
             add(label);
             tabLabels[i] = label;
 
-            // 탭 클릭 영역
             com.watabou.noosa.PointerArea hit = new com.watabou.noosa.PointerArea(
                     bg.x, bg.y, tabW, TAB_HEIGHT) {
                 @Override
@@ -135,16 +158,29 @@ public class OperatorSelectScene extends PixelScene {
         }
 
         // ── 일러스트 영역 ─────────────────────────
-        float illusX = W * 0.12f;
-        float illusY = tabY + TAB_HEIGHT + 4f;
-        float illusW = W * 0.76f;
-        float illusH = H - illusY - PORTRAIT_SIZE - PORTRAIT_GAP * 2 - 6f;
+        illusX = W * 0.12f;
+        illusY = tabY + TAB_HEIGHT + 4f;
+        illusW = W * 0.76f;
+        illusH = H - illusY - PORTRAIT_SIZE - PORTRAIT_GAP * 2 - 6f;
 
         illustrationBg = new ColorBlock(illusW, illusH, 0xFF2d3d2d);
         illustrationBg.x = illusX;
         illustrationBg.y = illusY;
         add(illustrationBg);
 
+        // ── 일러스트 카메라 + Group 설정 ─────────────
+        // Camera.main 기준 가상 좌표를 실제 스크린 픽셀로 변환
+        Point p = Camera.main.cameraToScreen(illusX, illusY);
+        illusCamera = new Camera(p.x, p.y, (int)illusW, (int)illusH, defaultZoom);
+        Camera.add(illusCamera);
+
+        // Group에 카메라를 할당 → 내부 요소들은 illusCamera 좌표계를 사용
+        // illusCamera 가상좌표 (0,0) = 일러스트 영역 좌상단
+        illusGroup = new Group();
+        illusGroup.camera = illusCamera;
+        add(illusGroup);   // illustrationBg 바로 다음 → 탭/버튼 아래 레이어
+
+        // ── placeholder 텍스트 (일러스트 없을 때) ─────
         illustrationLabel = renderTextBlock("", 9);
         illustrationLabel.hardlight(0xCCFFCC);
         add(illustrationLabel);
@@ -223,6 +259,12 @@ public class OperatorSelectScene extends PixelScene {
         fadeIn();
     }
 
+    @Override
+    public void destroy() {
+        Camera.remove(illusCamera);
+        super.destroy();
+    }
+
     // ─────────────────────────────────────────────
     // 탭 전환
     // ─────────────────────────────────────────────
@@ -231,12 +273,10 @@ public class OperatorSelectScene extends PixelScene {
         selectedAttr = attr;
         currentPage = 0;
 
-        // 탭 밑줄 갱신
         for (int i = 0; i < ATTRS.length; i++) {
             tabLines[i].visible = (ATTRS[i] == attr);
         }
 
-        // 해당 속성 오퍼레이터 수집 (ALL_OPERATORS 순서 유지)
         currentAttrOps.clear();
         for (Class<? extends Operator> cls : OperatorRegistry.ALL_OPERATORS) {
             try {
@@ -247,7 +287,6 @@ public class OperatorSelectScene extends PixelScene {
             }
         }
 
-        // 해금된 첫 번째 오퍼레이터를 기본 선택
         Class<? extends Operator> firstUnlocked = null;
         for (Class<? extends Operator> cls : currentAttrOps) {
             if (OperatorRegistry.isUnlockedAsMain(cls)) {
@@ -276,24 +315,64 @@ public class OperatorSelectScene extends PixelScene {
         refreshPortraits();
     }
 
+    // ─────────────────────────────────────────────
+    // 일러스트 업데이트
+    // ─────────────────────────────────────────────
+
     private void updateIllustration() {
-        if (selectedOpClass == null) {
-            illustrationLabel.text("—");
-        } else {
+        // 이전 이미지 제거
+        if (currentIllus != null) {
+            illusGroup.remove(currentIllus);
+            currentIllus = null;
+        }
+
+        String path = null;
+        if (selectedOpClass != null) {
             try {
-                Operator op = selectedOpClass.newInstance();
-                // TODO: op.illustration() 로 실제 이미지 교체 (Phase 3)
-                illustrationLabel.text(op.name());
+                path = selectedOpClass.newInstance().illustration();
             } catch (Exception e) {
-                illustrationLabel.text("?");
+                // ignore — fall through to placeholder
             }
         }
-        // 일러스트 영역 중앙 정렬
-        illustrationLabel.setPos(
-            illustrationBg.x + (illustrationBg.width  - illustrationLabel.width())  / 2f,
-            illustrationBg.y + (illustrationBg.height - illustrationLabel.height()) / 2f
-        );
-        align(illustrationLabel);
+
+        if (path != null) {
+            // ── 실제 일러스트 표시 ─────────────────
+            currentIllus = new Image(path);
+
+            // fill 스케일: 이미지가 일러스트 영역을 완전히 덮도록 (넘치는 부분은 클리핑)
+            float scaleX = illusW / currentIllus.width;
+            float scaleY = illusH / currentIllus.height;
+            float fillScale = Math.max(scaleX, scaleY);
+            currentIllus.scale.set(fillScale);
+
+            // 중앙 정렬: illusCamera 가상좌표 (0,0) 기준
+            // overflow는 illusCamera의 glScissor가 자동으로 클리핑
+            currentIllus.x = (illusW - currentIllus.width  * fillScale) / 2f;
+            currentIllus.y = (illusH - currentIllus.height * fillScale) / 2f;
+
+            illusGroup.add(currentIllus);
+            illustrationLabel.visible = false;
+
+        } else {
+            // ── placeholder 텍스트 ─────────────────
+            illustrationLabel.visible = true;
+            String labelText;
+            if (selectedOpClass == null) {
+                labelText = "—";
+            } else {
+                try {
+                    labelText = selectedOpClass.newInstance().name();
+                } catch (Exception e) {
+                    labelText = "?";
+                }
+            }
+            illustrationLabel.text(labelText);
+            illustrationLabel.setPos(
+                illustrationBg.x + (illustrationBg.width  - illustrationLabel.width())  / 2f,
+                illustrationBg.y + (illustrationBg.height - illustrationLabel.height()) / 2f
+            );
+            align(illustrationLabel);
+        }
     }
 
     // ─────────────────────────────────────────────
@@ -301,9 +380,9 @@ public class OperatorSelectScene extends PixelScene {
     // ─────────────────────────────────────────────
 
     private void refreshPortraits() {
-        int total     = currentAttrOps.size();
+        int total      = currentAttrOps.size();
         int totalPages = (int) Math.ceil((float) total / PORTRAITS_PER_PAGE);
-        int startIdx  = currentPage * PORTRAITS_PER_PAGE;
+        int startIdx   = currentPage * PORTRAITS_PER_PAGE;
 
         for (int i = 0; i < PORTRAITS_PER_PAGE; i++) {
             int opIdx = startIdx + i;
@@ -314,7 +393,6 @@ public class OperatorSelectScene extends PixelScene {
             }
         }
 
-        // 페이지 버튼 표시 여부
         btnPrev.visible = btnPrev.active = (currentPage > 0);
         btnNext.visible = btnNext.active = (currentPage < totalPages - 1);
     }
@@ -358,16 +436,13 @@ public class OperatorSelectScene extends PixelScene {
         private Class<? extends Operator> opClass;
         private boolean unlocked;
 
-        // placeholder 배경 + 이름 텍스트
         private ColorBlock bg;
         private ColorBlock lockOverlay;
         private RenderedTextBlock nameLabel;
 
-        // 더블클릭 감지
         private float lastClickTime = -1f;
         private static final float DOUBLE_CLICK_WINDOW = 0.4f;
 
-        // 선택 시 위로 올라오는 오프셋
         private static final float LIFT = 3f;
 
         @Override
@@ -464,7 +539,6 @@ public class OperatorSelectScene extends PixelScene {
 
         private void onDoubleClick() {
             // TODO: WndOperatorInfo 팝업 구현 (Phase 3)
-            // ShatteredPixelDungeon.scene().addToFront(new WndOperatorInfo(opClass));
         }
     }
 }

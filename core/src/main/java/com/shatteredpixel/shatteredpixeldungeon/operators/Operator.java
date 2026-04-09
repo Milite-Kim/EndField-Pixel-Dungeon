@@ -63,6 +63,14 @@ public abstract class Operator implements Bundlable {
     // 오퍼레이터 이름 (표시용)
     public abstract String name();
 
+    /**
+     * 오퍼레이터 선택 화면에 표시할 일러스트 에셋 경로.
+     * 일러스트가 없는 오퍼레이터는 null 반환 → placeholder 텍스트 표시.
+     */
+    public String illustration() {
+        return null;
+    }
+
     // 직군
     public abstract OperatorClass operatorClass();
 

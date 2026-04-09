@@ -338,4 +338,8 @@ public class Assets {
 		public static final String FUNGAL_SENTRY    = "sprites/fungal_sentry.png";
 		public static final String FUNGAL_CORE      = "sprites/fungal_core.png";
 	}
+
+	public static class Operators {
+		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/endministrator.png";
+	}
 }
