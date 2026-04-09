@@ -8,6 +8,7 @@ package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalAmplificationBuff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalPhysReductionBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
@@ -109,11 +110,11 @@ public class Antal extends TeamOperator {
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
 
-                // 기존 충전 소모 → 물리 피해 감소 (TODO: 실제 감소 버프 구현)
+                // 기존 충전 소모 → 물리 피해 감소
                 if (charges > 0) {
                     int reductionTurns = charges * PHYS_REDUCTION_TURNS_PER_CHARGE;
                     charges = 0;
-                    // TODO: Buff.affect(hero, AntalPhysReductionBuff.class, reductionTurns);
+                    Buff.affect(hero, AntalPhysReductionBuff.class, reductionTurns);
                 }
 
                 // 전기 피해

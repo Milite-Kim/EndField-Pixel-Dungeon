@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtifactRecharge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Awareness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barkskin;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalPhysReductionBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.EmberDamageReduction;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.KachirParry;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LowTempInjection;
@@ -2031,6 +2032,13 @@ public class Hero extends Char {
 		EmberDamageReduction edr = buff(EmberDamageReduction.class);
 		if (edr != null) {
 			dmg = Math.round(dmg * (1f - EmberDamageReduction.REDUCTION));
+		}
+
+		// AntalPhysReductionBuff: 안탈 충전 소모 시 받는 물리 피해 감소
+		// (물리 공격은 2인수 damage() 경로로 전달됨)
+		AntalPhysReductionBuff antalPR = buff(AntalPhysReductionBuff.class);
+		if (antalPR != null) {
+			dmg = Math.round(dmg * (1f - AntalPhysReductionBuff.REDUCTION));
 		}
 
 		int preHP = HP + shielding();
