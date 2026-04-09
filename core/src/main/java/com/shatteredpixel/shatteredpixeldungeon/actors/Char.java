@@ -539,8 +539,10 @@ public abstract class Char extends Actor {
 			ArtsCorrosion corrosion = enemy.buff(ArtsCorrosion.class);
 			if (enemy.isAlive() && corrosion != null) {
 				int heal = corrosion.healOnHit();
-				HP = Math.min(HP + heal, HT);
-				// TODO: 회복 플로팅 텍스트 표시
+				if (heal > 0) {
+					HP = Math.min(HP + heal, HT);
+					sprite.showStatus(CharSprite.POSITIVE, "+" + heal);
+				}
 			}
 
 			if (buff(FireImbue.class) != null)  buff(FireImbue.class).proc(enemy);

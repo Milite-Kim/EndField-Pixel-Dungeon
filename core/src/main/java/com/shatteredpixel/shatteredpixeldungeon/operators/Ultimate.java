@@ -139,6 +139,16 @@ public abstract class Ultimate implements Bundlable {
     }
 
     /**
+     * 애니메이션 기반(비동기) 궁극기 여부.
+     * true  → actUltimate()가 애니메이션 콜백 체인 방식으로 동작.
+     *          activate() 내부에서 반드시 마지막에 hero.spend(castTime()) + hero.next() 호출 필요.
+     * false → 기본 동기 방식 (즉시 계산 후 spend 반환).
+     */
+    public boolean isAnimated() {
+        return false;
+    }
+
+    /**
      * 빈 지면 타겟팅 가능 여부.
      * false → Char 타겟 전용 (기본값)
      * true  → 장판/설치형 궁극기 또는 미래 추가 오퍼레이터용

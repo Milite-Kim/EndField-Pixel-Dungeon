@@ -1632,28 +1632,21 @@ public class Hero extends Char {
 		if (activeBattleSkill == null || !activeBattleSkill.isReady()) return;
 
 		if (activeBattleSkill.selfTarget()) {
-			// 자기 대상 스킬: 타겟팅 모드 스킵, 즉시 자신의 셀로 발동
 			confirmBattleSkillTarget(pos);
 			return;
 		}
 
 		if (battleSkillTargeting && attackTarget != null) {
-			// 더블클릭: 현재 공격 대상으로 즉시 발동
 			confirmBattleSkillTarget(attackTarget.pos);
 		} else {
 			battleSkillTargeting = true;
-			// TODO: UI — 사거리 범위 하이라이트, 타겟 선택 커서 표시
+			GameScene.showRangeHighlight(cellsInRange(activeBattleSkill.range()));
 		}
 	}
 
-	/**
-	 * 타겟팅 모드에서 셀이 선택됐을 때 호출.
-	 * GameScene의 셀 클릭 핸들러 또는 버튼 재클릭에서 호출됨.
-	 *
-	 * @param cell 선택된 셀 번호
-	 */
 	public void confirmBattleSkillTarget(int cell) {
 		battleSkillTargeting = false;
+		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseBattleSkill(cell);
 		resume();
 	}
@@ -1661,7 +1654,7 @@ public class Hero extends Char {
 	/** 타겟팅 모드 취소 (ESC 등). */
 	public void cancelBattleSkillTargeting() {
 		battleSkillTargeting = false;
-		// TODO: UI — 하이라이트 해제
+		GameScene.clearRangeHighlight();
 	}
 
 	/** 현재 배틀스킬 타겟팅 모드 여부 (UI에서 버튼 상태 표시용). */
@@ -1760,16 +1753,13 @@ public class Hero extends Char {
 			confirmUltimateTarget(attackTarget.pos);
 		} else {
 			ultimateTargeting = true;
-			// TODO: UI — 사거리 범위 하이라이트
+			GameScene.showRangeHighlight(cellsInRange(activeUltimate.range()));
 		}
 	}
 
-	/**
-	 * 타겟팅 모드에서 셀이 선택됐을 때 호출.
-	 * @param cell 선택된 셀 번호
-	 */
 	public void confirmUltimateTarget(int cell) {
 		ultimateTargeting = false;
+		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseUltimate(cell);
 		resume();
 	}
@@ -1777,7 +1767,7 @@ public class Hero extends Char {
 	/** 타겟팅 모드 취소 (ESC 등). */
 	public void cancelUltimateTargeting() {
 		ultimateTargeting = false;
-		// TODO: UI — 하이라이트 해제
+		GameScene.clearRangeHighlight();
 	}
 
 	/** 현재 궁극기 타겟팅 모드 여부 (UI 버튼 상태 표시용). */
@@ -1808,15 +1798,14 @@ public class Hero extends Char {
 			confirmArtsChargeTarget(attackTarget.pos);
 		} else {
 			artsChargeTargeting = true;
+			// 시야 내 적 위치를 모두 하이라이트
+			GameScene.showRangeHighlight(visibleEnemyCells());
 		}
 	}
 
-	/**
-	 * 타겟팅 모드에서 셀이 확정됐을 때 호출.
-	 * @param cell 선택된 셀 번호
-	 */
 	public void confirmArtsChargeTarget(int cell) {
 		artsChargeTargeting = false;
+		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseArtsCharge(cell, Actor.findChar(cell));
 		resume();
 	}
@@ -1824,6 +1813,7 @@ public class Hero extends Char {
 	/** 아츠유닛 충전 타겟팅 모드 취소. */
 	public void cancelArtsChargeTargeting() {
 		artsChargeTargeting = false;
+		GameScene.clearRangeHighlight();
 	}
 
 	/** 현재 아츠유닛 충전 타겟팅 모드 여부 (UI 버튼 상태 표시용). */
@@ -1850,6 +1840,11 @@ public class Hero extends Char {
 		Char targetChar = Actor.findChar(targetCell);
 
 		if (activeUltimate.selfTarget()) {
+			if (activeUltimate.isAnimated()) {
+				tickOperatorCooldowns();
+				activeUltimate.use(this, this, pos);
+				return false;
+			}
 			activeUltimate.use(this, this, pos);
 			spend(activeUltimate.castTime());
 			return true;
@@ -1864,6 +1859,11 @@ public class Hero extends Char {
 		int dist = Dungeon.level.distance(pos, targetCell);
 
 		if (dist <= activeUltimate.range()) {
+			if (activeUltimate.isAnimated()) {
+				tickOperatorCooldowns();
+				activeUltimate.use(this, targetChar, targetCell);
+				return false;
+			}
 			activeUltimate.use(this, targetChar, targetCell);
 			spend(activeUltimate.castTime());
 			return true;
@@ -1882,6 +1882,13 @@ public class Hero extends Char {
 			ready();
 			return false;
 		}
+	}
+
+	/** 애니메이션 기반 궁극기에서 act()의 actResult 블록 대신 수동 호출 */
+	private void tickOperatorCooldowns() {
+		if (activeBattleSkill != null) activeBattleSkill.reduceCooldown();
+		for (TeamOperator op : teamOperators) op.reduceCooldown();
+		chainQueue.tick();
 	}
 
 	/**
@@ -1925,7 +1932,54 @@ public class Hero extends Char {
 		}
 		resting = fullRest;
 	}
-	
+
+	// ──────────────────────────────────────────────────────────────
+	// 사거리 하이라이트 헬퍼
+	// ──────────────────────────────────────────────────────────────
+
+	/**
+	 * 현재 위치 기준 BFS 사거리 내 시야 확보된 셀 배열 반환.
+	 * 사거리 1 이상, fieldOfView가 true인 셀만 포함.
+	 */
+	private int[] cellsInRange(int range) {
+		if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()) {
+			fieldOfView = new boolean[Dungeon.level.length()];
+			Dungeon.level.updateFieldOfView(this, fieldOfView);
+		}
+		PathFinder.buildDistanceMap(pos, Dungeon.level.passable, range);
+		java.util.ArrayList<Integer> result = new java.util.ArrayList<>();
+		for (int i = 0; i < Dungeon.level.length(); i++) {
+			int d = PathFinder.distance[i];
+			if (d >= 1 && d <= range && fieldOfView[i]) {
+				result.add(i);
+			}
+		}
+		int[] arr = new int[result.size()];
+		for (int i = 0; i < arr.length; i++) arr[i] = result.get(i);
+		return arr;
+	}
+
+	/**
+	 * 시야 내 적(ENEMY alignment) 위치 배열 반환.
+	 * 아츠충전 타겟팅(거리 제한 없음) 등에 사용.
+	 */
+	private int[] visibleEnemyCells() {
+		if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()) {
+			fieldOfView = new boolean[Dungeon.level.length()];
+			Dungeon.level.updateFieldOfView(this, fieldOfView);
+		}
+		java.util.ArrayList<Integer> result = new java.util.ArrayList<>();
+		for (Char ch : Actor.chars()) {
+			if (ch.alignment == Char.Alignment.ENEMY && ch.isAlive()
+					&& fieldOfView[ch.pos]) {
+				result.add(ch.pos);
+			}
+		}
+		int[] arr = new int[result.size()];
+		for (int i = 0; i < arr.length; i++) arr[i] = result.get(i);
+		return arr;
+	}
+
 	@Override
 	public int attackProc( final Char enemy, int damage ) {
 		damage = super.attackProc( enemy, damage );

@@ -130,6 +130,7 @@ import com.watabou.input.ControllerHandler;
 import com.watabou.input.KeyBindings;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Camera;
+import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Gizmo;
 import com.watabou.noosa.Group;
@@ -189,6 +190,7 @@ public class GameScene extends PixelScene {
 	private Group heaps;
 	private Group mobs;
 	private Group floorEmitters;
+	private Group rangeHighlight; // 배틀스킬/궁극기 사거리 하이라이트
 	private Group emitters;
 	private Group effects;
 	private Group gases;
@@ -294,6 +296,9 @@ public class GameScene extends PixelScene {
 
 		floorEmitters = new Group();
 		add(floorEmitters);
+
+		rangeHighlight = new Group();
+		add(rangeHighlight); // 몹/힙 아래, 바닥 위에 사거리 표시
 
 		heaps = new Group();
 		add( heaps );
@@ -1189,6 +1194,31 @@ public class GameScene extends PixelScene {
 		}
 	}
 	
+	// ──────────────────────────────────────────────────────────────
+	// 사거리 하이라이트 (배틀스킬 / 궁극기 / 아츠충전 타겟팅 모드)
+	// ──────────────────────────────────────────────────────────────
+
+	/** 반투명 파란 오버레이로 사거리 셀들을 표시. */
+	public static void showRangeHighlight(int[] cells) {
+		if (scene == null || scene.rangeHighlight == null) return;
+		clearRangeHighlight();
+		int w = Dungeon.level.width();
+		for (int cell : cells) {
+			ColorBlock block = new ColorBlock(
+					DungeonTilemap.SIZE, DungeonTilemap.SIZE, 0x660088FF);
+			block.x = (cell % w) * DungeonTilemap.SIZE;
+			block.y = (cell / w) * DungeonTilemap.SIZE;
+			scene.rangeHighlight.add(block);
+		}
+	}
+
+	/** 사거리 하이라이트 전체 제거. */
+	public static void clearRangeHighlight() {
+		if (scene != null && scene.rangeHighlight != null) {
+			scene.rangeHighlight.clear();
+		}
+	}
+
 	public static void effect( Visual effect ) {
 		if (scene != null) scene.effects.add( effect );
 	}

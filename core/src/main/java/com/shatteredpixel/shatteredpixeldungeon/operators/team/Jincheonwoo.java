@@ -19,6 +19,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
+import com.watabou.utils.Callback;
 
 /**
  * 진천우 (Jincheonwoo)
@@ -201,16 +202,36 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             @Override
-            protected void activate(Hero hero, Char target, int cell) {
-                if (target == null || !target.isAlive()) return;
+            public boolean isAnimated() { return true; }
 
-                // 7회 연속 물리 피해
-                // TODO: 히트 간 애니메이션 시퀀스 (현재는 즉시 계산)
-                for (int i = 0; i < ULT_HIT_COUNT; i++) {
-                    if (!target.isAlive()) break;
-                    int damage = Math.round(hero.damageRoll() * ULT_HIT_MULT);
-                    target.damage(damage, hero, DamageType.PHYSICAL);
+            @Override
+            protected void activate(Hero hero, Char target, int cell) {
+                if (target == null || !target.isAlive()) {
+                    hero.spend(castTime());
+                    hero.next();
+                    return;
                 }
+                applyNextHit(hero, target, ULT_HIT_COUNT);
+            }
+
+            /** 재귀 콜백 체인: 애니메이션 1회 → 피해 적용 → 다음 타격 */
+            private void applyNextHit(final Hero hero, final Char target, final int hitsLeft) {
+                if (hitsLeft <= 0 || !target.isAlive()) {
+                    hero.spend(castTime());
+                    hero.next();
+                    return;
+                }
+
+                hero.sprite.attack(target.pos, new Callback() {
+                    @Override
+                    public void call() {
+                        if (target.isAlive()) {
+                            int damage = Math.round(hero.damageRoll() * ULT_HIT_MULT);
+                            target.damage(damage, hero, DamageType.PHYSICAL);
+                        }
+                        applyNextHit(hero, target, hitsLeft - 1);
+                    }
+                });
             }
         };
     }
