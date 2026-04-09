@@ -19,6 +19,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
+import com.watabou.noosa.Game;
+import com.watabou.noosa.tweeners.Tweener;
 import com.watabou.utils.Callback;
 
 /**
@@ -53,6 +55,9 @@ public class Jincheonwoo extends TeamOperator {
 
     /** 궁극기 총 히트 수 */
     private static final int   ULT_HIT_COUNT = 7;
+
+    /** 궁극기 타격 사이 딜레이 (초). 애니메이션 후 다음 타격 시작 전 정지 시간. TODO: 수치 확정 */
+    private static final float HIT_INTERVAL  = 0.12f;
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
@@ -214,7 +219,12 @@ public class Jincheonwoo extends TeamOperator {
                 applyNextHit(hero, target, ULT_HIT_COUNT);
             }
 
-            /** 재귀 콜백 체인: 애니메이션 1회 → 피해 적용 → 다음 타격 */
+            /**
+             * 재귀 콜백 체인: 애니메이션 1회 → 피해 적용 → HIT_INTERVAL 딜레이 → 다음 타격
+             *
+             * sprite.attack() 콜백 → 피해 → Tweener(HIT_INTERVAL) → applyNextHit 재귀
+             * Tweener는 렌더 스레드에서 실제 경과 시간을 재며, 완료 시 다음 타격을 시작한다.
+             */
             private void applyNextHit(final Hero hero, final Char target, final int hitsLeft) {
                 if (hitsLeft <= 0 || !target.isAlive()) {
                     hero.spend(castTime());
@@ -229,7 +239,19 @@ public class Jincheonwoo extends TeamOperator {
                             int damage = Math.round(hero.damageRoll() * ULT_HIT_MULT);
                             target.damage(damage, hero, DamageType.PHYSICAL);
                         }
-                        applyNextHit(hero, target, hitsLeft - 1);
+
+                        // 타격 후 짧은 정지 → 다음 타격으로 리듬감 부여
+                        Tweener pause = new Tweener(hero.sprite, HIT_INTERVAL) {
+                            @Override
+                            protected void updateValues(float progress) { }
+
+                            @Override
+                            protected void onComplete() {
+                                super.onComplete();
+                                applyNextHit(hero, target, hitsLeft - 1);
+                            }
+                        };
+                        Game.scene().add(pause);
                     }
                 });
             }
