@@ -115,8 +115,13 @@ public class HeroAction {
 
 	/**
 	 * 아츠유닛 충전 활성화 액션.
-	 * 타겟팅 없이 즉시 발동. 1턴 소모.
-	 * Operator.activateArtsCharge(hero) 호출 후 충전 소모.
+	 * - 타겟 불필요 오퍼레이터: 기본 생성자 사용. dst = -1, target = null.
+	 * - 타겟 필요 오퍼레이터(질베르타 등): dst = 타겟 셀, target = 타겟 Char.
+	 * Operator.artsChargeTurns(charges)만큼 턴 소모.
 	 */
-	public static class UseArtsCharge extends HeroAction { }
+	public static class UseArtsCharge extends HeroAction {
+		public Char target;
+		public UseArtsCharge()                       { this.dst = -1; }
+		public UseArtsCharge(int cell, Char target)  { this.dst = cell; this.target = target; }
+	}
 }

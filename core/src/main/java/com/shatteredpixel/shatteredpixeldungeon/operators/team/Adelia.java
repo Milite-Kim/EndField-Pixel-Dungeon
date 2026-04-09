@@ -10,11 +10,13 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsCorrosion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PhysicalVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 
 /**
  * 아델리아 (Adelia)
@@ -49,6 +51,18 @@ public class Adelia extends TeamOperator {
 
     /** 궁극기 타격 횟수. */
     private static final int ULT_HIT_COUNT = 10;
+
+    /**
+     * 충전 활성화 — 충전량별 최대 HP 회복 비율.
+     * 인덱스 = 소비 충전 수 (1~3). TODO: 수치 확정
+     */
+    private static final float[] HP_RECOVERY_RATIOS = {0f, 0.03f, 0.07f, 0.12f};
+
+    /**
+     * 충전 활성화 — 충전 1개당 허기 회복량.
+     * Hunger.HUNGRY = 300f, Hunger.STARVING = 450f 기준. TODO: 수치 확정
+     */
+    private static final float HUNGER_RECOVERY_PER_CHARGE = 40f; // TODO
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
@@ -90,8 +104,45 @@ public class Adelia extends TeamOperator {
                     PhysicalVulnerable.apply(target);
                     ArtsVulnerable.apply(target);
                 }
+
+                gainArtsCharge();
             }
         };
+    }
+
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 활성화: HP + 허기 회복
+    // ─────────────────────────────────────────────
+
+    /**
+     * 충전 소비 턴: 1충전=1턴, 2충전=2턴, 3충전=3턴.
+     */
+    @Override
+    public float artsChargeTurns(int charges) { return charges; }
+
+    /**
+     * 충전 전량 소모 → 충전량 비례 HP 회복 + 허기 회복.
+     * HP: 최대 HP × HP_RECOVERY_RATIOS[charges].
+     * 허기: HUNGER_RECOVERY_PER_CHARGE × charges 만큼 Hunger.satisfy().
+     */
+    @Override
+    public void activateArtsCharge(Hero hero) {
+        if (artsCharges <= 0) return;
+        int charges = Math.min(artsCharges, HP_RECOVERY_RATIOS.length - 1);
+        artsCharges = 0;
+
+        // HP 회복
+        int heal = Math.round(hero.HT * HP_RECOVERY_RATIOS[charges]);
+        if (heal > 0 && hero.HP < hero.HT) {
+            hero.HP = Math.min(hero.HP + heal, hero.HT);
+            hero.sprite.showStatus(CharSprite.POSITIVE, "+" + heal);
+        }
+
+        // 허기 회복
+        Hunger hunger = hero.buff(Hunger.class);
+        if (hunger != null) {
+            hunger.satisfy(HUNGER_RECOVERY_PER_CHARGE * charges);
+        }
     }
 
     // ─────────────────────────────────────────────

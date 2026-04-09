@@ -306,6 +306,12 @@ public class Hero extends Char {
 	 * TODO: UI 연동 시 타겟 하이라이트 갱신 추가
 	 */
 	private boolean ultimateTargeting = false;
+
+	/**
+	 * 아츠유닛 충전 타겟팅 모드 상태 (질베르타 등 타겟 선택 필요 오퍼레이터).
+	 * true일 때 충전 버튼 재클릭으로 현재 공격 대상을 타겟으로 확정.
+	 */
+	private boolean artsChargeTargeting = false;
 	
 	public boolean resting = false;
 	
@@ -1779,6 +1785,52 @@ public class Hero extends Char {
 		return ultimateTargeting;
 	}
 
+	// ──────────────────────────────────────────────────────────────
+	// 아츠유닛 충전 타겟팅 (질베르타 등 artsChargeNeedsTarget() == true 오퍼레이터)
+	// ──────────────────────────────────────────────────────────────
+
+	/**
+	 * 충전 버튼 클릭 시 호출.
+	 * - 타겟 불필요 오퍼레이터: 즉시 UseArtsCharge 액션 세팅 후 진행.
+	 * - 타겟 필요 오퍼레이터: 타겟팅 모드 진입.
+	 *   타겟팅 중 재클릭 → 현재 공격 대상으로 즉시 확정.
+	 */
+	public void enterArtsChargeTargeting() {
+		if (activeMainOperator == null || activeMainOperator.getArtsCharges() <= 0) return;
+
+		if (!activeMainOperator.artsChargeNeedsTarget()) {
+			curAction = new HeroAction.UseArtsCharge();
+			GameScene.ready();
+			return;
+		}
+
+		if (artsChargeTargeting && attackTarget != null) {
+			confirmArtsChargeTarget(attackTarget.pos);
+		} else {
+			artsChargeTargeting = true;
+		}
+	}
+
+	/**
+	 * 타겟팅 모드에서 셀이 확정됐을 때 호출.
+	 * @param cell 선택된 셀 번호
+	 */
+	public void confirmArtsChargeTarget(int cell) {
+		artsChargeTargeting = false;
+		curAction = new HeroAction.UseArtsCharge(cell, Actor.findChar(cell));
+		resume();
+	}
+
+	/** 아츠유닛 충전 타겟팅 모드 취소. */
+	public void cancelArtsChargeTargeting() {
+		artsChargeTargeting = false;
+	}
+
+	/** 현재 아츠유닛 충전 타겟팅 모드 여부 (UI 버튼 상태 표시용). */
+	public boolean isArtsChargeTargeting() {
+		return artsChargeTargeting;
+	}
+
 	/**
 	 * 궁극기 발동 액션 처리.
 	 * 배틀스킬과 동일한 흐름:
@@ -1835,15 +1887,22 @@ public class Hero extends Char {
 	/**
 	 * 아츠유닛 충전 활성화 액션.
 	 * CombatHUD 충전 버튼 클릭 → curAction = UseArtsCharge → act() → 여기 호출.
-	 * 메인 오퍼레이터의 activateArtsCharge()를 실행하고 1턴 소모.
+	 * 타겟 필요 오퍼레이터는 target/cell 포함 오버로드 호출.
+	 * 소비 턴: Operator.artsChargeTurns(charges).
 	 */
 	private boolean actArtsCharge() {
 		if (activeMainOperator == null || activeMainOperator.getArtsCharges() <= 0) {
 			ready();
 			return false;
 		}
-		activeMainOperator.activateArtsCharge(this);
-		spend(1f);
+		int chargesBeforeUse = activeMainOperator.getArtsCharges();
+		if (activeMainOperator.artsChargeNeedsTarget()) {
+			HeroAction.UseArtsCharge action = (HeroAction.UseArtsCharge) curAction;
+			activeMainOperator.activateArtsCharge(this, action.target, action.dst);
+		} else {
+			activeMainOperator.activateArtsCharge(this);
+		}
+		spend(activeMainOperator.artsChargeTurns(chargesBeforeUse));
 		return true;
 	}
 

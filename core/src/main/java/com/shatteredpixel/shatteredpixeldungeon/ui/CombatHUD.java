@@ -9,12 +9,10 @@ import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroAction;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.ChainQueue;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
-import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.NinePatch;
@@ -92,7 +90,7 @@ public class CombatHUD extends Component {
         chainBtn     .updateDisplay(hero);
         artsChargeBtn.updateDisplay(hero);
 
-        boolean targeting = hero.isBattleSkillTargeting() || hero.isUltimateTargeting();
+        boolean targeting = hero.isBattleSkillTargeting() || hero.isUltimateTargeting() || hero.isArtsChargeTargeting();
         cancelBtn.visible = targeting;
         cancelBtn.active  = targeting;
     }
@@ -341,10 +339,8 @@ public class CombatHUD extends Component {
 
         @Override
         protected void onClick() {
-            Hero hero = Dungeon.hero;
-            if (hero == null) return;
-            hero.curAction = new HeroAction.UseArtsCharge();
-            GameScene.ready();
+            if (Dungeon.hero == null) return;
+            Dungeon.hero.enterArtsChargeTargeting();
         }
     }
 
@@ -374,6 +370,8 @@ public class CombatHUD extends Component {
                 Dungeon.hero.cancelBattleSkillTargeting();
             } else if (Dungeon.hero.isUltimateTargeting()) {
                 Dungeon.hero.cancelUltimateTargeting();
+            } else if (Dungeon.hero.isArtsChargeTargeting()) {
+                Dungeon.hero.cancelArtsChargeTargeting();
             }
         }
     }

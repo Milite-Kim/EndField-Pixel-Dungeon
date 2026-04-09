@@ -17,6 +17,8 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Longsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Quarterstaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
 
@@ -162,8 +164,30 @@ public abstract class Operator implements Bundlable {
      * 서브클래스에서 오버라이드해 오퍼레이터별 효과 구현.
      * 기본값: 충전 전량 소모 (효과 없음).
      */
-    public void activateArtsCharge(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+    public void activateArtsCharge(Hero hero) {
         artsCharges = 0;
+    }
+
+    /**
+     * 아츠유닛 충전 활성화 시 타겟 선택이 필요한지 여부.
+     * true인 경우 CombatHUD 충전 버튼 클릭 시 타겟팅 모드로 진입.
+     * 기본값: false (즉시 발동).
+     */
+    public boolean artsChargeNeedsTarget() { return false; }
+
+    /**
+     * 충전 활성화 액션 소비 턴 수.
+     * @param charges 활성화 직전 충전량
+     * @return 소비할 게임 턴 수 (기본 1턴)
+     */
+    public float artsChargeTurns(int charges) { return 1f; }
+
+    /**
+     * 타겟팅이 필요한 충전 활성화 (artsChargeNeedsTarget() == true 오퍼레이터용).
+     * 기본 구현은 무타겟 버전으로 위임.
+     */
+    public void activateArtsCharge(Hero hero, Char target, int cell) {
+        activateArtsCharge(hero);
     }
 
     /**

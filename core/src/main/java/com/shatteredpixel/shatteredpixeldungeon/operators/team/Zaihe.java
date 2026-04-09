@@ -77,9 +77,27 @@ public class Zaihe extends TeamOperator {
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 SupportCrystal.apply(hero);
-                // TODO: 아츠유닛 충전 +1
+                gainArtsCharge();
             }
         };
+    }
+
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 활성화: 배틀스킬 쿨타임 감소
+    // ─────────────────────────────────────────────
+
+    /**
+     * 충전 전량 소모 → 배틀스킬 현재 쿨다운 감소.
+     * 감소량: 1충전=1턴, 2충전=3턴, 3충전=5턴 (artsCharges × 2 − 1).
+     */
+    @Override
+    public void activateArtsCharge(Hero hero) {
+        if (artsCharges <= 0) return;
+        int reduction = artsCharges * 2 - 1;
+        artsCharges = 0;
+        if (hero.activeBattleSkill != null) {
+            hero.activeBattleSkill.reduceCooldownBy(reduction);
+        }
     }
 
     // ─────────────────────────────────────────────

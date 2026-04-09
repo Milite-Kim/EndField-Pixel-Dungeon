@@ -56,6 +56,12 @@ public class Gilberta extends TeamOperator {
     /** 궁극기 방어불능 스택당 아츠 취약 추가 지속 시간 (턴). TODO: 수치 확정 */
     private static final float ULT_STACK_BONUS = 1.0f;
 
+    /** 충전 활성화 — 충전당 자연 피해 배율. TODO: 수치 확정 */
+    private static final float CHARGE_MULT_PER_CHARGE = 0.5f;
+
+    /** 충전 활성화 — 감속(Cripple) 적에게 적용되는 추가 배율. */
+    private static final float CHARGE_SLOW_BONUS_MULT = 1.5f;
+
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
     // ─────────────────────────────────────────────
@@ -99,8 +105,40 @@ public class Gilberta extends TeamOperator {
                     }
                 }
                 // TODO: 중력 특이점 Actor/Blob 배치
+                gainArtsCharge();
             }
         };
+    }
+
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 활성화: 자연 피해 (감속 적 추가 피해)
+    // ─────────────────────────────────────────────
+
+    /** 충전 활성화는 타겟 선택이 필요함 (CombatHUD → 타겟팅 모드 진입). */
+    @Override
+    public boolean artsChargeNeedsTarget() { return true; }
+
+    /**
+     * 충전 전량 소모 → 대상에게 자연 피해 (충전량 × CHARGE_MULT_PER_CHARGE).
+     * 대상이 감속(Cripple) 중이면 피해에 CHARGE_SLOW_BONUS_MULT 추가 적용.
+     */
+    @Override
+    public void activateArtsCharge(Hero hero, Char target, int cell) {
+        if (artsCharges <= 0) return;
+        if (target == null || !target.isAlive()) {
+            artsCharges = 0;
+            return;
+        }
+
+        float mult = CHARGE_MULT_PER_CHARGE * artsCharges;
+        if (target.buff(Cripple.class) != null) {
+            mult *= CHARGE_SLOW_BONUS_MULT;
+        }
+
+        artsCharges = 0;
+
+        int dmg = Math.round(hero.damageRoll() * mult);
+        target.damage(dmg, hero, DamageType.NATURE);
     }
 
     // ─────────────────────────────────────────────
