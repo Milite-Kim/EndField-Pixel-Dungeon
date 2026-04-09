@@ -26,7 +26,7 @@ import com.watabou.utils.Bundle;
  * 사용법:
  *   ArmorBreaked.apply(enemy, consumedStacks);
  */
-public class ArmorBreaked extends Buff {
+public class ArmorBreaked extends FlavourBuff {
 
     {
         type = buffType.NEGATIVE;

@@ -73,7 +73,7 @@ public class Levatine extends TeamOperator {
     @Override public String name()               { return "레바테인"; }
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
-    @Override public Attribute attribute()       { return Attribute.HEAT; }
+    @Override public Attribute attribute()       { return Attribute.FIRE; }
 
     // ─────────────────────────────────────────────
     // 패시브: 메인 오퍼레이터 전환 시 MoltenFlame 버프 부여
