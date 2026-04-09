@@ -9,19 +9,23 @@ import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroAction;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.ChainQueue;
+import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.NinePatch;
 import com.watabou.noosa.ui.Component;
 
 /**
- * 전투 HUD — 배틀스킬 / 궁극기 / 연계기 버튼 + 타겟팅 취소 버튼.
+ * 전투 HUD — 배틀스킬 / 궁극기 / 연계기 버튼 + 충전 버튼 + 타겟팅 취소 버튼.
  *
  * 레이아웃:
  *   [연계] [스킬] [궁극]          ← 툴바 바로 위, 화면 가운데 정렬
+ *   [충전]                       ← 아츠유닛 충전 > 0 일 때만 표시, 왼쪽 기준
  *          [취소]                 ← 타겟팅 모드일 때만 표시, 스킬/궁 버튼 위
  */
 public class CombatHUD extends Component {
@@ -29,10 +33,11 @@ public class CombatHUD extends Component {
     public static final int BTN_SIZE = 28;
     public static final int GAP      = 3;
 
-    private SkillBtn   skillBtn;
-    private UltBtn     ultBtn;
-    private ChainBtn   chainBtn;
-    private CancelBtn  cancelBtn;
+    private SkillBtn      skillBtn;
+    private UltBtn        ultBtn;
+    private ChainBtn      chainBtn;
+    private ArtsChargeBtn artsChargeBtn;
+    private CancelBtn     cancelBtn;
 
     private static CombatHUD instance;
 
@@ -49,10 +54,11 @@ public class CombatHUD extends Component {
 
     @Override
     protected void createChildren() {
-        chainBtn  = new ChainBtn();  add(chainBtn);
-        skillBtn  = new SkillBtn();  add(skillBtn);
-        ultBtn    = new UltBtn();    add(ultBtn);
-        cancelBtn = new CancelBtn(); add(cancelBtn);
+        chainBtn      = new ChainBtn();      add(chainBtn);
+        skillBtn      = new SkillBtn();      add(skillBtn);
+        ultBtn        = new UltBtn();        add(ultBtn);
+        artsChargeBtn = new ArtsChargeBtn(); add(artsChargeBtn);
+        cancelBtn     = new CancelBtn();     add(cancelBtn);
     }
 
     @Override
@@ -67,6 +73,9 @@ public class CombatHUD extends Component {
         skillBtn.setRect(startX + BTN_SIZE + GAP,  btnY, BTN_SIZE, BTN_SIZE);
         ultBtn  .setRect(startX + (BTN_SIZE + GAP) * 2, btnY, BTN_SIZE, BTN_SIZE);
 
+        // 충전 버튼: 연계기 버튼 왼쪽
+        artsChargeBtn.setRect(startX - BTN_SIZE - GAP, btnY, BTN_SIZE, BTN_SIZE);
+
         // 취소 버튼: 스킬 버튼 바로 위
         float cancelX = startX + BTN_SIZE + GAP;
         cancelBtn.setRect(cancelX, btnY - BTN_SIZE - GAP, BTN_SIZE, BTN_SIZE);
@@ -78,9 +87,10 @@ public class CombatHUD extends Component {
         if (Dungeon.hero == null) return;
 
         Hero hero = Dungeon.hero;
-        skillBtn .updateDisplay(hero);
-        ultBtn   .updateDisplay(hero);
-        chainBtn .updateDisplay(hero);
+        skillBtn     .updateDisplay(hero);
+        ultBtn       .updateDisplay(hero);
+        chainBtn     .updateDisplay(hero);
+        artsChargeBtn.updateDisplay(hero);
 
         boolean targeting = hero.isBattleSkillTargeting() || hero.isUltimateTargeting();
         cancelBtn.visible = targeting;
@@ -283,6 +293,58 @@ public class CombatHUD extends Component {
             if (Dungeon.hero == null) return;
             // 현재 공격 대상을 연계기에 전달 (없으면 null — 각 구현에서 처리)
             Dungeon.hero.activateFrontChain(Dungeon.hero.getAttackTarget());
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 아츠유닛 충전 버튼
+    // ──────────────────────────────────────────────────────────────
+
+    private class ArtsChargeBtn extends HudBtn {
+        private RenderedTextBlock chargeLabel;
+
+        @Override
+        protected void createChildren() {
+            super.createChildren();
+            mainLabel.text("충전");
+
+            chargeLabel = PixelScene.renderTextBlock(6);
+            chargeLabel.text("");
+            add(chargeLabel);
+        }
+
+        void updateDisplay(Hero hero) {
+            Operator op = hero.activeMainOperator;
+            // 아츠유닛이 아니거나 충전이 없으면 숨김
+            if (op == null
+                    || op.weaponType() != Operator.WeaponType.ARTS_UNIT
+                    || op.getArtsCharges() <= 0) {
+                visible = false;
+                active  = false;
+                return;
+            }
+            visible = true;
+            active  = true;
+
+            // 충전 개수 표시
+            int charges = op.getArtsCharges();
+            chargeLabel.text(Integer.toString(charges));
+            chargeLabel.setPos(
+                x + (width - chargeLabel.width()) / 2f,
+                y + height - chargeLabel.height() - 2
+            );
+            PixelScene.align(chargeLabel);
+
+            bg.hardlight(0.3f, 0.8f, 1.0f);
+            centerLabel(mainLabel, -3f);
+        }
+
+        @Override
+        protected void onClick() {
+            Hero hero = Dungeon.hero;
+            if (hero == null) return;
+            hero.curAction = new HeroAction.UseArtsCharge();
+            GameScene.ready();
         }
     }
 

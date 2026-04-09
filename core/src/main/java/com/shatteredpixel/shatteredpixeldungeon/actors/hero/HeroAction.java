@@ -112,4 +112,11 @@ public class HeroAction {
 			this.dst = cell;
 		}
 	}
+
+	/**
+	 * 아츠유닛 충전 활성화 액션.
+	 * 타겟팅 없이 즉시 발동. 1턴 소모.
+	 * Operator.activateArtsCharge(hero) 호출 후 충전 소모.
+	 */
+	public static class UseArtsCharge extends HeroAction { }
 }

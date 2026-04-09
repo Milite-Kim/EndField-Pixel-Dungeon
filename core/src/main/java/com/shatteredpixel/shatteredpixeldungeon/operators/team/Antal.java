@@ -31,9 +31,9 @@ import com.watabou.utils.Bundle;
  *             + 전기 취약(ElectricVulnerable) + 열기 취약(HeatVulnerable) 동시 부여
  *             아츠유닛 배틀스킬 시 충전 +1 (최대 3)
  *
- * [충전 효과] 충전량 비례 시간동안 물리 피해 감소
- *             배틀스킬 사용 시 기존 충전 소모 → 물리 피해 감소 버프 적용 후 +1 충전
- *             TODO: 물리 피해 감소 버프 클래스 구현 후 연동
+ * [충전 활성화] CombatHUD 충전 버튼 클릭 → activateArtsCharge() 호출
+ *              충전량 비례 시간동안 물리 피해 감소 (AntalPhysReductionBuff)
+ *              충전 1당 PHYS_REDUCTION_TURNS_PER_CHARGE 턴, 전량 소모
  *
  * [연계기]   조건: 대상에게 물리 이상(DefenselessStack.apply) or 아츠 부착(ArtsAttachment.apply)
  *                  적용 직후 checkChainTriggers 호출 시
@@ -57,17 +57,8 @@ public class Antal extends TeamOperator {
     /** 연계기 전기 피해 배율. TODO: 수치 확정 */
     private static final float CHAIN_MULT = 0.7f;
 
-    /** 아츠유닛 최대 충전. */
-    private static final int MAX_CHARGES = 3;
-
     /** 충전 1개당 물리 피해 감소 지속 턴. TODO: 수치 확정 */
     private static final int PHYS_REDUCTION_TURNS_PER_CHARGE = 2;
-
-    // ─────────────────────────────────────────────
-    // 충전 (아츠유닛 배틀스킬 충전 시스템 — 플레이스홀더)
-    // ─────────────────────────────────────────────
-
-    private int charges = 0;
 
     // ─────────────────────────────────────────────
     // 연계기 트리거 저장
@@ -102,28 +93,19 @@ public class Antal extends TeamOperator {
             @Override public String name()       { return "전기장 형성"; }
             @Override public String description() {
                 return "전기 피해(×" + SKILL_MULT + ") + 전기 취약 + 열기 취약 동시 부여.\n" +
-                       "아츠유닛 충전 +1 (최대 " + MAX_CHARGES + "). 충전 효과: 물리 피해 감소.\n" +
-                       "TODO: 물리 피해 감소 버프 구현 후 연동";
+                       "아츠유닛 충전 +1 (최대 " + MAX_ARTS_CHARGES + "). 충전 활성화: 물리 피해 감소 부여.";
             }
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
 
-                // 기존 충전 소모 → 물리 피해 감소
-                if (charges > 0) {
-                    int reductionTurns = charges * PHYS_REDUCTION_TURNS_PER_CHARGE;
-                    charges = 0;
-                    Buff.affect(hero, AntalPhysReductionBuff.class, reductionTurns);
-                }
-
                 // 전기 피해
                 int dmg = Math.round(hero.damageRoll() * SKILL_MULT);
                 target.damage(dmg, hero, DamageType.ELECTRIC);
 
                 if (!target.isAlive()) {
-                    // 충전 추가 (대상 사망 시에도)
-                    if (charges < MAX_CHARGES) charges++;
+                    gainArtsCharge();
                     return;
                 }
 
@@ -132,9 +114,25 @@ public class Antal extends TeamOperator {
                 HeatVulnerable.apply(target);
 
                 // 아츠유닛 충전 +1
-                if (charges < MAX_CHARGES) charges++;
+                gainArtsCharge();
             }
         };
+    }
+
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 활성화: 물리 피해 감소
+    // ─────────────────────────────────────────────
+
+    /**
+     * 충전 전량 소모 → 충전량 비례 물리 피해 감소 버프 부여.
+     * CombatHUD 충전 버튼 → Hero.actArtsCharge() → 여기 호출.
+     */
+    @Override
+    public void activateArtsCharge(Hero hero) {
+        if (artsCharges <= 0) return;
+        int reductionTurns = artsCharges * PHYS_REDUCTION_TURNS_PER_CHARGE;
+        artsCharges = 0;
+        Buff.affect(hero, AntalPhysReductionBuff.class, reductionTurns);
     }
 
     // ─────────────────────────────────────────────
@@ -160,13 +158,11 @@ public class Antal extends TeamOperator {
         if (target == null || !target.isAlive()) return false;
 
         if (DefenselessStack.triggerContext != null) {
-            // 물리 이상 트리거 저장
             savedPhysicalType = DefenselessStack.triggerContext;
             savedArtsType = null;
             return true;
         }
         if (ArtsAttachment.triggerContext != null) {
-            // 아츠 부착 트리거 저장
             savedArtsType = ArtsAttachment.triggerContext;
             savedPhysicalType = null;
             return true;
@@ -179,7 +175,6 @@ public class Antal extends TeamOperator {
     public void activateChain(Hero hero, Char target) {
         if (target == null || !target.isAlive()) return;
 
-        // 전기 피해
         int dmg = Math.round(hero.damageRoll() * CHAIN_MULT);
         target.damage(dmg, hero, DamageType.ELECTRIC);
 
@@ -189,7 +184,6 @@ public class Antal extends TeamOperator {
             return;
         }
 
-        // 트리거 반복
         if (savedPhysicalType != null) {
             DefenselessStack.apply(target, savedPhysicalType, hero);
             savedPhysicalType = null;
@@ -219,7 +213,6 @@ public class Antal extends TeamOperator {
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
-                // 기존 버프 갱신
                 AntalAmplificationBuff existing = hero.buff(AntalAmplificationBuff.class);
                 if (existing != null) existing.detach();
                 Buff.affect(hero, AntalAmplificationBuff.class);
@@ -228,17 +221,16 @@ public class Antal extends TeamOperator {
     }
 
     // ─────────────────────────────────────────────
-    // 저장/불러오기 (charges + 저장 트리거)
+    // 저장/불러오기 (연계기 트리거 저장값)
+    // artsCharges는 Operator 베이스 클래스에서 처리
     // ─────────────────────────────────────────────
 
-    private static final String CHARGES           = "charges";
-    private static final String SAVED_PHYS_TYPE   = "savedPhysicalType";
-    private static final String SAVED_ARTS_TYPE   = "savedArtsType";
+    private static final String SAVED_PHYS_TYPE = "savedPhysicalType";
+    private static final String SAVED_ARTS_TYPE = "savedArtsType";
 
     @Override
     public void storeInBundle(Bundle bundle) {
         super.storeInBundle(bundle);
-        bundle.put(CHARGES, charges);
         bundle.put(SAVED_PHYS_TYPE, savedPhysicalType != null ? savedPhysicalType.name() : "");
         bundle.put(SAVED_ARTS_TYPE, savedArtsType != null ? savedArtsType.name() : "");
     }
@@ -246,7 +238,6 @@ public class Antal extends TeamOperator {
     @Override
     public void restoreFromBundle(Bundle bundle) {
         super.restoreFromBundle(bundle);
-        charges = bundle.getInt(CHARGES);
 
         String pt = bundle.getString(SAVED_PHYS_TYPE);
         savedPhysicalType = (pt != null && !pt.isEmpty())

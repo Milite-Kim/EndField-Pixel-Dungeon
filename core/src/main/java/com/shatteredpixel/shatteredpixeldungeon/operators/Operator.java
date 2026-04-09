@@ -130,6 +130,42 @@ public abstract class Operator implements Bundlable {
      */
     public void onBecomeMain(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {}
 
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 시스템
+    // 배틀스킬 사용 시 충전 +1 (최대 3).
+    // 충전 활성화는 별도 액션(CombatHUD 버튼)으로 수행.
+    // ─────────────────────────────────────────────
+
+    /** 현재 아츠유닛 충전량. */
+    protected int artsCharges = 0;
+
+    /** 아츠유닛 최대 충전량. */
+    public static final int MAX_ARTS_CHARGES = 3;
+
+    /**
+     * 아츠유닛 배틀스킬 사용 후 충전 +1.
+     * 배틀스킬 activate() 마지막에 호출할 것.
+     * ARTS_UNIT 무기 타입이 아니면 무시.
+     */
+    public final void gainArtsCharge() {
+        if (weaponType() == WeaponType.ARTS_UNIT && artsCharges < MAX_ARTS_CHARGES) {
+            artsCharges++;
+        }
+    }
+
+    /** 현재 충전량 반환. CombatHUD 버튼 활성화 여부 판단에 사용. */
+    public int getArtsCharges() { return artsCharges; }
+
+    /**
+     * 아츠유닛 충전 활성화 효과.
+     * CombatHUD의 충전 버튼 클릭 시 Hero.actArtsCharge()에서 호출.
+     * 서브클래스에서 오버라이드해 오퍼레이터별 효과 구현.
+     * 기본값: 충전 전량 소모 (효과 없음).
+     */
+    public void activateArtsCharge(com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero hero) {
+        artsCharges = 0;
+    }
+
     /**
      * 게임 시작 시 소지할 오퍼레이터 고유 아이템 목록.
      * 기본값: 빈 목록 (공통 아이템은 Hero.initFromOperator()에서 지급).
@@ -139,12 +175,18 @@ public abstract class Operator implements Bundlable {
         return new ArrayList<>();
     }
 
-    // 저장/불러오기 (현재는 비어있음, 서브클래스에서 필요 시 확장)
+    // 저장/불러오기
+    private static final String ARTS_CHARGES_KEY = "artsCharges";
+
     @Override
     public void storeInBundle(Bundle bundle) {
+        if (artsCharges != 0) {
+            bundle.put(ARTS_CHARGES_KEY, artsCharges);
+        }
     }
 
     @Override
     public void restoreFromBundle(Bundle bundle) {
+        artsCharges = bundle.getInt(ARTS_CHARGES_KEY);
     }
 }

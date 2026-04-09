@@ -1055,6 +1055,9 @@ public class Hero extends Char {
 			} else if (curAction instanceof HeroAction.UseUltimate) {
 				actResult = actUltimate( (HeroAction.UseUltimate)curAction );
 
+			} else if (curAction instanceof HeroAction.UseArtsCharge) {
+				actResult = actArtsCharge();
+
 			} else if (curAction instanceof HeroAction.Alchemy) {
 				actResult = actAlchemy( (HeroAction.Alchemy)curAction );
 				
@@ -1829,10 +1832,25 @@ public class Hero extends Char {
 		}
 	}
 
+	/**
+	 * 아츠유닛 충전 활성화 액션.
+	 * CombatHUD 충전 버튼 클릭 → curAction = UseArtsCharge → act() → 여기 호출.
+	 * 메인 오퍼레이터의 activateArtsCharge()를 실행하고 1턴 소모.
+	 */
+	private boolean actArtsCharge() {
+		if (activeMainOperator == null || activeMainOperator.getArtsCharges() <= 0) {
+			ready();
+			return false;
+		}
+		activeMainOperator.activateArtsCharge(this);
+		spend(1f);
+		return true;
+	}
+
 	public Char attackTarget(){
 		return attackTarget;
 	}
-	
+
 	public void rest( boolean fullRest ) {
 		spendAndNextConstant( TIME_TO_REST );
 		if (hasTalent(Talent.HOLD_FAST)){

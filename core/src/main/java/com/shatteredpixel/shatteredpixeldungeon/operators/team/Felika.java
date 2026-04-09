@@ -15,7 +15,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
-import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
@@ -29,11 +28,11 @@ import java.util.ArrayList;
  * 속성: 전기
  *
  * [배틀스킬] 전기 피해(×SKILL_MULT) + 전기 부착
- *             기존 충전 소모 → 소모량(칸) 비례 순간이동
- *             이후 아츠유닛 충전 +1 (최대 3)
+ *             아츠유닛 배틀스킬 시 충전 +1 (최대 3)
  *
- * [충전 효과] 충전량 비례 순간이동 (충전 1당 1칸, 최대 3칸)
- *             → 배틀스킬 사용 시 기존 충전 소모 → Hero가 주변 임의 셀로 이동
+ * [충전 활성화] CombatHUD 충전 버튼 클릭 → activateArtsCharge() 호출
+ *              충전량 비례 순간이동 (충전 1당 1칸, 최대 3칸)
+ *              전량 소모 후 BFS 반경 내 임의 빈 셀로 이동
  *
  * [연계기]   조건: 강력한 일격 적중 시 (finishingBlowContext = true)
  *             효과: 전기 피해(×CHAIN_MULT) + 감전(Electrified) 부여
@@ -61,16 +60,6 @@ public class Felika extends TeamOperator {
     private static final float ULT_MULT = 2.0f;
 
     // ─────────────────────────────────────────────
-    // 아츠유닛 충전 (배틀스킬 시 +1, 최대 3)
-    // ─────────────────────────────────────────────
-
-    /** 최대 충전량. */
-    private static final int MAX_CHARGES = 3;
-
-    /** 현재 충전량. */
-    private int charges = 0;
-
-    // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
     // ─────────────────────────────────────────────
 
@@ -91,19 +80,12 @@ public class Felika extends TeamOperator {
             @Override public String name()       { return "전기 충격"; }
             @Override public String description() {
                 return "전기 피해(×" + SKILL_MULT + ") + 전기 부착.\n" +
-                       "충전 소모 → 소모량 칸 수 만큼 주변 임의 위치로 순간이동.\n" +
-                       "이후 충전 +1 (최대 " + MAX_CHARGES + ").";
+                       "아츠유닛 충전 +1 (최대 " + MAX_ARTS_CHARGES + "). 충전 활성화: 충전량 칸 수 순간이동.";
             }
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
-
-                // 기존 충전 소모 → 순간이동
-                if (charges > 0) {
-                    teleport(hero, charges);
-                    charges = 0;
-                }
 
                 int dmg = Math.round(hero.damageRoll() * SKILL_MULT);
                 target.damage(dmg, hero, DamageType.ELECTRIC);
@@ -113,9 +95,25 @@ public class Felika extends TeamOperator {
                 }
 
                 // 아츠유닛 충전 +1
-                if (charges < MAX_CHARGES) charges++;
+                gainArtsCharge();
             }
         };
+    }
+
+    // ─────────────────────────────────────────────
+    // 아츠유닛 충전 활성화: 순간이동
+    // ─────────────────────────────────────────────
+
+    /**
+     * 충전 전량 소모 → 소모량 칸 수 이내 임의 빈 셀로 순간이동.
+     * CombatHUD 충전 버튼 → Hero.actArtsCharge() → 여기 호출.
+     */
+    @Override
+    public void activateArtsCharge(Hero hero) {
+        if (artsCharges <= 0) return;
+        int range = artsCharges;
+        artsCharges = 0;
+        teleport(hero, range);
     }
 
     /**
@@ -183,7 +181,6 @@ public class Felika extends TeamOperator {
     public Ultimate ultimate() {
         return new Ultimate() {
 
-            // 충전 요구량이 낮아 자주 사용 가능
             @Override public int maxCharge() { return 70; } // TODO: 수치 확정
             @Override public String name()   { return "초전도 방전"; }
             @Override public String description() {
@@ -199,23 +196,5 @@ public class Felika extends TeamOperator {
                 target.damage(dmg, hero, DamageType.ELECTRIC);
             }
         };
-    }
-
-    // ─────────────────────────────────────────────
-    // 저장/불러오기 (charges)
-    // ─────────────────────────────────────────────
-
-    private static final String CHARGES = "charges";
-
-    @Override
-    public void storeInBundle(Bundle bundle) {
-        super.storeInBundle(bundle);
-        bundle.put(CHARGES, charges);
-    }
-
-    @Override
-    public void restoreFromBundle(Bundle bundle) {
-        super.restoreFromBundle(bundle);
-        charges = bundle.getInt(CHARGES);
     }
 }
