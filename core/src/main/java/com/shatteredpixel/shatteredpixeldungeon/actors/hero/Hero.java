@@ -838,11 +838,11 @@ public class Hero extends Char {
 	}
 
 	/**
-	 * 장착 무기의 요구 능력치.
+	 * 장착 기질의 요구 능력치.
 	 * (현재 STR - 요구치) 가 피해 보너스로 적용됨.
-	 * TODO: 무기/오퍼레이터별 요구 능력치 정의 후 연동
+	 * TODO: 기질 아이템 클래스 구현 후 장착된 기질에서 직접 읽어올 것
 	 */
-	public int weaponRequiredStat() {
+	public int traitRequiredStat() {
 		return 10; // TODO
 	}
 
@@ -852,7 +852,7 @@ public class Hero extends Char {
 	 */
 	private int skillDamageRoll() {
 		int enchant   = getEnchantmentLevel();
-		int statBonus = Math.max(0, STR - weaponRequiredStat());
+		int statBonus = Math.max(0, STR - traitRequiredStat());
 		int min = 1 + enchant + statBonus;
 		int max = (int)(getATK() * ATK_TO_MAX_DMG) + statBonus;
 		max = Math.max(max, min);
@@ -865,7 +865,7 @@ public class Hero extends Char {
 	 */
 	private int basicAttackDamageRoll() {
 		int enchant   = getEnchantmentLevel();
-		int statBonus = Math.max(0, STR - weaponRequiredStat());
+		int statBonus = Math.max(0, STR - traitRequiredStat());
 		int baseMin = 1 + enchant + statBonus;
 		int baseMax = (int)(getATK() * ATK_TO_MAX_DMG) + statBonus;
 		float eff = finalAttackEfficiency();
