@@ -2359,9 +2359,23 @@ public class Hero extends Char {
 	}
 	
 	public boolean handle( int cell ) {
-		
+
 		if (cell == -1) {
 			return false;
+		}
+
+		// 타겟팅 모드 인터셉트 — 셀 클릭 시 일반 액션 대신 타겟 확정
+		if (battleSkillTargeting) {
+			confirmBattleSkillTarget(cell);
+			return true;
+		}
+		if (ultimateTargeting) {
+			confirmUltimateTarget(cell);
+			return true;
+		}
+		if (artsChargeTargeting) {
+			confirmArtsChargeTarget(cell);
+			return true;
 		}
 
 		if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()){
