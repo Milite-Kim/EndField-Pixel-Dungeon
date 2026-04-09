@@ -780,39 +780,132 @@ public class Hero extends Char {
 	}
 	
 	@Override
+	// ─────────────────────────────────────────────────────────────────
+	// 엔픽던 ATK(공격력) 시스템
+	// ─────────────────────────────────────────────────────────────────
+
+	/** 시작 공격력 (능력치 = 10 기준). TODO: 수치 확정 */
+	public static final float ATK_BASE = 60f;
+
+	/** 능력치 1 증가당 공격력 증가량. TODO: 수치 확정 */
+	public static final float ATK_PER_STAT = 5f;
+
+	/** 기본 공격 최대 피해 비율 (ATK × 이 값 = 최대 피해). */
+	public static final float ATK_TO_MAX_DMG = 0.10f;
+
+	// 무기 종류별 기본 공격 배율 (한손검 = 1.0 기준)
+	private static final float TWO_HAND_MIN_MULT = 2.0f;  // TODO: 수치 확정
+	private static final float TWO_HAND_MAX_MULT = 2.5f;  // TODO: 수치 확정
+	private static final float ARTS_MIN_MULT     = 0.5f;  // TODO: 수치 확정
+	private static final float ARTS_MAX_MULT     = 0.8f;  // TODO: 수치 확정
+
+	/**
+	 * 기본 공격 배율 모드 플래그.
+	 * true 이면 damageRoll()이 무기 배율 + finalAttackEfficiency() 포함 값을 반환.
+	 * onAttackComplete()에서만 true로 설정되며, 호출 직후 복원.
+	 */
+	private boolean basicAttackMode = false;
+
+	/**
+	 * 현재 공격력(ATK).
+	 * 능력치, 기질 식각 보너스, 버프 등 모두 합산.
+	 */
+	public int getATK() {
+		float atk = ATK_BASE + (STR - 10) * ATK_PER_STAT;
+		// TODO: 기질 식각 ATK 보너스 연동 (식각 시스템 구현 후)
+		// TODO: ATK 증가 버프 연동 (버프 구현 후)
+		return Math.max(1, Math.round(atk));
+	}
+
+	/**
+	 * 최종 공격 효율 배율.
+	 * 기본 공격에 적용되는 모든 배율 요소를 한 곳에서 계산.
+	 * 공격 관련 배율 버프를 추가할 때는 반드시 이 메서드에만 추가.
+	 */
+	public float finalAttackEfficiency() {
+		float efficiency = 1.0f;
+		// TODO: 공격 효율 버프 추가 시 여기에 등록
+		// 예: if (buff(AtkUpBuff.class) != null) efficiency *= buff(AtkUpBuff.class).multiplier();
+		return efficiency;
+	}
+
+	/**
+	 * 현재 기질 식각(강화) 수치.
+	 * TODO: 기질 식각 시스템 구현 후 실제 값 반환
+	 */
+	public int getEnchantmentLevel() {
+		return 0; // TODO
+	}
+
+	/**
+	 * 장착 무기의 요구 능력치.
+	 * (현재 STR - 요구치) 가 피해 보너스로 적용됨.
+	 * TODO: 무기/오퍼레이터별 요구 능력치 정의 후 연동
+	 */
+	public int weaponRequiredStat() {
+		return 10; // TODO
+	}
+
+	/**
+	 * 스킬용 기본 피해량 (무기 배율 미적용).
+	 * 모든 스킬은 hero.damageRoll()을 통해 이 값을 사용.
+	 */
+	private int skillDamageRoll() {
+		int enchant   = getEnchantmentLevel();
+		int statBonus = Math.max(0, STR - weaponRequiredStat());
+		int min = 1 + enchant + statBonus;
+		int max = (int)(getATK() * ATK_TO_MAX_DMG) + statBonus;
+		max = Math.max(max, min);
+		return Random.NormalIntRange(min, max);
+	}
+
+	/**
+	 * 기본 공격용 피해량 (무기 종류 배율 + finalAttackEfficiency 적용).
+	 * basicAttackMode = true 일 때 damageRoll()에서 호출됨.
+	 */
+	private int basicAttackDamageRoll() {
+		int enchant   = getEnchantmentLevel();
+		int statBonus = Math.max(0, STR - weaponRequiredStat());
+		int baseMin = 1 + enchant + statBonus;
+		int baseMax = (int)(getATK() * ATK_TO_MAX_DMG) + statBonus;
+		float eff = finalAttackEfficiency();
+
+		Operator.WeaponType wt = (activeMainOperator != null)
+				? activeMainOperator.weaponType()
+				: Operator.WeaponType.ONE_HANDED_SWORD;
+
+		int min, max;
+		switch (wt) {
+			case TWO_HANDED_SWORD:
+				min = Math.round(baseMin * TWO_HAND_MIN_MULT * eff);
+				max = Math.round(baseMax * TWO_HAND_MAX_MULT * eff);
+				break;
+			case ARTS_UNIT:
+				min = Math.max(1, Math.round(baseMin * ARTS_MIN_MULT * eff));
+				max = Math.round(baseMax * ARTS_MAX_MULT * eff);
+				break;
+			case PISTOL:
+				// TODO: 권총 전용 피해 로직 구현
+				min = Math.round(baseMin * eff);
+				max = Math.round(baseMax * eff);
+				break;
+			default: // ONE_HANDED_SWORD
+				min = Math.round(baseMin * eff);
+				max = Math.round(baseMax * eff);
+				break;
+		}
+		max = Math.max(max, min);
+		return Random.NormalIntRange(min, max);
+	}
+
+	/**
+	 * 피해량 계산 진입점.
+	 * basicAttackMode = true  → basicAttackDamageRoll() (무기 배율 포함)
+	 * basicAttackMode = false → skillDamageRoll()        (스킬용, 무기 배율 없음)
+	 */
+	@Override
 	public int damageRoll() {
-		KindOfWeapon wep = belongings.attackingWeapon();
-		int dmg;
-
-		if (!RingOfForce.fightingUnarmed(this)) {
-			dmg = wep.damageRoll( this );
-
-			if (!(wep instanceof MissileWeapon)) dmg += RingOfForce.armedDamageBonus(this);
-		} else {
-			dmg = RingOfForce.damageRoll(this);
-			if (RingOfForce.unarmedGetsWeaponAugment(this)){
-				dmg = ((Weapon)belongings.attackingWeapon()).augment.damageFactor(dmg);
-			}
-		}
-
-		PhysicalEmpower emp = buff(PhysicalEmpower.class);
-		if (emp != null){
-			dmg += emp.dmgBoost;
-			emp.left--;
-			if (emp.left <= 0) {
-				emp.detach();
-			}
-			Sample.INSTANCE.play(Assets.Sounds.HIT_STRONG, 0.75f, 1.2f);
-		}
-
-		if (heroClass != HeroClass.DUELIST
-				&& hasTalent(Talent.WEAPON_RECHARGING)
-				&& (buff(Recharging.class) != null || buff(ArtifactRecharge.class) != null)){
-			dmg = Math.round(dmg * 1.025f + (.025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
-		}
-
-		if (dmg < 0) dmg = 0;
-		return dmg;
+		return basicAttackMode ? basicAttackDamageRoll() : skillDamageRoll();
 	}
 
 	//damage rolls that come from the hero can have their RNG influenced by clover
@@ -2876,7 +2969,10 @@ public class Hero extends Char {
 		ComboTracker comboTracker = Buff.affect(this, ComboTracker.class);
 		float comboMult = comboTracker.currentMultiplier(this);
 		boolean wasFinishing = comboTracker.isFinishingBlow(this);
+		// 기본 공격: 무기 배율 + finalAttackEfficiency() 포함 damageRoll() 사용
+		basicAttackMode = true;
 		boolean hit = attack(attackTarget, comboMult, 0, 1f);
+		basicAttackMode = false;
 		comboTracker.advanceStep(this);
 
 		// 강력한 일격 적중 시 → 이벤트형 연계기 트리거
