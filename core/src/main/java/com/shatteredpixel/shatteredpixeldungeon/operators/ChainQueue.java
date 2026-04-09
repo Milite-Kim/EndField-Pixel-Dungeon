@@ -124,19 +124,19 @@ public class ChainQueue {
     // expiresAt을 그대로 저장하면 복원 후에도 정확한 만료 시간이 유지된다.
     // ─────────────────────────────────────────────
 
-    private static final String CHAIN_QUEUE  = "chainQueue";
     private static final String ENTRY_CLASS  = "class";
     private static final String ENTRY_EXPIRY = "expiresAt";
 
     public void storeInBundle(Bundle bundle) {
-        ArrayList<Bundle> entries = new ArrayList<>();
-        for (Entry e : queue) {
-            Bundle eb = new Bundle();
-            eb.put(ENTRY_CLASS,  e.operator.getClass().getName());
-            eb.put(ENTRY_EXPIRY, e.expiresAt);
-            entries.add(eb);
+        int n = queue.size();
+        String[] classNames = new String[n];
+        float[]  expiries   = new float[n];
+        for (int i = 0; i < n; i++) {
+            classNames[i] = queue.get(i).operator.getClass().getName();
+            expiries[i]   = queue.get(i).expiresAt;
         }
-        bundle.put(CHAIN_QUEUE, entries.toArray(new Bundle[0]));
+        bundle.put(ENTRY_CLASS,  classNames);
+        bundle.put(ENTRY_EXPIRY, expiries);
     }
 
     /**
@@ -144,15 +144,15 @@ public class ChainQueue {
      */
     public void restoreFromBundle(Bundle bundle, List<TeamOperator> teamOperators) {
         queue.clear();
-        Bundle[] entries = bundle.getBundleArray(CHAIN_QUEUE);
-        if (entries == null) return;
-        for (Bundle eb : entries) {
-            String className = eb.getString(ENTRY_CLASS);
-            float  expiresAt = eb.getFloat(ENTRY_EXPIRY);
+        String[] classNames = bundle.getStringArray(ENTRY_CLASS);
+        float[]  expiries   = bundle.getFloatArray(ENTRY_EXPIRY);
+        if (classNames == null) return;
+        for (int i = 0; i < classNames.length; i++) {
+            float expiresAt = expiries[i];
             // 이미 만료된 엔트리는 복원하지 않는다
             if (expiresAt <= Actor.now()) continue;
             for (TeamOperator op : teamOperators) {
-                if (op.getClass().getName().equals(className)) {
+                if (op.getClass().getName().equals(classNames[i])) {
                     queue.add(new Entry(op, expiresAt));
                     break;
                 }
