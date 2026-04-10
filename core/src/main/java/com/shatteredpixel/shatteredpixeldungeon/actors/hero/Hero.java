@@ -150,6 +150,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ThirteenLeafClove
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.Trait;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
@@ -830,19 +831,22 @@ public class Hero extends Char {
 
 	/**
 	 * 현재 기질 식각(강화) 수치.
-	 * TODO: 기질 식각 시스템 구현 후 실제 값 반환
+	 * 장착된 기질의 enchantLevel() 을 반환한다.
+	 * 기질 미장착 시 0.
 	 */
 	public int getEnchantmentLevel() {
-		return 0; // TODO
+		if (belongings.trait != null) return belongings.trait.enchantLevel();
+		return 0;
 	}
 
 	/**
 	 * 장착 기질의 요구 능력치.
-	 * (현재 STR - 요구치) 가 피해 보너스로 적용됨.
-	 * TODO: 기질 아이템 클래스 구현 후 장착된 기질에서 직접 읽어올 것
+	 * (STR - requiredStat()) 이 피해 보너스로 적용됨.
+	 * 기질 미장착 시 기본값 10.
 	 */
 	public int traitRequiredStat() {
-		return 10; // TODO
+		if (belongings.trait != null) return belongings.trait.requiredStat();
+		return 10;
 	}
 
 	/**
@@ -2084,6 +2088,11 @@ public class Hero extends Char {
 		}
 
 		damage = Talent.onAttackProc( this, enemy, damage );
+
+		// 기질 proc — 무기 인챈트와 동일 위치에서 호출
+		if (belongings.trait != null) {
+			damage = belongings.trait.proc( this, enemy, damage );
+		}
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );
