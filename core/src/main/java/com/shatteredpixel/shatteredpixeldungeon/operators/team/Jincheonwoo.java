@@ -45,19 +45,25 @@ public class Jincheonwoo extends TeamOperator {
     // ─────────────────────────────────────────────
 
     /** 배틀스킬 피해 배율 (hero.damageRoll() 기준). TODO: 수치 확정 */
-    private static final float SKILL_MULT    = 1.5f;
+    private static final float SKILL_MULT      = 1.5f;
 
     /** 연계기 피해 배율. TODO: 수치 확정 */
-    private static final float CHAIN_MULT    = 1.2f;
+    private static final float CHAIN_MULT      = 1.2f;
 
-    /** 궁극기 히트 1회당 피해 배율. TODO: 수치 확정 */
-    private static final float ULT_HIT_MULT  = 0.8f;
+    /** 궁극기 1~6타 피해 배율 (비교적 약한 연속 타격). TODO: 수치 확정 */
+    private static final float ULT_HIT_MULT    = 0.7f;
+
+    /** 궁극기 7타(마무리 일격) 피해 배율. TODO: 수치 확정 */
+    private static final float ULT_FINAL_MULT  = 1.5f;
 
     /** 궁극기 총 히트 수 */
-    private static final int   ULT_HIT_COUNT = 7;
+    private static final int   ULT_HIT_COUNT   = 7;
 
-    /** 궁극기 타격 사이 딜레이 (초). 애니메이션 후 다음 타격 시작 전 정지 시간. TODO: 수치 확정 */
-    private static final float HIT_INTERVAL  = 0.12f;
+    /** 궁극기 1~6타 사이 딜레이 (초). TODO: 수치 확정 */
+    private static final float HIT_INTERVAL    = 0.08f;
+
+    /** 궁극기 6타 → 마무리 일격 전 딜레이 (초). 살짝 길게 = 타이밍 강조. TODO: 수치 확정 */
+    private static final float FINAL_INTERVAL  = 0.15f;
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
@@ -220,10 +226,11 @@ public class Jincheonwoo extends TeamOperator {
             }
 
             /**
-             * 재귀 콜백 체인: 애니메이션 1회 → 피해 적용 → HIT_INTERVAL 딜레이 → 다음 타격
+             * 재귀 콜백 체인:
+             *   1~6타: 애니메이션 → 피해(ULT_HIT_MULT) → HIT_INTERVAL 딜레이
+             *   7타:   애니메이션 → 피해(ULT_FINAL_MULT) — 마무리 일격
              *
-             * sprite.attack() 콜백 → 피해 → Tweener(HIT_INTERVAL) → applyNextHit 재귀
-             * Tweener는 렌더 스레드에서 실제 경과 시간을 재며, 완료 시 다음 타격을 시작한다.
+             * 6타 → 7타 전환 시 FINAL_INTERVAL(더 긴 정지)로 타이밍을 강조.
              */
             private void applyNextHit(final Hero hero, final Char target, final int hitsLeft) {
                 if (hitsLeft <= 0 || !target.isAlive()) {
@@ -232,21 +239,28 @@ public class Jincheonwoo extends TeamOperator {
                     return;
                 }
 
+                final boolean isFinalHit = (hitsLeft == 1);
+
                 hero.sprite.attack(target.pos, new Callback() {
                     @Override
                     public void call() {
                         if (target.isAlive()) {
-                            int damage = Math.round(hero.damageRoll() * ULT_HIT_MULT);
+                            float mult = isFinalHit ? ULT_FINAL_MULT : ULT_HIT_MULT;
+                            int damage = Math.round(hero.damageRoll() * mult);
                             target.damage(damage, hero, DamageType.PHYSICAL);
                         }
 
-                        // 타격 후 짧은 정지 → 다음 타격으로 리듬감 부여
-                        Tweener pause = new Tweener(hero.sprite, HIT_INTERVAL) {
-                            @Override
-                            protected void updateValues(float progress) { }
+                        if (isFinalHit) {
+                            // 마무리 타격 완료 → 궁극기 종료
+                            applyNextHit(hero, target, 0);
+                            return;
+                        }
 
-                            @Override
-                            protected void onComplete() {
+                        // 다음 타격이 마무리 일격이면 FINAL_INTERVAL, 아니면 HIT_INTERVAL
+                        float interval = (hitsLeft - 1 == 1) ? FINAL_INTERVAL : HIT_INTERVAL;
+                        Tweener pause = new Tweener(hero.sprite, interval) {
+                            @Override protected void updateValues(float progress) { }
+                            @Override protected void onComplete() {
                                 super.onComplete();
                                 applyNextHit(hero, target, hitsLeft - 1);
                             }
