@@ -48,8 +48,13 @@ public class Endministrator extends TeamOperator {
     /** 궁극기 기본 물리 피해 배율. TODO: 수치 확정 */
     private static final float ULT_MULT = 2.5f;
 
-    /** 궁극기 오리지늄 아츠 결정 스택당 추가 피해 배율. TODO: 수치 확정 */
-    private static final float ULT_CRYSTAL_MULT = 0.8f;
+    /**
+     * 궁극기 오리지늄 결정 소모 추가 피해 배율 (최대 1스택 소모).
+     * 설계 의도: 추가 피해 > 기본 피해 (ULT_MULT).
+     * 이유: 결정을 부착 후 배틀스킬로 직접 터뜨리는 것보다 궁극기 소모가 더 큰 이득이어야 함.
+     * TODO: 수치 확정 (단, ULT_MULT 초과로 설정할 것)
+     */
+    private static final float ULT_CRYSTAL_MULT = 3.5f;
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
