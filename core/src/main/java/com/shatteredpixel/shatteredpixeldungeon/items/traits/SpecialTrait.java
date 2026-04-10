@@ -20,14 +20,8 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
  * - 귀속 오퍼레이터가 메인일 때 : operatorActivate() / operatorDeactivate() / operatorProc() 호출
  * - 다른 오퍼레이터가 메인일 때 : 5티어 공용 기질처럼 기본 효과만 적용
  *
- * 효과 설계 패턴 (docs/엔픽던_기질시스템.md):
- *   특수 기질 로직은 해당 오퍼레이터 클래스 안에 위임하는 방식을 권장.
- *   SpecialTrait 서브클래스는 뼈대를 갖고, 실제 효과는 operatorClass() 지정 오퍼레이터에서 처리.
- *
- * 오퍼레이터 전환 시 주의:
- *   메인 오퍼레이터가 바뀌면 Hero.syncActiveOperator() → Operator.onBecomeMain() 이 호출되므로,
- *   필요 시 해당 훅에서 hero.belongings.trait 의 activate/deactivate 를 재호출해야 한다.
- *   (TODO: onBecomeMain 훅 연동)
+ * 메인 오퍼레이터는 런 시작 시 확정되며 런 중 변경되지 않는다.
+ * 따라서 activate() 호출 시점(장착/로드)에 isForCurrentMain() 체크 한 번으로 충분하다.
  *
  * TODO: 오퍼레이터당 1종씩 items/traits/special/ 에 구현
  */
