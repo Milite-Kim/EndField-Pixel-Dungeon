@@ -345,5 +345,16 @@ public class Assets {
 		/** 궁극기 컷씬 이미지 — 메인 일러스트와 별도로 제작. 미확정 시 null 처리. */
 		// TODO: 각 오퍼레이터 컷씬 에셋 추가 시 여기에 등록
 		public static final String ENDMINISTRATOR_CUTSCENE = null; // 미확정
+
+		/**
+		 * 연계기 얼굴 팝업 이미지 — 메인 일러스트의 얼굴 크롭 예정.
+		 * 정사각형 이미지. 미확정 시 null → 속성 색상 placeholder.
+		 * TODO: 에셋 확정 후 경로 지정 (operators/faces/<name>.png 예정)
+		 */
+		public static final String ENDMINISTRATOR_FACE  = null; // 미확정
+		public static final String JINCHEONWOO_FACE      = null; // 미확정
+		public static final String POGRANICHNIK_FACE     = null; // 미확정
+		public static final String EMBER_FACE            = null; // 미확정
+		public static final String LASTLIGHT_FACE        = null; // 미확정
 	}
 }

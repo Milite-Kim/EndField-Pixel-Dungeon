@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
@@ -58,6 +59,7 @@ public class Ember extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "엠버"; }
+    @Override public String chainFaceAsset()     { return Assets.Operators.EMBER_FACE; } // TODO: 에셋 확정 후 경로 지정
     @Override public OperatorClass operatorClass() { return OperatorClass.DEFENDER; }
     @Override public WeaponType weaponType()     { return WeaponType.TWO_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.HEAT; }

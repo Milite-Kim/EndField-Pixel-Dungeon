@@ -10,6 +10,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -71,6 +72,9 @@ public class Jincheonwoo extends TeamOperator {
 
     @Override
     public String name() { return "진천우"; }
+
+    @Override
+    public String chainFaceAsset() { return Assets.Operators.JINCHEONWOO_FACE; } // TODO: 에셋 확정 후 경로 지정
 
     @Override
     public OperatorClass operatorClass() { return OperatorClass.GUARD; }

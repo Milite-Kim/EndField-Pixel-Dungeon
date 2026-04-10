@@ -3164,6 +3164,10 @@ public class Hero extends Char {
 	public boolean activateFrontChain(Char target) {
 		TeamOperator op = chainQueue.consume();
 		if (op == null) return false;
+
+		// 연계기 발동 얼굴 팝업
+		GameScene.showChainFacePopup(op);
+
 		chainActivationContext = true;
 		op.activateChain(this, target);
 		chainActivationContext = false;
