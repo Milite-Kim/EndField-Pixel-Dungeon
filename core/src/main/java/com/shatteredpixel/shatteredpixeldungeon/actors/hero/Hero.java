@@ -99,6 +99,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
+import com.shatteredpixel.shatteredpixeldungeon.effects.UltimateCutscene;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Dewdrop;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
@@ -1936,14 +1937,7 @@ public class Hero extends Char {
 		Char targetChar = Actor.findChar(targetCell);
 
 		if (activeUltimate.selfTarget()) {
-			if (activeUltimate.isAnimated()) {
-				tickOperatorCooldowns();
-				activeUltimate.use(this, this, pos);
-				return false;
-			}
-			activeUltimate.use(this, this, pos);
-			spend(activeUltimate.castTime());
-			return true;
+			return fireCutscenedUltimate(this, pos);
 		}
 
 		if (targetChar == null && !activeUltimate.canTargetCell()) {
@@ -1955,14 +1949,7 @@ public class Hero extends Char {
 		int dist = Dungeon.level.distance(pos, targetCell);
 
 		if (dist <= activeUltimate.range()) {
-			if (activeUltimate.isAnimated()) {
-				tickOperatorCooldowns();
-				activeUltimate.use(this, targetChar, targetCell);
-				return false;
-			}
-			activeUltimate.use(this, targetChar, targetCell);
-			spend(activeUltimate.castTime());
-			return true;
+			return fireCutscenedUltimate(targetChar, targetCell);
 
 		} else if (activeUltimate.autoApproach()) {
 			if (fieldOfView[targetCell] && getCloser(targetCell)) {
@@ -1978,6 +1965,35 @@ public class Hero extends Char {
 			ready();
 			return false;
 		}
+	}
+
+	/**
+	 * 컷씬이 있으면 컷씬 → 궁극기, 없으면 즉시 궁극기 발동.
+	 * tickOperatorCooldowns() 포함. actUltimate() 내 공통 발동 경로.
+	 */
+	private boolean fireCutscenedUltimate(final Char target, final int cell) {
+		tickOperatorCooldowns();
+		final boolean animated = activeUltimate.isAnimated();
+
+		if (activeMainOperator != null && activeMainOperator.cutsceneAsset() != null) {
+			// 컷씬이 있는 경우: 컷씬 종료 후 콜백으로 궁극기 실행
+			UltimateCutscene.show(activeMainOperator, () -> {
+				activeUltimate.use(Hero.this, target, cell);
+				if (!animated) {
+					Hero.this.spend(activeUltimate.castTime());
+					Hero.this.next();
+				}
+			});
+			return false; // 액터 턴 소모는 콜백에서 처리
+		}
+
+		// 컷씬 없는 경우: 기존 방식 유지
+		activeUltimate.use(this, target, cell);
+		if (animated) {
+			return false;
+		}
+		spend(activeUltimate.castTime());
+		return true;
 	}
 
 	/** 애니메이션 기반 궁극기에서 act()의 actResult 블록 대신 수동 호출 */

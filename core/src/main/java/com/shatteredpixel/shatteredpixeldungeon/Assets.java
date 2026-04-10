@@ -341,5 +341,9 @@ public class Assets {
 
 	public static class Operators {
 		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/endministrator.png";
+
+		/** 궁극기 컷씬 이미지 — 메인 일러스트와 별도로 제작. 미확정 시 null 처리. */
+		// TODO: 각 오퍼레이터 컷씬 에셋 추가 시 여기에 등록
+		public static final String ENDMINISTRATOR_CUTSCENE = null; // 미확정
 	}
 }
