@@ -160,9 +160,13 @@ public class CombatHUD extends Component {
             centerLabel(mainLabel, 0);
 
             if (skill.isReady()) {
-                bg.hardlight(0.4f, 0.6f, 1.0f);
                 cooldownOverlay.visible = false;
-                active = !hero.isBattleSkillTargeting(); // 이미 타겟팅 중이면 비활성
+                if (hero.isBattleSkillTargeting()) {
+                    bg.hardlight(1.0f, 0.6f, 0.2f); // 타겟팅 모드 — 주황 (재클릭으로 취소)
+                } else {
+                    bg.hardlight(0.4f, 0.6f, 1.0f); // 준비 완료 — 파란색
+                }
+                active = true; // 타겟팅 중에도 활성: 재클릭 시 onClick()에서 취소
             } else {
                 bg.hardlight(0.2f, 0.2f, 0.2f);
                 float frac = (float) skill.cooldown() / skill.baseCooldown();
