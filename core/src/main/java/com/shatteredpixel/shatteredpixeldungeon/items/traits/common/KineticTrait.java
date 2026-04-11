@@ -41,7 +41,7 @@ public class KineticTrait extends CommonTrait {
     @Override
     public int proc(Char attacker, Char defender, int damage) {
         if (attacker instanceof Hero && damage > 0 && Random.Float() < PROC_CHANCE) {
-            DefenselessStack.apply(defender, DefenselessStack.Type.KNOCKDOWN, attacker);
+            DefenselessStack.apply(defender, DefenselessStack.PhysicalAbnormality.KNOCKDOWN, attacker);
         }
         return damage;
     }

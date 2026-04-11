@@ -66,6 +66,9 @@ public class ChainFacePopup extends Group {
     /** 팝업 Y (top) */
     private float popY;
 
+    /** 현재 그룹 위치 (Group은 x/y 필드가 없으므로 직접 추적) */
+    private float groupX = 0f, groupY = 0f;
+
     // ── 현재 살아있는 팝업 (대체 처리용) ─────────────
     private static ChainFacePopup current;
 
@@ -117,10 +120,8 @@ public class ChainFacePopup extends Group {
             add(dot_);
         }
 
-        // 초기 위치 — 오른쪽 밖
-        x = startX;
-        y = popY;
-        alpha(0f);
+        // 초기 위치 — 오른쪽 밖 (Group은 x/y 없으므로 자식들 좌표를 직접 이동)
+        setGroupPos(startX, popY);
     }
 
     /**
@@ -154,10 +155,10 @@ public class ChainFacePopup extends Group {
                 float progress = Math.min(elapsed / POP_IN_TIME, 1f);
                 // ease-out cubic
                 float ease = 1f - (1f - progress) * (1f - progress) * (1f - progress);
-                x = startX + (targetX - startX) * ease;
+                setGroupPos(startX + (targetX - startX) * ease, groupY);
                 setGroupAlpha(ease);
                 if (elapsed >= POP_IN_TIME) {
-                    x = targetX;
+                    setGroupPos(targetX, groupY);
                     setGroupAlpha(1f);
                     phase = Phase.HOLD;
                     elapsed = 0f;
@@ -188,6 +189,19 @@ public class ChainFacePopup extends Group {
         for (int i = 0; i < length; i++) {
             if (members.get(i) instanceof com.watabou.noosa.Visual) {
                 ((com.watabou.noosa.Visual) members.get(i)).alpha(a);
+            }
+        }
+    }
+
+    /** Group 전체 위치 이동 (Group은 x/y 필드가 없으므로 자식 Visual 좌표를 직접 옮긴다) */
+    private void setGroupPos(float gx, float gy) {
+        float dx = gx - groupX, dy = gy - groupY;
+        groupX = gx; groupY = gy;
+        for (int i = 0; i < length; i++) {
+            if (members.get(i) instanceof com.watabou.noosa.Visual) {
+                com.watabou.noosa.Visual v = (com.watabou.noosa.Visual) members.get(i);
+                v.x += dx;
+                v.y += dy;
             }
         }
     }
