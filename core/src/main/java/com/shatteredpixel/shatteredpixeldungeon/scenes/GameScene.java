@@ -1416,7 +1416,7 @@ public class GameScene extends PixelScene {
 	}
 
 	/** GameScene 최상단에 임의 Gizmo(오버레이, 컷씬 등)를 추가한다. */
-	public static void addToFront(Gizmo g) {
+	public static void addToSceneFront(Gizmo g) {
 		if (scene != null) scene.addToFront(g);
 	}
 

@@ -262,11 +262,12 @@ public class Jincheonwoo extends TeamOperator {
 
                         // 다음 타격이 마무리 일격이면 FINAL_INTERVAL, 아니면 HIT_INTERVAL
                         float interval = (hitsLeft - 1 == 1) ? FINAL_INTERVAL : HIT_INTERVAL;
+                        final Char nextTarget = target; // Tweener.target(Gizmo) 섀도잉 방지
                         Tweener pause = new Tweener(hero.sprite, interval) {
                             @Override protected void updateValues(float progress) { }
                             @Override protected void onComplete() {
                                 super.onComplete();
-                                applyNextHit(hero, target, hitsLeft - 1);
+                                applyNextHit(hero, nextTarget, hitsLeft - 1);
                             }
                         };
                         Game.scene().add(pause);

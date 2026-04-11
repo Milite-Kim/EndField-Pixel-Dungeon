@@ -118,7 +118,7 @@ public class UltimateCutscene extends Group {
         }
 
         UltimateCutscene cutscene = new UltimateCutscene(assetPath, onComplete);
-        GameScene.addToFront(cutscene);
+        GameScene.addToSceneFront(cutscene);
     }
 
     // ─────────────────────────────────────────────

@@ -13,7 +13,6 @@ package com.shatteredpixel.shatteredpixeldungeon.items.traits.common;
 import com.shatteredpixel.shatteredpixeldungeon.items.traits.CommonTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.noosa.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.watabou.utils.Random;
 
