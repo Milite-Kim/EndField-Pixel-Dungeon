@@ -319,8 +319,10 @@ public class Dungeon {
 				GamesInProgress.selectedClass.initHero(hero);
 			}
 		} else {
-			// ── SPD 기본 초기화 (폴백) ──────────────────────
-			GamesInProgress.selectedClass.initHero(hero);
+			// ── SPD 기본 초기화 (폴백 — 정상 흐름에서는 도달하지 않아야 함) ──────────
+			if (GamesInProgress.selectedClass != null) {
+				GamesInProgress.selectedClass.initHero(hero);
+			}
 		}
 	}
 
