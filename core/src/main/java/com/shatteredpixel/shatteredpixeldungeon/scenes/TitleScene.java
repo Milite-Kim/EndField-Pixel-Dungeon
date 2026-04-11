@@ -149,8 +149,10 @@ public class TitleScene extends PixelScene {
 			protected void onClick() {
 				if (GamesInProgress.checkAll().size() == 0){
 					GamesInProgress.selectedClass = null;
+					GamesInProgress.selectedMainOp = null;
+					GamesInProgress.selectedTeamOp = null;
 					GamesInProgress.curSlot = 1;
-					ShatteredPixelDungeon.switchScene(HeroSelectScene.class);
+					ShatteredPixelDungeon.switchScene(OperatorSelectScene.class);
 				} else {
 					ShatteredPixelDungeon.switchNoFade( StartScene.class );
 				}
@@ -161,8 +163,10 @@ public class TitleScene extends PixelScene {
 				//making it easier to start runs quickly while debugging
 				if (DeviceCompat.isDebug()) {
 					GamesInProgress.selectedClass = null;
+					GamesInProgress.selectedMainOp = null;
+					GamesInProgress.selectedTeamOp = null;
 					GamesInProgress.curSlot = 1;
-					ShatteredPixelDungeon.switchScene(HeroSelectScene.class);
+					ShatteredPixelDungeon.switchScene(OperatorSelectScene.class);
 					return true;
 				}
 				return super.onLongClick();

@@ -3043,6 +3043,12 @@ public class Hero extends Char {
 	 * @param teamOp  선택한 팀 오퍼레이터 인스턴스 (null = 솔로)
 	 */
 	public void initFromOperator(Operator mainOp, TeamOperator teamOp) {
+		// 탤런트 시스템이 storeTalentsInBundle에서 talents.get(i)를 호출하므로
+		// 4개 빈 맵을 미리 채워두지 않으면 첫 세이브 시 IndexOutOfBoundsException 발생
+		while (talents.size() < Talent.MAX_TALENT_TIERS) {
+			talents.add(new java.util.LinkedHashMap<>());
+		}
+
 		// 오퍼레이터 무기 장착
 		belongings.weapon = mainOp.startingWeapon();
 		belongings.weapon.identify();
