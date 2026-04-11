@@ -23,7 +23,6 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.Ratmogrify;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.RatSprite;
 import com.watabou.utils.Bundle;
@@ -50,13 +49,6 @@ public class Rat extends Mob {
 			if (state == SLEEPING) state = WANDERING;
 		}
 		return super.act();
-	}
-
-	// TODO(테스트용): 방어불능 스택/쇄빙 시스템 검증용. 실제 엔드필드 적 설계 시 제거할 것.
-	@Override
-	public int attackProc(Char enemy, int damage) {
-		DefenselessStack.apply(enemy, DefenselessStack.PhysicalAbnormality.KNOCKDOWN, this);
-		return super.attackProc(enemy, damage);
 	}
 
 	@Override

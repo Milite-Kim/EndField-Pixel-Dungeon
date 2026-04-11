@@ -23,7 +23,6 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -45,13 +44,6 @@ public class Slime extends Mob {
 		lootChance = 0.2f; //by default, see lootChance()
 	}
 	
-	// TODO(테스트용): 아츠 반응/부식회복 시스템 검증용. 실제 엔드필드 적 설계 시 제거할 것.
-	@Override
-	public int attackProc(Char enemy, int damage) {
-		ArtsAttachment.apply(enemy, ArtsAttachment.ArtsType.NATURE, this);
-		return super.attackProc(enemy, damage);
-	}
-
 	@Override
 	public int damageRoll() {
 		return Random.NormalIntRange( 2, 5 );
