@@ -23,6 +23,12 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.BigHornAngelos;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.CowardlyOriginiumSlug;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.LandBreakerPlunderer;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.LandBreakerRiptusk;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.MimicAngelos;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.OriginiumSlug;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.RatSkull;
 import com.watabou.utils.Random;
 
@@ -71,30 +77,38 @@ public class MobSpawner extends Actor {
 	private static ArrayList<Class<? extends Mob>> standardMobRotation( int depth ){
 		switch(depth){
 
-			// Sewers
+			// 4번 협곡 (EndField)
 			case 1: default:
-				//3x rat, 1x snake
+				// A1: 원석충 + 겁쟁이 원석충
 				return new ArrayList<>(Arrays.asList(
-						Rat.class, Rat.class, Rat.class,
-						Snake.class));
+						OriginiumSlug.class, OriginiumSlug.class, OriginiumSlug.class,
+						CowardlyOriginiumSlug.class));
 			case 2:
-				//2x rat, 1x snake, 2x gnoll
-				return new ArrayList<>(Arrays.asList(Rat.class, Rat.class,
-						Snake.class,
-						Gnoll.class, Gnoll.class));
+				// A2: +큰뿔아겔로스, 모방아겔로스
+				return new ArrayList<>(Arrays.asList(
+						OriginiumSlug.class, OriginiumSlug.class,
+						CowardlyOriginiumSlug.class,
+						BigHornAngelos.class, BigHornAngelos.class,
+						MimicAngelos.class));
 			case 3:
-				//1x rat, 1x snake, 3x gnoll, 1x swarm, 1x crab
-				return new ArrayList<>(Arrays.asList(Rat.class,
-						Snake.class,
-						Gnoll.class, Gnoll.class, Gnoll.class,
-						Swarm.class,
-						Crab.class));
-			case 4: case 5:
-				//1x gnoll, 1x swarm, 2x crab, 2x slime
-				return new ArrayList<>(Arrays.asList(Gnoll.class,
-						Swarm.class,
-						Crab.class, Crab.class,
-						Slime.class, Slime.class));
+				// A3: +본크러셔 약탈자, 립터스크
+				return new ArrayList<>(Arrays.asList(
+						OriginiumSlug.class,
+						CowardlyOriginiumSlug.class,
+						BigHornAngelos.class, BigHornAngelos.class,
+						MimicAngelos.class,
+						LandBreakerPlunderer.class,
+						LandBreakerRiptusk.class));
+			case 4:
+				// A4: 본크러셔 위주
+				return new ArrayList<>(Arrays.asList(
+						BigHornAngelos.class,
+						MimicAngelos.class,
+						LandBreakerPlunderer.class, LandBreakerPlunderer.class,
+						LandBreakerRiptusk.class, LandBreakerRiptusk.class));
+			case 5:
+				// A5: 로댄 보스 층 — 일반 몹 스폰 없음(빈 리스트)
+				return new ArrayList<>();
 
 			// Prison
 			case 6:
