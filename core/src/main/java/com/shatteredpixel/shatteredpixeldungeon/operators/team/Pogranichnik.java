@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
@@ -65,6 +66,9 @@ public class Pogranichnik extends TeamOperator {
 
     @Override
     public String name() { return "포그라니치니크"; }
+
+    @Override
+    public String chainFaceAsset() { return Assets.Operators.POGRANICHNIK_FACE; } // TODO: 에셋 확정 후 경로 지정
 
     @Override
     public OperatorClass operatorClass() { return OperatorClass.VANGUARD; }

@@ -26,6 +26,13 @@ public class OriginiumCrystal extends Buff {
     /** 결정 소모 1회당 피해 배율. TODO: 수치 확정 */
     private static final float CONSUME_DMG_MULT = 0.5f;
 
+    /**
+     * 최대 스택 수.
+     * 연계기 쿨타임보다 유지시간이 짧아 정상 플레이에서는 1스택 초과가 불가능하지만,
+     * 층 이동 시 타이머가 멈추는 SPD 특성을 고려해 하드캡으로 명시.
+     */
+    public static final int MAX_STACKS = 1;
+
     /** 현재 스택 수 */
     private int stacks = 0;
 
@@ -39,7 +46,7 @@ public class OriginiumCrystal extends Buff {
      */
     public static void apply(Char enemy, int addStacks) {
         OriginiumCrystal crystal = Buff.affect(enemy, OriginiumCrystal.class);
-        crystal.stacks += addStacks;
+        crystal.stacks = Math.min(crystal.stacks + addStacks, MAX_STACKS);
     }
 
     // ─────────────────────────────────────────────

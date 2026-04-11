@@ -37,6 +37,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.Trait;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -81,6 +82,8 @@ public class Belongings implements Iterable<Item> {
 
 	public KindOfWeapon weapon = null;
 	public Armor armor = null;
+	/** 장착된 기질 슬롯. 식각 수치와 요구 능력치를 Hero에 제공한다. */
+	public Trait trait = null;
 	public Artifact artifact = null;
 	public KindofMisc misc = null;
 	public Ring ring = null;
@@ -167,6 +170,7 @@ public class Belongings implements Iterable<Item> {
 	
 	private static final String WEAPON		= "weapon";
 	private static final String ARMOR		= "armor";
+	private static final String TRAIT      = "trait";
 	private static final String ARTIFACT   = "artifact";
 	private static final String MISC       = "misc";
 	private static final String RING       = "ring";
@@ -179,6 +183,7 @@ public class Belongings implements Iterable<Item> {
 		
 		bundle.put( WEAPON, weapon );
 		bundle.put( ARMOR, armor );
+		bundle.put( TRAIT, trait );
 		bundle.put( ARTIFACT, artifact );
 		bundle.put( MISC, misc );
 		bundle.put( RING, ring );
@@ -198,6 +203,9 @@ public class Belongings implements Iterable<Item> {
 		armor = (Armor)bundle.get( ARMOR );
 		if (armor() != null)        armor().activate( owner );
 
+		trait = (Trait) bundle.get( TRAIT );
+		if (trait != null)          trait.activate( owner );
+
 		artifact = (Artifact) bundle.get(ARTIFACT);
 		if (artifact() != null)     artifact().activate(owner);
 
@@ -216,6 +224,7 @@ public class Belongings implements Iterable<Item> {
 	public void clear(){
 		backpack.clear();
 		weapon = secondWep = null;
+		trait = null;
 		armor = null;
 		artifact = null;
 		misc = null;
@@ -425,7 +434,7 @@ public class Belongings implements Iterable<Item> {
 		
 		private Iterator<Item> backpackIterator = backpack.iterator();
 		
-		private Item[] equipped = {weapon, armor, artifact, misc, ring, secondWep};
+		private Item[] equipped = {weapon, armor, trait, artifact, misc, ring, secondWep};
 		private int backpackIndex = equipped.length;
 		
 		@Override
@@ -463,16 +472,19 @@ public class Belongings implements Iterable<Item> {
 				equipped[1] = armor = null;
 				break;
 			case 2:
-				equipped[2] = artifact = null;
+				equipped[2] = trait = null;
 				break;
 			case 3:
-				equipped[3] = misc = null;
+				equipped[3] = artifact = null;
 				break;
 			case 4:
-				equipped[4] = ring = null;
+				equipped[4] = misc = null;
 				break;
 			case 5:
-				equipped[5] = secondWep = null;
+				equipped[5] = ring = null;
+				break;
+			case 6:
+				equipped[6] = secondWep = null;
 				break;
 			default:
 				backpackIterator.remove();

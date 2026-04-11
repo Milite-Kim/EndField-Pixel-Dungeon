@@ -46,6 +46,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Snake;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BannerSprites;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
+import com.shatteredpixel.shatteredpixeldungeon.effects.ChainFacePopup;
 import com.shatteredpixel.shatteredpixeldungeon.effects.EmoIcon;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Flare;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
@@ -1412,6 +1413,16 @@ public class GameScene extends PixelScene {
 
 			scene.addToFront(wnd);
 		}
+	}
+
+	/** GameScene 최상단에 임의 Gizmo(오버레이, 컷씬 등)를 추가한다. */
+	public static void addToFront(Gizmo g) {
+		if (scene != null) scene.addToFront(g);
+	}
+
+	/** 연계기 발동 시 우상단 얼굴 팝업을 표시한다. */
+	public static void showChainFacePopup(com.shatteredpixel.shatteredpixeldungeon.operators.Operator op) {
+		if (scene != null) ChainFacePopup.show(op, scene);
 	}
 
 	public static boolean showingWindow(){

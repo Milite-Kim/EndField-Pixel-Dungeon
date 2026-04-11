@@ -99,6 +99,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
+import com.shatteredpixel.shatteredpixeldungeon.effects.UltimateCutscene;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Dewdrop;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
@@ -150,6 +151,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ThirteenLeafClove
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.Trait;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
@@ -830,19 +832,22 @@ public class Hero extends Char {
 
 	/**
 	 * 현재 기질 식각(강화) 수치.
-	 * TODO: 기질 식각 시스템 구현 후 실제 값 반환
+	 * 장착된 기질의 enchantLevel() 을 반환한다.
+	 * 기질 미장착 시 0.
 	 */
 	public int getEnchantmentLevel() {
-		return 0; // TODO
+		if (belongings.trait != null) return belongings.trait.enchantLevel();
+		return 0;
 	}
 
 	/**
 	 * 장착 기질의 요구 능력치.
-	 * (현재 STR - 요구치) 가 피해 보너스로 적용됨.
-	 * TODO: 기질 아이템 클래스 구현 후 장착된 기질에서 직접 읽어올 것
+	 * (STR - requiredStat()) 이 피해 보너스로 적용됨.
+	 * 기질 미장착 시 기본값 10.
 	 */
 	public int traitRequiredStat() {
-		return 10; // TODO
+		if (belongings.trait != null) return belongings.trait.requiredStat();
+		return 10;
 	}
 
 	/**
@@ -1932,14 +1937,7 @@ public class Hero extends Char {
 		Char targetChar = Actor.findChar(targetCell);
 
 		if (activeUltimate.selfTarget()) {
-			if (activeUltimate.isAnimated()) {
-				tickOperatorCooldowns();
-				activeUltimate.use(this, this, pos);
-				return false;
-			}
-			activeUltimate.use(this, this, pos);
-			spend(activeUltimate.castTime());
-			return true;
+			return fireCutscenedUltimate(this, pos);
 		}
 
 		if (targetChar == null && !activeUltimate.canTargetCell()) {
@@ -1951,14 +1949,7 @@ public class Hero extends Char {
 		int dist = Dungeon.level.distance(pos, targetCell);
 
 		if (dist <= activeUltimate.range()) {
-			if (activeUltimate.isAnimated()) {
-				tickOperatorCooldowns();
-				activeUltimate.use(this, targetChar, targetCell);
-				return false;
-			}
-			activeUltimate.use(this, targetChar, targetCell);
-			spend(activeUltimate.castTime());
-			return true;
+			return fireCutscenedUltimate(targetChar, targetCell);
 
 		} else if (activeUltimate.autoApproach()) {
 			if (fieldOfView[targetCell] && getCloser(targetCell)) {
@@ -1974,6 +1965,35 @@ public class Hero extends Char {
 			ready();
 			return false;
 		}
+	}
+
+	/**
+	 * 컷씬이 있으면 컷씬 → 궁극기, 없으면 즉시 궁극기 발동.
+	 * tickOperatorCooldowns() 포함. actUltimate() 내 공통 발동 경로.
+	 */
+	private boolean fireCutscenedUltimate(final Char target, final int cell) {
+		tickOperatorCooldowns();
+		final boolean animated = activeUltimate.isAnimated();
+
+		if (activeMainOperator != null && activeMainOperator.cutsceneAsset() != null) {
+			// 컷씬이 있는 경우: 컷씬 종료 후 콜백으로 궁극기 실행
+			UltimateCutscene.show(activeMainOperator, () -> {
+				activeUltimate.use(Hero.this, target, cell);
+				if (!animated) {
+					Hero.this.spend(activeUltimate.castTime());
+					Hero.this.next();
+				}
+			});
+			return false; // 액터 턴 소모는 콜백에서 처리
+		}
+
+		// 컷씬 없는 경우: 기존 방식 유지
+		activeUltimate.use(this, target, cell);
+		if (animated) {
+			return false;
+		}
+		spend(activeUltimate.castTime());
+		return true;
 	}
 
 	/** 애니메이션 기반 궁극기에서 act()의 actResult 블록 대신 수동 호출 */
@@ -2084,6 +2104,11 @@ public class Hero extends Char {
 		}
 
 		damage = Talent.onAttackProc( this, enemy, damage );
+
+		// 기질 proc — 무기 인챈트와 동일 위치에서 호출
+		if (belongings.trait != null) {
+			damage = belongings.trait.proc( this, enemy, damage );
+		}
 
 		if (wep != null) {
 			damage = wep.proc( this, enemy, damage );
@@ -3139,6 +3164,10 @@ public class Hero extends Char {
 	public boolean activateFrontChain(Char target) {
 		TeamOperator op = chainQueue.consume();
 		if (op == null) return false;
+
+		// 연계기 발동 얼굴 팝업
+		GameScene.showChainFacePopup(op);
+
 		chainActivationContext = true;
 		op.activateChain(this, target);
 		chainActivationContext = false;

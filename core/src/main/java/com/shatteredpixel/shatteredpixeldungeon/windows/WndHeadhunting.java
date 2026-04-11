@@ -346,7 +346,7 @@ public class WndHeadhunting extends Window {
             try {
                 TeamOperator newOp = (TeamOperator) selected.newInstance();
                 hero.addTeamOperator(newOp);
-                permit.detach(hero.belongings);
+                permit.detach(hero.belongings.backpack);
                 hide();
             } catch (Exception e) {
                 Game.reportException(e);
@@ -362,7 +362,7 @@ public class WndHeadhunting extends Window {
         try {
             TeamOperator newOp = (TeamOperator) selected.newInstance();
             hero.replaceTeamOperator(oldOp, newOp);
-            permit.detach(hero.belongings);
+            permit.detach(hero.belongings.backpack);
             hide();
         } catch (Exception e) {
             Game.reportException(e);
