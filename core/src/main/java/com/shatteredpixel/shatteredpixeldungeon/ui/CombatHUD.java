@@ -139,7 +139,8 @@ public class CombatHUD extends Component {
     // ──────────────────────────────────────────────────────────────
 
     private class SkillBtn extends HudBtn {
-        private ColorBlock cooldownOverlay;
+        private ColorBlock        cooldownOverlay;
+        private RenderedTextBlock cooldownLabel;
 
         @Override
         protected void createChildren() {
@@ -147,6 +148,9 @@ public class CombatHUD extends Component {
             mainLabel.text("스킬");
             cooldownOverlay = new ColorBlock(1, 1, 0x99000000);
             add(cooldownOverlay);
+            cooldownLabel = PixelScene.renderTextBlock(6);
+            cooldownLabel.text("");
+            add(cooldownLabel);
         }
 
         void updateDisplay(Hero hero) {
@@ -157,10 +161,11 @@ public class CombatHUD extends Component {
             // 텍스트: 스킬명 최대 4글자
             String name = skill.name();
             mainLabel.text(name.length() > 4 ? name.substring(0, 4) : name);
-            centerLabel(mainLabel, 0);
 
             if (skill.isReady()) {
                 cooldownOverlay.visible = false;
+                cooldownLabel.visible   = false;
+                centerLabel(mainLabel, 0);
                 if (hero.isBattleSkillTargeting()) {
                     bg.hardlight(1.0f, 0.6f, 0.2f); // 타겟팅 모드 — 주황 (재클릭으로 취소)
                 } else {
@@ -169,11 +174,21 @@ public class CombatHUD extends Component {
                 active = true; // 타겟팅 중에도 활성: 재클릭 시 onClick()에서 취소
             } else {
                 bg.hardlight(0.2f, 0.2f, 0.2f);
+                // iconFadePercent 스타일: frac=1(방금 사용) → frac=0(재장전 완료)
                 float frac = (float) skill.cooldown() / skill.baseCooldown();
                 cooldownOverlay.visible = true;
                 cooldownOverlay.size(width, height * frac);
                 cooldownOverlay.x = x;
                 cooldownOverlay.y = y;
+                // 스킬명을 위로 올리고 남은 쿨다운 턴수 표시
+                centerLabel(mainLabel, -3f);
+                cooldownLabel.visible = true;
+                cooldownLabel.text(String.valueOf(skill.cooldown()));
+                cooldownLabel.setPos(
+                    x + (width - cooldownLabel.width()) / 2f,
+                    y + height - cooldownLabel.height() - 2
+                );
+                PixelScene.align(cooldownLabel);
                 active = false;
             }
         }
@@ -215,7 +230,7 @@ public class CombatHUD extends Component {
 
             if (ult.isReady()) {
                 bg.hardlight(1.0f, 0.6f, 0.1f);
-                active = !hero.isUltimateTargeting();
+                active = true; // 타겟팅 중에도 활성: 재클릭 시 onClick()에서 취소
             } else {
                 bg.hardlight(0.2f, 0.2f, 0.2f);
                 active = false;

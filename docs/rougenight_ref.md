@@ -64,6 +64,23 @@ public class Combo extends Buff implements ActionIndicator.Action {
 
 `hit(Char enemy)` 호출 → 스택/타이머 갱신 → `ActionIndicator.setAction(this)` → UI에 버튼 표시
 
+### ActionIndicator ↔ 엔픽던 ChainQueue 대응 관계
+
+명픽던의 ActionIndicator 패턴과 우리 ChainQueue 시스템은 같은 문제를 다른 방식으로 푼다.
+
+| 항목 | 명픽던 ActionIndicator | 엔픽던 ChainQueue |
+|------|----------------------|-----------------|
+| 버튼 표시 트리거 | 버프가 `setAction(this)` 직접 호출 (이벤트 푸시) | HUD가 `peek()` 매 프레임 폴링 |
+| 버튼 제거 트리거 | 버프가 `clearAction(this)` 직접 호출 | peek() == null이면 HUD가 숨김 |
+| 타이머 시각화 | `iconFadePercent()` (0=꽉참, 1=비어) | timerBar + timerLabel (수동) |
+| 버튼 로직 위치 | 버프 클래스 내부 (`doAction()`) | HUD 내부 (`ChainBtn.onClick()`) |
+
+**리팩터링 방향 (나중에)**: ChainQueue가 `enqueue()`할 때 `ActionIndicator.setAction(chainAction)`을,
+`consume()`·만료 시에 `ActionIndicator.clearAction()`을 직접 호출하면 HUD 폴링 없이 동일한 UX 구현 가능.
+현재 ChainBtn의 timerBar·timerLabel 로직은 `iconFadePercent()`로 대체 가능.
+
+---
+
 ### 기본 콤보 시스템: `actors/buffs/Combo.java`
 
 - **스택 기반 무브 해금**: 공격할 때마다 count 증가, 5초 타임아웃
@@ -230,9 +247,9 @@ if (talentBlink) { ... }
 
 | 우리 코드 | 참고할 명픽던 코드 | 이유 |
 |-----------|-----------------|------|
-| `ui/CombatHUD.java` (스킬 버튼) | `ui/ActionIndicator.java` | ActionIndicator 패턴은 SPD 호환성이 검증됨. Tag 베이스 + interface 구조가 우리 HUD 버튼보다 깔끔 |
+| `operators/ChainQueue.java` + `ui/CombatHUD.java` (ChainBtn) | `ui/ActionIndicator.java` | ChainQueue의 enqueue/consume에서 setAction/clearAction 호출 시 폴링 제거 가능. 상세 분석은 "ActionIndicator ↔ ChainQueue 대응 관계" 섹션 참고 |
 | `actors/buffs/DefenselessStack.java` (스택 추적) | `actors/buffs/CounterBuff.java` | 스택 저장/불러오기가 자동화된 CounterBuff 베이스를 활용하면 코드 단순화 가능 |
-| `actors/hero/Hero.java` (배틀스킬 쿨다운) | `actors/buffs/KnightSKILL.java`의 `comboTime` + `iconFadePercent()` | 쿨다운 남은 시간을 버프 아이콘에 페이드로 표시하는 패턴 |
+| `ui/CombatHUD.java` (SkillBtn 쿨다운) | `actors/buffs/KnightSKILL.java`의 `comboTime` + `iconFadePercent()` | 쿨다운 남은 시간을 시각화하는 패턴. 현재 SkillBtn은 오버레이 클리핑 + 남은 턴 숫자 표시로 구현됨 ✅ |
 
 ### 🟡 중간 우선순위
 
