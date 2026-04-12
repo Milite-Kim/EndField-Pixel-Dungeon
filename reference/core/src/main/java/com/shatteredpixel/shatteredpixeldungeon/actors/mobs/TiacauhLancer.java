@@ -1,0 +1,53 @@
+package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
+
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Silence;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.Tiacauh_lancerSprite;
+import com.watabou.utils.Random;
+
+public class TiacauhLancer extends Mob {
+    {
+        spriteClass =  Tiacauh_lancerSprite.class;
+
+        HP = HT = 80;
+        defenseSkill = 13;
+
+        EXP = 14;
+        maxLvl = 30;
+
+        immunities.add(Silence.class);
+    }
+
+    @Override
+    protected boolean canAttack(Char enemy) {
+        return this.fieldOfView[enemy.pos] && Dungeon.level.distance(this.pos, enemy.pos) <= 3;
+    }
+
+    @Override
+    public int damageRoll() {
+        return Random.NormalIntRange(30,38);
+    }
+
+    @Override
+    protected float attackDelay() {
+        return super.attackDelay() * 0.5f;
+    }
+
+    @Override
+    public int attackSkill( Char target ) {
+        return 36;
+    }
+
+    @Override
+    public int drRoll() {
+        return Random.NormalIntRange(0, 16); }
+
+    @Override
+    public void damage(int dmg, Object src) {
+        if (src == Burning.class) dmg *= 2;
+        super.damage(dmg, src);
+    }
+
+}
