@@ -1745,7 +1745,7 @@ public class Hero extends Char {
 		battleSkillTargeting = false;
 		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseBattleSkill(cell);
-		resume();
+		next(); // resume()은 curAction을 lastAction으로 덮어쓰므로 사용 금지
 	}
 
 	/** 타겟팅 모드 취소 (ESC 등). */
@@ -1858,7 +1858,7 @@ public class Hero extends Char {
 		ultimateTargeting = false;
 		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseUltimate(cell);
-		resume();
+		next(); // resume()은 curAction을 lastAction으로 덮어쓰므로 사용 금지
 	}
 
 	/** 타겟팅 모드 취소 (ESC 등). */
@@ -1904,7 +1904,7 @@ public class Hero extends Char {
 		artsChargeTargeting = false;
 		GameScene.clearRangeHighlight();
 		curAction = new HeroAction.UseArtsCharge(cell, Actor.findChar(cell));
-		resume();
+		next(); // resume()은 curAction을 lastAction으로 덮어쓰므로 사용 금지
 	}
 
 	/** 아츠유닛 충전 타겟팅 모드 취소. */
