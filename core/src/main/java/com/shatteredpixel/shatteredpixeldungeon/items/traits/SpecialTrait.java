@@ -31,9 +31,13 @@ public abstract class SpecialTrait extends Trait {
     @Override
     public final int tier() { return 5; }
 
-    /** 5티어 기본 요구 능력치. TODO: 수치 확정 */
+    /** 5티어 기본 요구 능력치. */
     @Override
     public int requiredStat() { return 18; }
+
+    /** 5티어 기본 ATK 보너스 (CommonTrait T5와 동일). */
+    @Override
+    public int traitATK() { return 180; }
 
     // ─────────────────────────────────────────────
     // 귀속 오퍼레이터

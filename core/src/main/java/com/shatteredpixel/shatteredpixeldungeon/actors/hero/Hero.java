@@ -785,14 +785,20 @@ public class Hero extends Char {
 	// 엔픽던 ATK(공격력) 시스템
 	// ─────────────────────────────────────────────────────────────────
 
-	/** 시작 공격력 (능력치 = 10 기준). TODO: 수치 확정 */
-	public static final float ATK_BASE = 60f;
+	/**
+	 * ATK 절대 하한 (기질 없음 + STR 10 기준).
+	 * 기질이 ATK의 주축이므로 기저값은 작게 설정.
+	 */
+	public static final float ATK_BASE = 10f;
 
-	/** 능력치 1 증가당 공격력 증가량. TODO: 수치 확정 */
+	/** 능력치 1 증가당 공격력 증가량. */
 	public static final float ATK_PER_STAT = 5f;
 
 	/** 기본 공격 최대 피해 비율 (ATK × 이 값 = 최대 피해). */
 	public static final float ATK_TO_MAX_DMG = 0.10f;
+
+	/** 식각 1 수치당 ATK 증가량. min 피해는 별도로 +1/식각 적용. */
+	public static final float ENCHANT_ATK_PER_LEVEL = 5f;
 
 	// 무기 종류별 기본 공격 배율 (한손검 = 1.0 기준)
 	private static final float TWO_HAND_MIN_MULT = 2.0f;  // TODO: 수치 확정
@@ -812,8 +818,10 @@ public class Hero extends Char {
 	 * 능력치, 기질 식각 보너스, 버프 등 모두 합산.
 	 */
 	public int getATK() {
-		float atk = ATK_BASE + (STR - 10) * ATK_PER_STAT;
-		// TODO: 기질 식각 ATK 보너스 연동 (식각 시스템 구현 후)
+		float atk = ATK_BASE
+				+ (STR - 10) * ATK_PER_STAT
+				+ (belongings.trait != null ? belongings.trait.traitATK() : 0)
+				+ getEnchantmentLevel() * ENCHANT_ATK_PER_LEVEL;
 		// TODO: ATK 증가 버프 연동 (버프 구현 후)
 		return Math.max(1, Math.round(atk));
 	}

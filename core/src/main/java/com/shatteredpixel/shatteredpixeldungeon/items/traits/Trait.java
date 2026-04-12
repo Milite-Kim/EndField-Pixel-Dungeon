@@ -125,6 +125,16 @@ public abstract class Trait extends EquipableItem {
     public void deactivate(Hero hero) {}
 
     /**
+     * 이 기질이 제공하는 ATK 보너스.
+     * Hero.getATK()에서 참조한다.
+     * CommonTrait / SpecialTrait는 티어에 따라 오버라이드.
+     * ErodedTrait는 설계 확정 후 오버라이드 예정.
+     */
+    public int traitATK() {
+        return 0;
+    }
+
+    /**
      * 공격 명중 시 proc 효과 (무기 인챈트 대응).
      * Hero.attackProc()에서 장착된 기질의 이 메서드를 호출한다.
      *

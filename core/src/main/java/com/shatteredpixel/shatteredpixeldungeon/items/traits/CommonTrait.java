@@ -27,10 +27,21 @@ package com.shatteredpixel.shatteredpixeldungeon.items.traits;
 public abstract class CommonTrait extends Trait {
 
     // ─────────────────────────────────────────────
-    // 티어별 기본 요구 능력치 (TODO: 수치 확정)
+    // 티어별 기본 요구 능력치 (확정)
     // ─────────────────────────────────────────────
 
     private static final int[] REQUIRED_STAT_BY_TIER = { 10, 12, 14, 16, 18 };
+
+    // ─────────────────────────────────────────────
+    // 티어별 기본 ATK 보너스 (확정)
+    //   T1 혼탁: 50  → STR 10 기준 총 ATK 60 (max 피해 6)
+    //   T2 안정: 75  → ATK 85  (max 8)
+    //   T3 세련: 105 → ATK 115 (max 11)
+    //   T4 순수: 140 → ATK 150 (max 15)
+    //   T5 무결: 180 → ATK 190 (max 19)
+    // ─────────────────────────────────────────────
+
+    private static final int[] ATK_BY_TIER = { 50, 75, 105, 140, 180 };
 
     // ─────────────────────────────────────────────
     // 등급 필드
@@ -55,5 +66,15 @@ public abstract class CommonTrait extends Trait {
     public int requiredStat() {
         int idx = Math.max(0, Math.min(tierValue - 1, REQUIRED_STAT_BY_TIER.length - 1));
         return REQUIRED_STAT_BY_TIER[idx];
+    }
+
+    /**
+     * 티어별 기본 ATK 보너스.
+     * 수식어 기질은 이 값에 추가 효과를 더하는 방식으로 구현.
+     */
+    @Override
+    public int traitATK() {
+        int idx = Math.max(0, Math.min(tierValue - 1, ATK_BY_TIER.length - 1));
+        return ATK_BY_TIER[idx];
     }
 }
