@@ -32,16 +32,14 @@ import java.util.List;
  * 메인 오퍼레이터 선택 화면.
  *
  * 레이아웃:
- *  - 상단: 속성 탭 5개
- *  - 중앙: 선택된 오퍼레이터 일러스트 (fill+center crop, 없으면 placeholder 텍스트)
- *  - 하단: 초상화 행 (PORTRAITS_PER_PAGE 개씩, 페이지 이동 가능)
- *  - 일러스트 위 우하단: 진행 버튼
- *  - 좌상단: 뒤로가기 버튼
+ *  - 일러스트: 전체 너비 × (전체 높이 - 이름 바 - 초상화 행)
+ *  - 속성 탭: 일러스트 상단에 오버레이 (반투명 배경)
+ *  - 이름 바: 일러스트 바로 아래 — 속성 색상 마커 + 이름 + 진행 버튼
+ *  - 초상화 행: 화면 최하단, 너비 중앙 정렬
+ *  - 뒤로가기 버튼: 좌상단 (일러스트 위 오버레이)
  *
  * 일러스트 표시 방식:
- *  가로가 긴 원본 이미지를 세로 모드에서는 높이 기준 fill 스케일 + 좌우 중앙 크롭,
- *  가로 모드에서는 자연스럽게 더 넓은 영역을 표시.
- *  Camera 기반 glScissor 클리핑으로 일러스트 영역 밖 overflow 차단.
+ *  fill+center crop — Camera 기반 glScissor 클리핑으로 영역 밖 overflow 차단.
  */
 public class OperatorSelectScene extends PixelScene {
 
@@ -52,10 +50,13 @@ public class OperatorSelectScene extends PixelScene {
     private static final int PORTRAIT_SIZE   = 28;
     private static final int PORTRAIT_GAP    = 2;
 
-    // 탭 크기
-    private static final int TAB_HEIGHT = 16;
+    // 탭 크기 (일러스트 위 오버레이)
+    private static final int TAB_HEIGHT = 14;
 
-    // 속성 탭 색상 (placeholder — 아이콘으로 교체 예정)
+    // 이름 바 높이
+    private static final float NAME_BAR_H = 24f;
+
+    // 속성 탭 색상
     private static final int[] ATTR_COLORS = {
         0xFF888888, // PHYSICAL  물리
         0xFFCC4400, // HEAT      열기
@@ -71,7 +72,6 @@ public class OperatorSelectScene extends PixelScene {
     private Class<? extends Operator> selectedOpClass = Endministrator.class;
     private int currentPage = 0;
 
-    // 현재 탭의 오퍼레이터 목록 (해금/미해금 모두 포함, 순서 고정)
     private List<Class<? extends Operator>> currentAttrOps = new ArrayList<>();
 
     // ─── 일러스트 영역 ───────────────────────────
@@ -92,11 +92,15 @@ public class OperatorSelectScene extends PixelScene {
 
     // ─── UI 요소 ─────────────────────────────────
     private ColorBlock illustrationBg;
-    private RenderedTextBlock illustrationLabel;  // 일러스트 없을 때 placeholder 텍스트
+    private RenderedTextBlock illustrationLabel;  // 일러스트 없을 때 placeholder
 
     private ColorBlock[] tabBgs   = new ColorBlock[ATTRS.length];
     private ColorBlock[] tabLines = new ColorBlock[ATTRS.length];
     private RenderedTextBlock[] tabLabels = new RenderedTextBlock[ATTRS.length];
+
+    // 이름 바 요소
+    private ColorBlock   nameBarAttrMarker; // 속성 색상 마커 (좌측)
+    private RenderedTextBlock nameLabel;    // 오퍼레이터 이름
 
     private PortraitBtn[] portraitBtns = new PortraitBtn[PORTRAITS_PER_PAGE];
 
@@ -114,24 +118,66 @@ public class OperatorSelectScene extends PixelScene {
         float W = Camera.main.width;
         float H = Camera.main.height;
 
-        // ── 배경 ──────────────────────────────────
-        ColorBlock sceneBg = new ColorBlock(W, H, 0xFF1a2a3a);
+        // ── 배경 (전체 화면) ──────────────────────
+        ColorBlock sceneBg = new ColorBlock(W, H, 0xFF111820);
         add(sceneBg);
 
-        // ── 속성 탭 ───────────────────────────────
-        int tabCount   = ATTRS.length;
-        float tabAreaW = W * 0.7f;
-        float tabW     = (tabAreaW - (tabCount - 1) * 2f) / tabCount;
-        float tabStartX = (W - tabAreaW) / 2f;
-        float tabY      = 4f;
+        // ── 하단 UI 높이 계산 ───────────────────────
+        // 이름 바 + 초상화 행 + 여백
+        float portraitRowH = PORTRAIT_SIZE + 4f;
+        float bottomH = NAME_BAR_H + portraitRowH + 4f;
+
+        // ── 일러스트 영역: 전체 너비 × 나머지 높이 ──────
+        illusX = 0f;
+        illusY = 0f;
+        illusW = W;
+        illusH = H - bottomH;
+
+        illustrationBg = new ColorBlock(illusW, illusH, 0xFF1a1a2a);
+        illustrationBg.x = 0f;
+        illustrationBg.y = 0f;
+        add(illustrationBg);
+
+        // ── 일러스트 카메라 + Group ──────────────────
+        Point camP = Camera.main.cameraToScreen(0f, 0f);
+        illusCamera = new Camera(camP.x, camP.y, (int)illusW, (int)illusH, defaultZoom);
+        Camera.add(illusCamera);
+
+        illusGroup = new Group();
+        illusGroup.camera = illusCamera;
+        add(illusGroup);
+
+        // ── placeholder 텍스트 ─────────────────────
+        illustrationLabel = renderTextBlock("", 9);
+        illustrationLabel.hardlight(0xCCFFCC);
+        add(illustrationLabel);
+
+        // ── 일러스트 하단 페이드 (이름 바와 자연스럽게 이어지도록) ──
+        ColorBlock bottomFade = new ColorBlock(W, Math.min(60f, illusH * 0.25f), 0xCC111820);
+        bottomFade.x = 0f;
+        bottomFade.y = illusH - bottomFade.height;
+        add(bottomFade);
+
+        // ── 속성 탭 (일러스트 위 오버레이, 상단) ─────────
+        // 탭 배경 (반투명)
+        ColorBlock tabAreaBg = new ColorBlock(W, TAB_HEIGHT + 2f, 0xBB111820);
+        tabAreaBg.x = 0f;
+        tabAreaBg.y = 0f;
+        add(tabAreaBg);
+
+        int tabCount  = ATTRS.length;
+        float tabW    = (W - (tabCount - 1) * 1f) / tabCount;
+        float tabStartX = 0f;
+        float tabY    = 0f;
 
         for (int i = 0; i < tabCount; i++) {
             final int idx = i;
             final Operator.Attribute attr = ATTRS[i];
 
             ColorBlock bg = new ColorBlock(tabW, TAB_HEIGHT, ATTR_COLORS[i]);
-            bg.x = tabStartX + i * (tabW + 2);
-            bg.y = tabY;
+            bg.x = tabStartX + i * (tabW + 1f);
+            bg.y = tabY + 1f;
+            bg.alpha(0.6f);
             add(bg);
             tabBgs[i] = bg;
 
@@ -147,45 +193,40 @@ public class OperatorSelectScene extends PixelScene {
             add(label);
             tabLabels[i] = label;
 
-            com.watabou.noosa.PointerArea hit = new com.watabou.noosa.PointerArea(
+            // 탭 라벨 위치
+            label.setPos(bg.x + (tabW - label.width()) / 2f,
+                         bg.y + (TAB_HEIGHT - label.height()) / 2f);
+            align(label);
+
+            PointerArea hit = new PointerArea(
                     bg.x, bg.y, tabW, TAB_HEIGHT) {
                 @Override
-                protected void onClick(com.watabou.input.PointerEvent event) {
+                protected void onClick(PointerEvent event) {
                     selectAttr(attr);
                 }
             };
             add(hit);
         }
 
-        // ── 일러스트 영역 ─────────────────────────
-        illusX = W * 0.12f;
-        illusY = tabY + TAB_HEIGHT + 4f;
-        illusW = W * 0.76f;
-        illusH = H - illusY - PORTRAIT_SIZE - PORTRAIT_GAP * 2 - 6f;
+        // ── 이름 바 (일러스트 바로 아래) ────────────────
+        float nameBarY = illusH;
+        ColorBlock nameBarBg = new ColorBlock(W, NAME_BAR_H, 0xEE1a2a3a);
+        nameBarBg.x = 0f;
+        nameBarBg.y = nameBarY;
+        add(nameBarBg);
 
-        illustrationBg = new ColorBlock(illusW, illusH, 0xFF2d3d2d);
-        illustrationBg.x = illusX;
-        illustrationBg.y = illusY;
-        add(illustrationBg);
+        // 속성 색상 마커 (이름 바 좌측) — 흰색 기반 + hardlight로 색상 동적 교체
+        nameBarAttrMarker = new ColorBlock(3f, NAME_BAR_H - 4f, 0xFFFFFFFF);
+        nameBarAttrMarker.x = 6f;
+        nameBarAttrMarker.y = nameBarY + 2f;
+        add(nameBarAttrMarker);
 
-        // ── 일러스트 카메라 + Group 설정 ─────────────
-        // Camera.main 기준 가상 좌표를 실제 스크린 픽셀로 변환
-        Point p = Camera.main.cameraToScreen(illusX, illusY);
-        illusCamera = new Camera(p.x, p.y, (int)illusW, (int)illusH, defaultZoom);
-        Camera.add(illusCamera);
+        // 오퍼레이터 이름 (이름 바 중앙)
+        nameLabel = renderTextBlock("", 9);
+        nameLabel.hardlight(Window.TITLE_COLOR);
+        add(nameLabel);
 
-        // Group에 카메라를 할당 → 내부 요소들은 illusCamera 좌표계를 사용
-        // illusCamera 가상좌표 (0,0) = 일러스트 영역 좌상단
-        illusGroup = new Group();
-        illusGroup.camera = illusCamera;
-        add(illusGroup);   // illustrationBg 바로 다음 → 탭/버튼 아래 레이어
-
-        // ── placeholder 텍스트 (일러스트 없을 때) ─────
-        illustrationLabel = renderTextBlock("", 9);
-        illustrationLabel.hardlight(0xCCFFCC);
-        add(illustrationLabel);
-
-        // ── 진행 버튼 (일러스트 위에 float) ──────────
+        // ── 진행 버튼 (이름 바 우측) ──────────────────
         btnProceed = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "진행") {
             @Override
             protected void onClick() {
@@ -193,15 +234,17 @@ public class OperatorSelectScene extends PixelScene {
             }
         };
         btnProceed.icon(Icons.get(Icons.ENTER));
-        btnProceed.setSize(50, 18);
-        btnProceed.setPos(illusX + illusW - btnProceed.width() - 4,
-                          illusY + illusH - btnProceed.height() - 4);
+        btnProceed.setSize(50, NAME_BAR_H - 6f);
+        btnProceed.setPos(W - btnProceed.width() - 4f,
+                          nameBarY + (NAME_BAR_H - btnProceed.height()) / 2f);
         btnProceed.textColor(Window.TITLE_COLOR);
         add(btnProceed);
 
-        // ── 하단 초상화 버튼 ───────────────────────
-        float portraitRowY = illusY + illusH + PORTRAIT_GAP + 2f;
-        float portraitRowX = illusX;
+        // ── 초상화 행 (화면 최하단, 중앙 정렬) ──────────
+        float portraitTotalW = PORTRAITS_PER_PAGE * PORTRAIT_SIZE
+                             + (PORTRAITS_PER_PAGE - 1) * PORTRAIT_GAP;
+        float portraitRowX = (W - portraitTotalW) / 2f;
+        float portraitRowY = nameBarY + NAME_BAR_H + 2f;
 
         for (int i = 0; i < PORTRAITS_PER_PAGE; i++) {
             PortraitBtn btn = new PortraitBtn();
@@ -211,7 +254,7 @@ public class OperatorSelectScene extends PixelScene {
             portraitBtns[i] = btn;
         }
 
-        // ── 이전/다음 페이지 버튼 ─────────────────
+        // ── 이전/다음 페이지 버튼 ─────────────────────
         float arrowY = portraitRowY + (PORTRAIT_SIZE - 16) / 2f;
 
         btnPrev = new IconButton(Icons.get(Icons.LEFTARROW)) {
@@ -221,7 +264,7 @@ public class OperatorSelectScene extends PixelScene {
                 refreshPortraits();
             }
         };
-        btnPrev.setRect(illusX - 18, arrowY, 16, 16);
+        btnPrev.setRect(portraitRowX - 18f, arrowY, 16, 16);
         add(btnPrev);
 
         btnNext = new IconButton(Icons.get(Icons.RIGHTARROW)) {
@@ -231,29 +274,20 @@ public class OperatorSelectScene extends PixelScene {
                 refreshPortraits();
             }
         };
-        btnNext.setRect(illusX + illusW + 2, arrowY, 16, 16);
+        btnNext.setRect(portraitRowX + portraitTotalW + 2f, arrowY, 16, 16);
         add(btnNext);
 
-        // ── 뒤로가기 버튼 ─────────────────────────
+        // ── 뒤로가기 버튼 (좌상단, 탭 위에 오버레이) ──────
         btnBack = new IconButton(Icons.get(Icons.ARROW)) {
             @Override
             protected void onClick() {
                 onBackPressed();
             }
         };
-        btnBack.setRect(4, 4, 16, 16);
+        btnBack.setRect(2f, (TAB_HEIGHT - 14f) / 2f + 1f, 16, 16);
         add(btnBack);
 
-        // ── 탭 라벨 위치 정렬 ────────────────────
-        for (int i = 0; i < tabCount; i++) {
-            ColorBlock bg = tabBgs[i];
-            RenderedTextBlock lbl = tabLabels[i];
-            lbl.setPos(bg.x + (tabW - lbl.width()) / 2f,
-                       bg.y + (TAB_HEIGHT - lbl.height()) / 2f);
-            align(lbl);
-        }
-
-        // ── 초기 상태: 물리 탭 선택 ──────────────
+        // ── 초기 상태: 물리 탭 선택 ──────────────────
         selectAttr(Operator.Attribute.PHYSICAL);
 
         fadeIn();
@@ -275,6 +309,7 @@ public class OperatorSelectScene extends PixelScene {
 
         for (int i = 0; i < ATTRS.length; i++) {
             tabLines[i].visible = (ATTRS[i] == attr);
+            tabBgs[i].alpha(ATTRS[i] == attr ? 1.0f : 0.6f);
         }
 
         currentAttrOps.clear();
@@ -316,7 +351,7 @@ public class OperatorSelectScene extends PixelScene {
     }
 
     // ─────────────────────────────────────────────
-    // 일러스트 업데이트
+    // 일러스트 + 이름 바 업데이트
     // ─────────────────────────────────────────────
 
     private void updateIllustration() {
@@ -326,27 +361,45 @@ public class OperatorSelectScene extends PixelScene {
             currentIllus = null;
         }
 
-        String path = null;
+        String opName = "—";
+        String path   = null;
+        int    attrColor = 0xFF888888;
+
         if (selectedOpClass != null) {
             try {
-                path = selectedOpClass.newInstance().illustration();
+                Operator op = selectedOpClass.newInstance();
+                path      = op.illustration();
+                opName    = op.name();
+                int ordinal = op.attribute().ordinal();
+                if (ordinal < ATTR_COLORS.length) attrColor = ATTR_COLORS[ordinal];
             } catch (Exception e) {
-                // ignore — fall through to placeholder
+                // fall through to placeholder
             }
         }
 
+        // ── 이름 바 갱신 ────────────────────────────
+        nameLabel.text(opName);
+        // 이름 바 중앙 정렬 (진행 버튼 왼쪽 공간)
+        float nameCenterX = (Camera.main.width - btnProceed.width() - 8f) / 2f;
+        nameLabel.setPos(
+            nameCenterX - nameLabel.width() / 2f,
+            illusH + (NAME_BAR_H - nameLabel.height()) / 2f
+        );
+        align(nameLabel);
+
+        nameBarAttrMarker.hardlight(attrColor);
+
+        // ── 일러스트 ───────────────────────────────
         if (path != null) {
-            // ── 실제 일러스트 표시 ─────────────────
             currentIllus = new Image(path);
 
-            // fill 스케일: 이미지가 일러스트 영역을 완전히 덮도록 (넘치는 부분은 클리핑)
+            // fill 스케일: 영역을 완전히 덮도록 (넘치는 부분은 카메라 클리핑)
             float scaleX = illusW / currentIllus.width;
             float scaleY = illusH / currentIllus.height;
             float fillScale = Math.max(scaleX, scaleY);
             currentIllus.scale.set(fillScale);
 
-            // 중앙 정렬: illusCamera 가상좌표 (0,0) 기준
-            // overflow는 illusCamera의 glScissor가 자동으로 클리핑
+            // 중앙 정렬 (illusCamera 좌표계 기준)
             currentIllus.x = (illusW - currentIllus.width  * fillScale) / 2f;
             currentIllus.y = (illusH - currentIllus.height * fillScale) / 2f;
 
@@ -354,22 +407,11 @@ public class OperatorSelectScene extends PixelScene {
             illustrationLabel.visible = false;
 
         } else {
-            // ── placeholder 텍스트 ─────────────────
             illustrationLabel.visible = true;
-            String labelText;
-            if (selectedOpClass == null) {
-                labelText = "—";
-            } else {
-                try {
-                    labelText = selectedOpClass.newInstance().name();
-                } catch (Exception e) {
-                    labelText = "?";
-                }
-            }
-            illustrationLabel.text(labelText);
+            illustrationLabel.text(opName);
             illustrationLabel.setPos(
-                illustrationBg.x + (illustrationBg.width  - illustrationLabel.width())  / 2f,
-                illustrationBg.y + (illustrationBg.height - illustrationLabel.height()) / 2f
+                illusX + (illusW - illustrationLabel.width())  / 2f,
+                illusY + (illusH - illustrationLabel.height()) / 2f
             );
             align(illustrationLabel);
         }
