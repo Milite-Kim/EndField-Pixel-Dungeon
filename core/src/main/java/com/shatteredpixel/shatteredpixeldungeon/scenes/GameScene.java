@@ -79,6 +79,7 @@ import com.shatteredpixel.shatteredpixeldungeon.plants.Plant;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.DiscardedItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.HeroSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.OperatorSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.CustomTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTerrainTilemap;
@@ -317,7 +318,13 @@ public class GameScene extends PixelScene {
 		mobs = new Group();
 		add( mobs );
 
-		hero = new HeroSprite();
+		// 메인 오퍼레이터에 전용 스프라이트가 있으면 OperatorSprite, 없으면 기존 HeroSprite
+		if (Dungeon.hero.activeMainOperator != null
+				&& Dungeon.hero.activeMainOperator.spriteSheet() != null) {
+			hero = new OperatorSprite();
+		} else {
+			hero = new HeroSprite();
+		}
 		hero.place( Dungeon.hero.pos );
 		hero.updateArmor();
 		mobs.add( hero );

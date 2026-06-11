@@ -72,6 +72,16 @@ public abstract class Operator implements Bundlable {
     }
 
     /**
+     * 인게임 스탠딩/모션 스프라이트 시트 에셋 경로 (64×64 프레임).
+     * 메인 오퍼레이터로 운용 시 {@code OperatorSprite}가 이 경로를 텍스처로 사용한다.
+     * 스프라이트 미제작 오퍼레이터는 null 반환 → 기존 HeroSprite 폴백.
+     * 자세한 내용: docs/엔픽던_스프라이트시스템.md
+     */
+    public String spriteSheet() {
+        return null;
+    }
+
+    /**
      * 궁극기 컷씬 이미지 에셋 경로.
      * 메인 일러스트와 별도로 오퍼레이터마다 고유 컷씬 이미지를 사용.
      * 에셋 미확정 시 null 반환 → 컷씬 없이 즉시 궁극기 발동.

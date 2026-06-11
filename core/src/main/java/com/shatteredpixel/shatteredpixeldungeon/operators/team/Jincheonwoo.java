@@ -74,6 +74,9 @@ public class Jincheonwoo extends TeamOperator {
     public String name() { return "진천우"; }
 
     @Override
+    public String spriteSheet() { return Assets.Operators.JINCHEONWOO_SPRITE; }
+
+    @Override
     public String chainFaceAsset() { return Assets.Operators.JINCHEONWOO_FACE; } // TODO: 에셋 확정 후 경로 지정
 
     @Override

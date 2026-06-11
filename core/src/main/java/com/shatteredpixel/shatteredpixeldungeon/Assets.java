@@ -342,6 +342,15 @@ public class Assets {
 	public static class Operators {
 		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/endministrator.png";
 
+		/**
+		 * 인게임 스탠딩 스프라이트 — 64×64 단일 프레임.
+		 * 모션 시트 제작 후에는 {이름}.png(가로 나열 프레임)로 확장 예정.
+		 * 자세한 내용: docs/엔픽던_스프라이트시스템.md
+		 */
+		public static final String ENDMINISTRATOR_SPRITE = "sprites/Endmistrator_Standing.png";
+		public static final String JINCHEONWOO_SPRITE    = "sprites/Chen_Standing.png";
+		public static final String FELIKA_SPRITE         = "sprites/Perlica_Standing.png";
+
 		/** 궁극기 컷씬 이미지 — 메인 일러스트와 별도로 제작. 미확정 시 null 처리. */
 		// TODO: 각 오퍼레이터 컷씬 에셋 추가 시 여기에 등록
 		public static final String ENDMINISTRATOR_CUTSCENE = null; // 미확정

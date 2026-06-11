@@ -8,6 +8,7 @@ package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Electrified;
@@ -64,6 +65,7 @@ public class Felika extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "펠리카"; }
+    @Override public String spriteSheet()        { return Assets.Operators.FELIKA_SPRITE; }
     @Override public OperatorClass operatorClass() { return OperatorClass.CASTER; }
     @Override public WeaponType weaponType()     { return WeaponType.ARTS_UNIT; }
     @Override public Attribute attribute()       { return Attribute.ELECTRIC; }
