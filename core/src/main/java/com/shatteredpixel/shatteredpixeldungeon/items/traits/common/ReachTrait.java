@@ -17,12 +17,9 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
  * 방출 (ReachTrait) — 공용 수식어 '방출' 기질.
  *
  * 공격 사거리를 REACH_BONUS 칸 증가시킨다.
+ * Hero.operatorReach()가 belongings.trait.reachBonus()를 합산한다.
  *
- * ⚠️ 스텁: Hero에 공격 사거리(reach) 시스템이 아직 없어 효과가 적용되지 않는다.
- *     reach 시스템 구현 후 Hero가 reachBonus()를 참조하도록 연동 예정.
- *     docs/엔픽던_기질시스템.md §6 참조.
- *
- * TODO: reach 시스템 구현 + REACH_BONUS 수치 확정
+ * TODO: REACH_BONUS 수치 확정
  */
 public class ReachTrait extends CommonTrait {
 

@@ -626,8 +626,13 @@ public class Hero extends Char {
 
 	@Override
 	public int attackSkill( Char target ) {
+		// 아츠 유닛: 항상 명중
+		if (activeWeaponType == Operator.WeaponType.ARTS_UNIT) {
+			return INFINITE_ACCURACY;
+		}
+
 		KindOfWeapon wep = belongings.attackingWeapon();
-		
+
 		float accuracy = 1;
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
 		
@@ -810,6 +815,17 @@ public class Hero extends Char {
 	private static final float ARTS_MIN_MULT     = 0.5f;  // TODO: 수치 확정
 	private static final float ARTS_MAX_MULT     = 0.8f;  // TODO: 수치 확정
 
+	// 무기 종류별 사거리
+	private static final int   POLEARM_REACH           = 2;    // 장병기: 기본 사거리 2칸
+	private static final int   HANDGUN_REACH           = 4;    // 권총: 기본 사거리 4칸
+
+	// 권총 거리 비례 피해 감소 (인접 거리 초과 1칸당)
+	private static final float HANDGUN_FALLOFF_PER_TILE = 0.15f; // TODO: 수치 확정
+	private static final float HANDGUN_FALLOFF_MIN      = 0.40f; // 최소 피해 비율
+
+	// 장병기 인접(1칸) 피해 감소 배율
+	private static final float POLEARM_MELEE_MULT = 0.75f; // TODO: 수치 확정
+
 	/**
 	 * 기본 공격 배율 모드 플래그.
 	 * true 이면 damageRoll()이 무기 배율 + finalAttackEfficiency() 포함 값을 반환.
@@ -910,11 +926,28 @@ public class Hero extends Char {
 				min = Math.max(1, Math.round(baseMin * ARTS_MIN_MULT * eff));
 				max = Math.round(baseMax * ARTS_MAX_MULT * eff);
 				break;
-			case HANDGUN:
-				// TODO: 권총 전용 피해 로직 구현
+			case POLEARM: {
+				// 인접(1칸) 시 피해 감소
+				boolean melee = attackTarget != null && Dungeon.level.adjacent(pos, attackTarget.pos);
+				float mult = melee ? POLEARM_MELEE_MULT : 1f;
+				min = Math.round(baseMin * mult * eff);
+				max = Math.round(baseMax * mult * eff);
+				break;
+			}
+			case HANDGUN: {
+				// 거리 비례 피해 감소 (인접 초과 1칸당 HANDGUN_FALLOFF_PER_TILE 감소)
 				min = Math.round(baseMin * eff);
 				max = Math.round(baseMax * eff);
+				if (attackTarget != null) {
+					int dist = Dungeon.level.distance(pos, attackTarget.pos);
+					if (dist > 1) {
+						float falloff = Math.max(HANDGUN_FALLOFF_MIN, 1f - (dist - 1) * HANDGUN_FALLOFF_PER_TILE);
+						min = Math.round(min * falloff);
+						max = Math.round(max * falloff);
+					}
+				}
 				break;
+			}
 			default: // ONE_HANDED_SWORD
 				min = Math.round(baseMin * eff);
 				max = Math.round(baseMax * eff);
@@ -994,6 +1027,11 @@ public class Hero extends Char {
 			return true;
 		}
 
+		// 엔픽던: 오퍼레이터 무기 유형별 사거리 (인접 초과 공격)
+		if (activeWeaponType != null) {
+			return operatorCanReach(enemy.pos);
+		}
+
 		KindOfWeapon wep = Dungeon.hero.belongings.attackingWeapon();
 
 		if (wep != null){
@@ -1050,12 +1088,35 @@ public class Hero extends Char {
 	}
 
 	/**
+	 * 오퍼레이터 무기 유형 기반 공격 가능 사거리.
+	 * POLEARM/HANDGUN 은 인접 범위 초과 적도 공격 가능.
+	 * 공용 수식어 '방출' reachBonus() 도 합산.
+	 */
+	public int operatorReach() {
+		int reach;
+		switch (activeWeaponType) {
+			case POLEARM: reach = POLEARM_REACH; break;
+			case HANDGUN: reach = HANDGUN_REACH; break;
+			default:      reach = 1;             break;
+		}
+		if (belongings.trait != null) reach += belongings.trait.reachBonus();
+		return reach;
+	}
+
+	private boolean operatorCanReach(int targetPos) {
+		int reach = operatorReach();
+		if (Dungeon.level.distance(pos, targetPos) > reach) return false;
+		boolean[] passable = BArray.not(Dungeon.level.solid, null);
+		for (Char ch : Actor.chars()) {
+			if (ch != this) passable[ch.pos] = false;
+		}
+		PathFinder.buildDistanceMap(targetPos, passable, reach);
+		return PathFinder.distance[pos] <= reach;
+	}
+
+	/**
 	 * 엔픽던 무기 유형별 공격 딜레이.
 	 * activeWeaponType 이 설정되어 있을 때만 호출됨.
-	 *
-	 * TODO: 수치 확정 및 추가 무기 특성 구현
-	 *   - POLEARM: 사거리 +1칸 (별도 처리 필요)
-	 *   - HANDGUN: 거리 비례 피해 변동 (별도 처리 필요)
 	 */
 	private float operatorAttackDelay() {
 		float delay;
