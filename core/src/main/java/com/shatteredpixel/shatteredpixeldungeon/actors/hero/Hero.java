@@ -47,6 +47,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SnowshineParry;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SupportCrystal;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AnguishBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
@@ -672,7 +673,10 @@ public class Hero extends Char {
 		if (buff(Scimitar.SwordDance.class) != null){
 			accuracy *= 1.50f;
 		}
-		
+
+		// 공용 수식어 '분쇄' — 명중률 증가
+		if (belongings.trait != null) accuracy *= belongings.trait.accuracyMultiplier();
+
 		if (!RingOfForce.fightingUnarmed(this)) {
 			return Math.max(1, Math.round(attackSkill * accuracy * wep.accuracyFactor( this, target )));
 		} else {
@@ -822,7 +826,9 @@ public class Hero extends Char {
 				+ (STR - 10) * ATK_PER_STAT
 				+ (belongings.trait != null ? belongings.trait.traitATK() : 0)
 				+ getEnchantmentLevel() * ENCHANT_ATK_PER_LEVEL;
-		// TODO: ATK 증가 버프 연동 (버프 구현 후)
+		// 공용 수식어 '고통' — 궁극기 사용 후 일정 턴 공격력 증가
+		if (buff(AnguishBuff.class) != null) atk *= AnguishBuff.ATK_MULT;
+		// TODO: 그 외 ATK 증가 버프 연동
 		return Math.max(1, Math.round(atk));
 	}
 
@@ -833,6 +839,8 @@ public class Hero extends Char {
 	 */
 	public float finalAttackEfficiency() {
 		float efficiency = 1.0f;
+		// 공용 수식어 '강공' — 기본 공격 피해 증가
+		if (belongings.trait != null) efficiency *= belongings.trait.basicAttackMultiplier();
 		// TODO: 공격 효율 버프 추가 시 여기에 등록
 		// 예: if (buff(AtkUpBuff.class) != null) efficiency *= buff(AtkUpBuff.class).multiplier();
 		return efficiency;
@@ -844,7 +852,10 @@ public class Hero extends Char {
 	 * 기질 미장착 시 0.
 	 */
 	public int getEnchantmentLevel() {
-		if (belongings.trait != null) return belongings.trait.enchantLevel();
+		// 공용 수식어 '효율' — 식각 효율 증가 (enchantEfficiency 기본 1.0)
+		if (belongings.trait != null) {
+			return Math.round(belongings.trait.enchantLevel() * belongings.trait.enchantEfficiency());
+		}
 		return 0;
 	}
 
@@ -868,7 +879,10 @@ public class Hero extends Char {
 		int min = 1 + enchant + statBonus;
 		int max = (int)(getATK() * ATK_TO_MAX_DMG) + statBonus;
 		max = Math.max(max, min);
-		return Random.NormalIntRange(min, max);
+		int dmg = Random.NormalIntRange(min, max);
+		// 공용 수식어 '기예' — 스킬 피해 증가
+		if (belongings.trait != null) dmg = Math.round(dmg * belongings.trait.skillDamageMultiplier());
+		return dmg;
 	}
 
 	/**
@@ -1044,12 +1058,18 @@ public class Hero extends Char {
 	 *   - HANDGUN: 거리 비례 피해 변동 (별도 처리 필요)
 	 */
 	private float operatorAttackDelay() {
+		float delay;
 		switch (activeWeaponType) {
 			case TWO_HANDED_SWORD:
-				return 2.0f; // 양손검: 1회 공격에 2턴 소모
+				delay = 2.0f; // 양손검: 1회 공격에 2턴 소모
+				break;
 			default:
-				return 1.0f; // 한손검/장병기/권총/아츠유닛: 기본 1턴
+				delay = 1.0f; // 한손검/장병기/권총/아츠유닛: 기본 1턴
+				break;
 		}
+		// 공용 수식어 '사기' — 공격 속도 증가 (배율이 클수록 delay 감소)
+		if (belongings.trait != null) delay /= belongings.trait.attackSpeedMultiplier();
+		return delay;
 	}
 
 	@Override

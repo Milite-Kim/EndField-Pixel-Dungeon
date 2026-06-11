@@ -10,32 +10,30 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.traits.common;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.items.traits.CommonTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.watabou.utils.Random;
 
 /**
- * 굳건함 (GritTrait) — 1티어 공용 기질.
+ * 의료 (MendingTrait) — 공용 수식어 '의료' 기질.
  *
  * 공격 명중 시 PROC_CHANCE 확률로 가한 피해의 HEAL_RATIO 만큼 HP를 회복한다.
  *
  * TODO: PROC_CHANCE / HEAL_RATIO 수치 확정
  */
-public class GritTrait extends CommonTrait {
+public class MendingTrait extends CommonTrait {
 
-    // ── 수치 (TODO: 확정) ─────────────────────────
-    private static final float PROC_CHANCE = 0.25f; // 발동 확률 25%
-    private static final float HEAL_RATIO  = 0.20f; // 피해량 대비 회복 비율 20%
+    private static final float PROC_CHANCE = 0.25f; // TODO: 수치 확정
+    private static final float HEAL_RATIO  = 0.20f; // TODO: 수치 확정
 
     {
         image = ItemSpriteSheet.SOMETHING; // TODO: 전용 스프라이트
     }
 
-    public GritTrait() {
-        super(1); // 1티어
-    }
+    public MendingTrait()         { super(1); }
+    public MendingTrait(int tier) { super(tier); }
 
     @Override
     public int proc(Char attacker, Char defender, int damage) {

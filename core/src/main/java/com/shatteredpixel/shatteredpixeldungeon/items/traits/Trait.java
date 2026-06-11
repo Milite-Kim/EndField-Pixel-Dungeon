@@ -146,4 +146,47 @@ public abstract class Trait extends EquipableItem {
     public int proc(Char attacker, Char defender, int damage) {
         return damage;
     }
+
+    // ─────────────────────────────────────────────
+    // 공용 수식어 패시브 훅 (Hero가 장착 기질을 참조)
+    //   기본값은 모두 중립(효과 없음). 해당 수식어 기질만 오버라이드.
+    //   자세한 내용: docs/엔픽던_기질시스템.md §6
+    // ─────────────────────────────────────────────
+
+    /** 기본 공격 피해 배율 ('강공'). Hero.finalAttackEfficiency()에서 곱연산. */
+    public float basicAttackMultiplier() {
+        return 1f;
+    }
+
+    /** 스킬 피해 배율 ('기예'). Hero.skillDamageRoll()에서 곱연산. */
+    public float skillDamageMultiplier() {
+        return 1f;
+    }
+
+    /** 명중률 배율 ('분쇄'). Hero.attackSkill()에서 곱연산. */
+    public float accuracyMultiplier() {
+        return 1f;
+    }
+
+    /** 공격 속도 배율 ('사기'). Hero.operatorAttackDelay()에서 delay를 이 값으로 나눔. */
+    public float attackSpeedMultiplier() {
+        return 1f;
+    }
+
+    /** 식각 효율 배율 ('효율'). Hero.getEnchantmentLevel()에서 곱연산. */
+    public float enchantEfficiency() {
+        return 1f;
+    }
+
+    /** 공격 사거리 보너스 ('방출'). TODO: Hero reach 시스템 구현 후 연동 (현재 스텁). */
+    public int reachBonus() {
+        return 0;
+    }
+
+    /**
+     * 궁극기 사용 직후 호출 ('고통').
+     * Ultimate.use()에서 발동 → 결전 준비형 효과(예: 일정 턴 공격력 증가)를 부여.
+     * 기본값: no-op
+     */
+    public void onUltimateUsed(Hero hero) {}
 }

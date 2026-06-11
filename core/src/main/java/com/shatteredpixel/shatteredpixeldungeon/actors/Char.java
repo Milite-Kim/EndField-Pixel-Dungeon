@@ -36,6 +36,9 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barkskin;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Berserk;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bless;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Darkness;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Fracture;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PursuitBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy;
@@ -487,6 +490,11 @@ public abstract class Char extends Actor {
 				dmg *= 0.67f;
 			}
 
+			// 공용 수식어 '골절' 디버프 — 가하는 피해 감소
+			if ( buff(Fracture.class) != null ){
+				dmg *= Fracture.DAMAGE_MULT;
+			}
+
 			//characters influenced by aggression deal 1/2 damage to bosses
 			if ( enemy.buff(StoneOfAggression.Aggression.class) != null
 					&& enemy.alignment == alignment
@@ -679,6 +687,8 @@ public abstract class Char extends Actor {
 		if (attacker.buff(Bless.class) != null) acuRoll *= 1.25f;
 		if (attacker.buff(  Hex.class) != null) acuRoll *= 0.8f;
 		if (attacker.buff( Daze.class) != null) acuRoll *= 0.5f;
+		// 공용 수식어 '어둠' 디버프 — 명중 판정 감소
+		if (attacker.buff(Darkness.class) != null) acuRoll *= Darkness.ACC_MULT;
 		for (ChampionEnemy buff : attacker.buffs(ChampionEnemy.class)){
 			acuRoll *= buff.evasionAndAccuracyFactor();
 		}
@@ -806,6 +816,8 @@ public abstract class Char extends Actor {
 		if ( buff( Adrenaline.class ) != null) speed *= 2f;
 		if ( buff( Haste.class ) != null) speed *= 3f;
 		if ( buff( Dread.class ) != null) speed *= 2f;
+		// 공용 수식어 '추격' — 공격 후 일정 턴 이동 속도 증가
+		if ( buff( PursuitBuff.class ) != null) speed *= PursuitBuff.SPEED_MULT;
 
 		speed *= Swiftness.speedBoost(this, glyphLevel(Swiftness.class));
 		speed *= Flow.speedBoost(this, glyphLevel(Flow.class));

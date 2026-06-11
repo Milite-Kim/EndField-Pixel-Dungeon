@@ -14,7 +14,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.Berry;
-import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.GritTrait;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.MendingTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.SnakeSprite;
 import com.watabou.utils.Random;
 
@@ -23,7 +23,7 @@ import com.watabou.utils.Random;
  *
  * HP 1 / ATK 20 / 명중 8 / 회피 35 / 방어 0 / EXP 2 / maxLvl 6
  * 회피 35로 인해 기습·확정 명중 외에는 타격이 거의 불가능.
- * 드랍: 혼탁기질(5%, 현재 GritTrait 플레이스홀더) + 작물(50%, 현재 Berry 플레이스홀더)
+ * 드랍: 혼탁기질(5%, 현재 MendingTrait 플레이스홀더) + 작물(50%, 현재 Berry 플레이스홀더)
  *
  * TODO: 전용 스프라이트, 수치 최종 확정, 전용 드랍 아이템(혼탁기질·작물) 구현
  */
@@ -63,7 +63,7 @@ public class CowardlyOriginiumSlug extends Mob {
 
         // 혼탁기질 5% (TODO: TurbidTrait 구현 후 교체)
         if (Random.Float() < 0.05f) {
-            Dungeon.level.drop(new GritTrait(), pos).sprite.drop();
+            Dungeon.level.drop(new MendingTrait(1), pos).sprite.drop();
         }
         // 작물 50% (TODO: Crop 아이템 구현 후 교체)
         if (Random.Float() < 0.50f) {

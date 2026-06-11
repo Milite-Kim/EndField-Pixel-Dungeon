@@ -13,8 +13,8 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.GritTrait;
-import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.KineticTrait;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.MendingTrait;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.CrueltyTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.BruteSprite;
 import com.watabou.utils.Random;
 
@@ -23,7 +23,7 @@ import com.watabou.utils.Random;
  *
  * HP 25 / ATK 60 / 명중 12 / 회피 5 / 방어 3 all / EXP 3 / maxLvl 9
  * 특수 패턴 없음. 공격속성: 물리.
- * 드랍: 1~2티어 기질 랜덤(25%, GritTrait 또는 KineticTrait 플레이스홀더)
+ * 드랍: 1~2티어 기질 랜덤(25%, MendingTrait 또는 CrueltyTrait 플레이스홀더)
  *
  * TODO: 전용 스프라이트, 수치 최종 확정, 기질 아이템 최종 확정
  */
@@ -63,9 +63,9 @@ public class LandBreakerPlunderer extends Mob {
         // 1~2티어 기질 25% 랜덤 드랍 (TODO: 최종 기질 아이템 확정 후 교체)
         if (Random.Float() < 0.25f) {
             if (Random.Int(2) == 0) {
-                Dungeon.level.drop(new GritTrait(), pos).sprite.drop();
+                Dungeon.level.drop(new MendingTrait(1), pos).sprite.drop();
             } else {
-                Dungeon.level.drop(new KineticTrait(), pos).sprite.drop();
+                Dungeon.level.drop(new CrueltyTrait(2), pos).sprite.drop();
             }
         }
     }

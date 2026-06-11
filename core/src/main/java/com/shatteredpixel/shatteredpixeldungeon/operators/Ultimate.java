@@ -224,6 +224,8 @@ public abstract class Ultimate implements Bundlable {
         if (!isReady()) return;
         activate(hero, target, cell);
         charge = 0;
+        // 기질 훅: 궁극기 사용 직후 효과 ('고통' 등 결전 준비형)
+        if (hero.belongings.trait != null) hero.belongings.trait.onUltimateUsed(hero);
     }
 
     // ─────────────────────────────────────────────

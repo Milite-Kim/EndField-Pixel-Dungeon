@@ -11,37 +11,35 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.traits.common;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Darkness;
 import com.shatteredpixel.shatteredpixeldungeon.items.traits.CommonTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.watabou.utils.Random;
 
 /**
- * 운동 에너지 (KineticTrait) — 2티어 공용 기질.
+ * 어둠 (ShadowTrait) — 공용 수식어 '어둠' 기질.
  *
- * 공격 명중 시 PROC_CHANCE 확률로 대상에게 KNOCKDOWN(넘어뜨리기) +1스택.
- * 방어불능 스택 시스템과 연계하여 연계기 트리거 조건을 쌓는 데 유용하다.
+ * 공격 명중 시 PROC_CHANCE 확률로 대상에게 '어둠'(Darkness) 디버프를 부여한다.
+ * Darkness 보유 대상은 명중률이 감소한다 (Char.hit() 적용).
  *
  * TODO: PROC_CHANCE 수치 확정
  */
-public class KineticTrait extends CommonTrait {
+public class ShadowTrait extends CommonTrait {
 
-    // ── 수치 (TODO: 확정) ─────────────────────────
-    private static final float PROC_CHANCE = 0.15f; // 발동 확률 15%
+    private static final float PROC_CHANCE = 0.25f; // TODO: 수치 확정
 
     {
         image = ItemSpriteSheet.SOMETHING; // TODO: 전용 스프라이트
     }
 
-    public KineticTrait() {
-        super(2); // 2티어
-    }
+    public ShadowTrait()         { super(1); }
+    public ShadowTrait(int tier) { super(tier); }
 
     @Override
     public int proc(Char attacker, Char defender, int damage) {
-        if (attacker instanceof Hero && damage > 0 && Random.Float() < PROC_CHANCE) {
-            DefenselessStack.apply(defender, DefenselessStack.PhysicalAbnormality.KNOCKDOWN, attacker);
+        if (damage > 0 && Random.Float() < PROC_CHANCE) {
+            Buff.affect(defender, Darkness.class, Darkness.DURATION);
         }
         return damage;
     }
