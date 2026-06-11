@@ -682,6 +682,14 @@ public class Hero extends Char {
 		// 공용 수식어 '분쇄' — 명중률 증가
 		if (belongings.trait != null) accuracy *= belongings.trait.accuracyMultiplier();
 
+		// 권총: 기준 거리(4칸)보다 가까울수록 명중 5%/칸 감소
+		if (activeWeaponType == Operator.WeaponType.HANDGUN && target != null) {
+			int dist = Dungeon.level.distance(pos, target.pos);
+			if (dist < HANDGUN_NEUTRAL_DIST) {
+				accuracy *= Math.max(0f, 1f - (HANDGUN_NEUTRAL_DIST - dist) * HANDGUN_ACC_PENALTY_PER_TILE);
+			}
+		}
+
 		if (!RingOfForce.fightingUnarmed(this)) {
 			return Math.max(1, Math.round(attackSkill * accuracy * wep.accuracyFactor( this, target )));
 		} else {
@@ -816,12 +824,14 @@ public class Hero extends Char {
 	private static final float ARTS_MAX_MULT     = 0.8f;  // TODO: 수치 확정
 
 	// 무기 종류별 사거리
-	private static final int   POLEARM_REACH           = 2;    // 장병기: 기본 사거리 2칸
-	private static final int   HANDGUN_REACH           = 4;    // 권총: 기본 사거리 4칸
+	private static final int   POLEARM_REACH    = 2; // 장병기: 기본 사거리 2칸
+	private static final int   HANDGUN_REACH    = 6; // 권총: 기본 사거리 6칸
+	private static final int   ARTS_UNIT_REACH  = 4; // 아츠유닛: 기본 사거리 4칸
 
-	// 권총 거리 비례 피해 감소 (인접 거리 초과 1칸당)
-	private static final float HANDGUN_FALLOFF_PER_TILE = 0.15f; // TODO: 수치 확정
-	private static final float HANDGUN_FALLOFF_MIN      = 0.40f; // 최소 피해 비율
+	// 권총 거리 기준점 및 변화량
+	private static final int   HANDGUN_NEUTRAL_DIST       = 4;     // 피해·명중 모두 100% 기준 거리
+	private static final float HANDGUN_FALLOFF_PER_TILE   = 0.10f; // 기준보다 멀수록 피해 10%/칸 감소
+	private static final float HANDGUN_ACC_PENALTY_PER_TILE = 0.05f; // 기준보다 가까울수록 명중 5%/칸 감소
 
 	// 장병기 인접(1칸) 피해 감소 배율
 	private static final float POLEARM_MELEE_MULT = 0.75f; // TODO: 수치 확정
@@ -935,13 +945,13 @@ public class Hero extends Char {
 				break;
 			}
 			case HANDGUN: {
-				// 거리 비례 피해 감소 (인접 초과 1칸당 HANDGUN_FALLOFF_PER_TILE 감소)
+				// 기준 거리(4칸) 초과 시 피해 10%/칸 감소, 이하 시 피해 변화 없음
 				min = Math.round(baseMin * eff);
 				max = Math.round(baseMax * eff);
 				if (attackTarget != null) {
 					int dist = Dungeon.level.distance(pos, attackTarget.pos);
-					if (dist > 1) {
-						float falloff = Math.max(HANDGUN_FALLOFF_MIN, 1f - (dist - 1) * HANDGUN_FALLOFF_PER_TILE);
+					if (dist > HANDGUN_NEUTRAL_DIST) {
+						float falloff = 1f - (dist - HANDGUN_NEUTRAL_DIST) * HANDGUN_FALLOFF_PER_TILE;
 						min = Math.round(min * falloff);
 						max = Math.round(max * falloff);
 					}
@@ -1095,9 +1105,10 @@ public class Hero extends Char {
 	public int operatorReach() {
 		int reach;
 		switch (activeWeaponType) {
-			case POLEARM: reach = POLEARM_REACH; break;
-			case HANDGUN: reach = HANDGUN_REACH; break;
-			default:      reach = 1;             break;
+			case POLEARM:    reach = POLEARM_REACH;   break;
+			case HANDGUN:    reach = HANDGUN_REACH;   break;
+			case ARTS_UNIT:  reach = ARTS_UNIT_REACH; break;
+			default:         reach = 1;               break;
 		}
 		if (belongings.trait != null) reach += belongings.trait.reachBonus();
 		return reach;
