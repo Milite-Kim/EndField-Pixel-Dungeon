@@ -52,7 +52,7 @@ import java.util.List;
  *
  * [첫 번째 런 정책]
  * 저장 파일이 없으면 (첫 실행) DEFAULT_UNLOCKED 목록을 자동 해금한다.
- * 기본 해금 오퍼레이터: 관리자 (Endministrator)
+ * 기본 해금 오퍼레이터: 관리자 (Endministrator), 펠리카 (Felika)
  * 이후 팀 오퍼레이터 편성 이력이 쌓이면서 해금 풀이 확장된다.
  */
 public class OperatorRegistry {
@@ -108,6 +108,7 @@ public class OperatorRegistry {
 
     static {
         DEFAULT_UNLOCKED.add(Endministrator.class);
+        DEFAULT_UNLOCKED.add(Felika.class);
     }
 
     // ─────────────────────────────────────────────
