@@ -141,12 +141,14 @@ public class Yeofung extends TeamOperator {
     }
 
     /**
-     * 연계기 조건: 대상에게 물리 취약(Vulnerable) or 갑옷파괴(ArmorBreaked) 버프 존재.
-     * Hero.onFinishingBlowLanded() → checkChainTriggers() 경로로 평가됨.
+     * 연계기 조건: 메인의 '강력한 일격' 적중 시(finishingBlowContext) +
+     * 대상에게 물리 취약(Vulnerable) or 갑옷파괴(ArmorBreaked) 버프 존재.
+     * Hero.onFinishingBlowLanded() → finishingBlowContext=true → checkChainTriggers() 경로로 평가됨.
      */
     @Override
     public boolean chainCondition(Hero hero, Char target) {
         if (target == null || !target.isAlive()) return false;
+        if (!hero.finishingBlowContext) return false;
         return target.buff(Vulnerable.class) != null
                 || target.buff(ArmorBreaked.class) != null;
     }

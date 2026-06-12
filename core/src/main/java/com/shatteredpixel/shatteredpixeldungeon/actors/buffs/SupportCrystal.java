@@ -16,14 +16,11 @@ import com.watabou.utils.Bundle;
  *
  * 자이히 배틀스킬 사용 시 Hero에게 부여.
  * 강력한 일격(onFinishingBlowLanded) 적중 시 발동:
- *   → 추가 냉기 피해(×COLD_MULT) + 아츠 취약(ArtsVulnerable) 부여
+ *   → 적에게 추가 냉기 피해(×COLD_MULT) + 아군에게 아츠 증폭(ArtsAmplification) 부여
  *   최대 MAX_HITS회 발동 후 자동 소멸. 재사용 시 갱신(남은 횟수 초기화).
  *
  * onPowerfulHit()은 Hero.onFinishingBlowLanded()에서 호출됨.
  * 버프가 없으면 즉시 반환하므로 다른 오퍼레이터에게 영향 없음.
- *
- * NOTE: "아츠 취약"은 ArtsVulnerable 버프로 표현 (아직 미구현 → 플레이스홀더로 냉기 피해만 추가).
- * TODO: ArtsVulnerable 구현 후 onPowerfulHit에서 apply 호출 추가
  */
 public class SupportCrystal extends Buff {
 
@@ -54,18 +51,19 @@ public class SupportCrystal extends Buff {
 
     /**
      * 강력한 일격 적중 시 호출.
-     * 결정체가 있으면 냉기 피해 + 아츠 취약 부여 후 카운트 감소.
+     * 결정체가 있으면 적에게 냉기 피해 + 아군에게 아츠 증폭 부여 후 카운트 감소.
      */
     public static void onPowerfulHit(Hero hero, Char target) {
         if (target == null || !target.isAlive()) return;
         SupportCrystal crystal = hero.buff(SupportCrystal.class);
         if (crystal == null) return;
 
-        // 추가 냉기 피해
+        // 적에게 추가 냉기 피해
         int dmg = Math.round(hero.damageRoll() * COLD_MULT);
         target.damage(dmg, hero, DamageType.COLD);
 
-        // TODO: ArtsVulnerable.apply(target) — 구현 완료 후 추가
+        // 아군에게 아츠 증폭 부여 (서포터 본분: 아군 강화)
+        ArtsAmplification.apply(hero);
 
         crystal.hitsLeft--;
         if (crystal.hitsLeft <= 0) {

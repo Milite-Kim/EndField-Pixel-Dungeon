@@ -22,7 +22,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  * 무기: 한손검
  * 속성: 물리
  *
- * [배틀스킬] 강타 — HEAVY_ATTACK 방어불능 스택 적용 (스택 비례 물리 피해)
+ * [배틀스킬] 구성 시퀀스 — 물리 피해 + 강타(HEAVY_ATTACK) 적용
  * [연계기]   오리지늄 아츠 투척
  *   - 조건: 아군 연계기 적중 시 (자신 제외)
  *   - 효과: 물리 피해 + 오리지늄 아츠 결정 1스택 부여
@@ -41,6 +41,9 @@ public class Endministrator extends TeamOperator {
     // ─────────────────────────────────────────────
     // 피해 배율 상수 (TODO: 수치 확정)
     // ─────────────────────────────────────────────
+
+    /** 배틀스킬 기본 물리 피해 배율. TODO: 수치 확정 */
+    private static final float SKILL_MULT = 1.5f;
 
     /** 연계기 물리 피해 배율. TODO: 수치 확정 */
     private static final float CHAIN_MULT = 1.0f;
@@ -95,18 +98,27 @@ public class Endministrator extends TeamOperator {
             }
 
             @Override
-            public String name() { return "강타"; }
+            public String name() { return "구성 시퀀스"; }
 
             @Override
             public String description() {
-                return "강타(HEAVY_ATTACK) — 스택 전량 소모 + 스택 비례 대량 물리 피해.\n" +
+                return "물리 피해(" + SKILL_MULT + "×) + 강타(HEAVY_ATTACK) 적용.\n" +
+                       "강타: 방어불능 스택 보유 시 전량 소모 + 스택 비례 대량 물리 피해.\n" +
                        "TODO: 피해 수치 확정";
             }
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
-                DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.HEAVY_ATTACK, hero);
+
+                // 기본 물리 피해
+                int damage = Math.round(hero.damageRoll() * SKILL_MULT);
+                target.damage(damage, hero, DamageType.PHYSICAL);
+
+                // 강타 적용 (방어불능 스택 소모/축적)
+                if (target.isAlive()) {
+                    DefenselessStack.apply(target, DefenselessStack.PhysicalAbnormality.HEAVY_ATTACK, hero);
+                }
             }
         };
     }

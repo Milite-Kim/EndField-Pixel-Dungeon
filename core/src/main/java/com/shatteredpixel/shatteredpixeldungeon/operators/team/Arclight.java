@@ -273,7 +273,6 @@ public class Arclight extends TeamOperator {
                     // 대신 직접 감전 적용
                     existing = target.buff(ArtsAttachment.class);
                     if (existing != null) existing.detach();
-                    Buff.affect(target, Electrified.class);
                     Electrified.apply(target, 1);
                 } else {
                     // 전기 부착 없으면 신규 부착

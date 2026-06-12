@@ -88,6 +88,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ElectricVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HeatVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalAmplificationBuff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAmplification;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -972,6 +973,14 @@ public abstract class Char extends Actor {
 			AntalAmplificationBuff ampBuff = Dungeon.hero.buff(AntalAmplificationBuff.class);
 			if (ampBuff != null) {
 				damage *= ampBuff.amplMult();
+			}
+		}
+
+		// 아츠 증폭 버프(ArtsAmplification): 플레이어 팀의 아츠(열/냉/자연/전기) 피해 증폭
+		if (type.isArts() && src instanceof Hero && Dungeon.hero != null) {
+			ArtsAmplification artsAmp = Dungeon.hero.buff(ArtsAmplification.class);
+			if (artsAmp != null) {
+				damage *= artsAmp.amplMult();
 			}
 		}
 

@@ -7,6 +7,7 @@ package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAmplification;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SupportCrystal;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -27,9 +28,9 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
  * [연계기]   조건: 아군 배틀스킬 적중 시 (lastChainActivator 기반이 아닌 배틀스킬 훅 필요)
  *             → 현재: 적 냉기 or 자연 부착 보유 시로 근사 구현
  *             효과: 냉기 피해 + 냉기 부착
- * [궁극기]   냉기 증폭 + 자연 증폭 부여 (자기 강화형)
+ * [궁극기]   아군에게 아츠 증폭(ArtsAmplification) 부여 (자기 강화형)
  *             결정체 소환 중이라면 소모 → 냉기 피해 + 소량 Hero 회복
- *             TODO: 냉기/자연 증폭 버프 시스템 구현 후 연동
+ *             (DB의 "냉기 증폭 + 자연 증폭"은 범용 아츠 증폭으로 통합 구현)
  * [충전 효과] 충전 전량 소모 → 소모량 비례 배틀스킬 쿨타임 감소
  *             TODO: 아츠유닛 충전 시스템 구현 후 연동
  */
@@ -68,7 +69,7 @@ public class Zaihe extends TeamOperator {
             @Override public int baseCooldown() { return 4; } // TODO: 수치 확정
             @Override public String name()        { return "지원 결정체 소환"; }
             @Override public String description() {
-                return "지원 결정체 소환 (강력한 일격 시 추가 냉기 피해 × " + SupportCrystal.COLD_MULT + ", 최대 " + SupportCrystal.MAX_HITS + "회).\n" +
+                return "지원 결정체 소환 (강력한 일격 시 추가 냉기 피해 × " + SupportCrystal.COLD_MULT + " + 아군 아츠 증폭, 최대 " + SupportCrystal.MAX_HITS + "회).\n" +
                        "재소환 시 남은 횟수 갱신.";
             }
 
@@ -149,7 +150,7 @@ public class Zaihe extends TeamOperator {
             @Override public int maxCharge() { return 100; } // TODO: 수치 확정
             @Override public String name()   { return "절대 냉기"; }
             @Override public String description() {
-                return "냉기 증폭 + 자연 증폭 부여 (TODO: 증폭 버프 구현 후 연동).\n" +
+                return "아군에게 아츠 증폭(×" + ArtsAmplification.AMP_MULT + ", " + ArtsAmplification.DURATION + "턴) 부여.\n" +
                        "지원 결정체 소환 중이라면 소모 → 냉기 피해(×" + ULT_CRYSTAL_MULT + ") + Hero 회복";
             }
 
@@ -157,7 +158,8 @@ public class Zaihe extends TeamOperator {
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
-                // TODO: 냉기 증폭 + 자연 증폭 버프 적용
+                // 아군에게 아츠 증폭 부여
+                ArtsAmplification.apply(hero);
 
                 // 결정체 소모 → 냉기 피해 + Hero 회복
                 SupportCrystal crystal = hero.buff(SupportCrystal.class);
