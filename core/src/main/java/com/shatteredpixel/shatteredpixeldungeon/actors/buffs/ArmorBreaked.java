@@ -10,6 +10,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
@@ -49,7 +50,7 @@ public class ArmorBreaked extends FlavourBuff {
      *
      * @param consumedStacks 소모된 방어불능 스택 수 (1~4)
      */
-    public static void apply(com.shatteredpixel.shatteredpixeldungeon.actors.Char enemy, int consumedStacks) {
+    public static void apply(Char enemy, int consumedStacks) {
         ArmorBreaked buff = Buff.affect(enemy, ArmorBreaked.class, DURATION);
         // 이미 존재하면 더 높은 스택 수로 갱신
         if (consumedStacks > buff.consumedStacks) {
