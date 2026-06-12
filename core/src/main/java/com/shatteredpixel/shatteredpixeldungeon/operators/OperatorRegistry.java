@@ -132,11 +132,19 @@ public class OperatorRegistry {
                 Bundle bundle = FileUtils.bundleFromFile(REGISTRY_FILE);
                 unlockedAsMain = restoreUnlocked(bundle);
             } catch (IOException e) {
-                // 저장 파일 없음 = 첫 실행 → 기본 오퍼레이터 해금
+                // 저장 파일 없음 = 첫 실행
                 unlockedAsMain = new HashSet<>();
-                for (Class<? extends Operator> opClass : DEFAULT_UNLOCKED) {
-                    unlockedAsMain.add(opClass.getSimpleName());
+            }
+
+            // 기본 해금 오퍼레이터는 항상 보장한다.
+            // (기존 세이브에 신규 기본 해금 오퍼레이터를 추가했을 때도 소급 적용)
+            boolean changed = false;
+            for (Class<? extends Operator> opClass : DEFAULT_UNLOCKED) {
+                if (unlockedAsMain.add(opClass.getSimpleName())) {
+                    changed = true;
                 }
+            }
+            if (changed) {
                 saveNeeded = true;
                 saveGlobal();
             }

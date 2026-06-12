@@ -548,11 +548,13 @@ public class GameScene extends PixelScene {
 		}
 
 		// 전투 HUD (배틀스킬 / 궁극기 / 연계기 버튼)
+		// 화면 중앙을 가리지 않도록 우측 정렬. 우측 인디케이터 태그 열(Tag.SIZE)을 피해 배치.
 		combatHUD = new CombatHUD();
 		combatHUD.camera = uiCamera;
 		float hudW = CombatHUD.BTN_SIZE * 3 + CombatHUD.GAP * 2;
 		float hudY = toolbar.top() - CombatHUD.BTN_SIZE - 4;
-		combatHUD.setRect( (uiCamera.width - hudW) / 2f, hudY, hudW, CombatHUD.BTN_SIZE );
+		float hudX = uiCamera.width - hudW - Tag.SIZE - insets.right - 4;
+		combatHUD.setRect( hudX, hudY, hudW, CombatHUD.BTN_SIZE );
 		add(combatHUD);
 
 		layoutTags();

@@ -158,9 +158,7 @@ public class CombatHUD extends Component {
             if (skill == null) { visible = false; active = false; return; }
             visible = true;
 
-            // 텍스트: 스킬명 최대 4글자
-            String name = skill.name();
-            mainLabel.text(name.length() > 4 ? name.substring(0, 4) : name);
+            // 고정 라벨 "스킬" 사용 — 오퍼레이터별 스킬명 미표기 (createChildren에서 설정)
 
             if (skill.isReady()) {
                 cooldownOverlay.visible = false;
@@ -224,8 +222,7 @@ public class CombatHUD extends Component {
             if (ult == null) { visible = false; active = false; return; }
             visible = true;
 
-            String name = ult.name();
-            mainLabel.text(name.length() > 4 ? name.substring(0, 4) : name);
+            // 고정 라벨 "궁극" 사용 — 오퍼레이터별 궁극기명 미표기 (createChildren에서 설정)
             centerLabel(mainLabel, -2f);
 
             if (ult.isReady()) {
