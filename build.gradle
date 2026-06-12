@@ -4,7 +4,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.1.0'
+        if (!project.hasProperty('skipAndroid')) {
+            classpath 'com.android.tools.build:gradle:9.1.0'
+        }
     }
 }
 

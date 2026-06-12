@@ -3,9 +3,14 @@ include ':SPD-classes'
 include ':core'
 
 //platform modules
-include ':android'
-include ':ios'
-include ':desktop'
+//  Skipped when the 'skipAndroid' property is set (e.g. -PskipAndroid), which
+//  lets :core be compiled in environments without access to the Android Gradle
+//  plugin (google() repository). Normal builds are unaffected.
+if (!hasProperty('skipAndroid')) {
+    include ':android'
+    include ':ios'
+    include ':desktop'
+}
 
 //service modules
 include ':services'
