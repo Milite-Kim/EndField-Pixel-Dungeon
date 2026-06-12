@@ -12,9 +12,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.operators.BattleSkill;
 import com.shatteredpixel.shatteredpixeldungeon.operators.ChainQueue;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.watabou.noosa.ColorBlock;
+import com.watabou.noosa.Image;
 import com.watabou.noosa.NinePatch;
 import com.watabou.noosa.ui.Component;
 
@@ -253,59 +255,123 @@ public class CombatHUD extends Component {
 
     // ──────────────────────────────────────────────────────────────
     // 연계기 버튼
+    // 스킬명 텍스트 대신 오퍼레이터 얼굴 이미지로 "누구의 연계기인지" 표시.
+    // 얼굴 에셋 미확정 시 속성 색 placeholder.
     // ──────────────────────────────────────────────────────────────
 
+    private static final int[] CHAIN_ATTR_COLORS = {
+        0xFF888888, // PHYSICAL
+        0xFFCC4400, // HEAT
+        0xFF4488CC, // COLD
+        0xFF44AA44, // NATURE
+        0xFFCCCC00, // ELECTRIC
+    };
+
     private class ChainBtn extends HudBtn {
+        private ColorBlock        faceBg;      // 얼굴 배경 / placeholder 색상
+        private Image             faceImage;   // 오퍼레이터 얼굴 이미지 (있을 때만)
         private RenderedTextBlock timerLabel;
         private ColorBlock        timerBar;
+
+        /** 현재 표시 중인 오퍼레이터 (불필요한 재로드 방지) */
+        private TeamOperator displayedOp = null;
 
         @Override
         protected void createChildren() {
             super.createChildren();
-            mainLabel.text("연계");
+            mainLabel.visible = false; // 텍스트 대신 얼굴 이미지 사용
+
+            faceBg = new ColorBlock(1, 1, 0xFFFFFFFF);
+            add(faceBg);
 
             timerLabel = PixelScene.renderTextBlock(5);
-            timerLabel.text("");
             add(timerLabel);
 
             timerBar = new ColorBlock(1, 2, 0xFF00FFAA);
             add(timerBar);
         }
 
+        @Override
+        protected void layout() {
+            super.layout();
+            float innerW = width  - 2;
+            float innerH = height - 5; // 하단 타이머 바 + 여백 확보
+            faceBg.x = x + 1;
+            faceBg.y = y + 1;
+            faceBg.size(innerW, innerH);
+
+            if (faceImage != null) {
+                float s = Math.min(innerW / faceImage.width, innerH / faceImage.height);
+                faceImage.scale.set(s);
+                faceImage.x = x + 1 + (innerW - faceImage.width  * s) / 2f;
+                faceImage.y = y + 1 + (innerH - faceImage.height * s) / 2f;
+                PixelScene.align(faceImage);
+            }
+
+            if (timerLabel != null && timerLabel.text() != null && !timerLabel.text().isEmpty()) {
+                timerLabel.setPos(
+                    x + (width - timerLabel.width())  / 2f,
+                    y + height - timerLabel.height() - 3
+                );
+                PixelScene.align(timerLabel);
+            }
+        }
+
         void updateDisplay(Hero hero) {
             ChainQueue.Entry entry = hero.chainQueue.peek();
-            if (entry == null) { visible = false; active = false; return; }
+            if (entry == null) {
+                visible = false;
+                active  = false;
+                displayedOp = null;
+                return;
+            }
             visible = true;
             active  = true;
 
-            // 연계기 이름
-            String chainName = entry.operator.chainName();
-            mainLabel.text(chainName.length() > 4 ? chainName.substring(0, 4) : chainName);
-            centerLabel(mainLabel, -3f);
+            TeamOperator op = entry.operator;
 
-            // 남은 시간
+            // 오퍼레이터가 바뀌었을 때만 얼굴 갱신
+            if (op != displayedOp) {
+                displayedOp = op;
+
+                if (faceImage != null) {
+                    remove(faceImage);
+                    faceImage = null;
+                }
+
+                int attrIdx = Math.min(op.attribute().ordinal(), CHAIN_ATTR_COLORS.length - 1);
+                int attrColor = CHAIN_ATTR_COLORS[attrIdx];
+                faceBg.hardlight(attrColor);
+
+                String faceAsset = op.chainFaceAsset();
+                if (faceAsset != null) {
+                    faceImage = new Image(faceAsset);
+                    add(faceImage);
+                }
+
+                bg.hardlight(0.1f, 0.7f, 0.5f);
+                layout();
+            }
+
+            // 남은 시간 표시
             float remaining = Math.max(0f, entry.expiresAt - Actor.now());
             timerLabel.text(String.format("%.1f", remaining));
             timerLabel.setPos(
-                x + (width - timerLabel.width()) / 2f,
+                x + (width - timerLabel.width())  / 2f,
                 y + height - timerLabel.height() - 3
             );
             PixelScene.align(timerLabel);
 
-            // 타이머 바 (남은 비율)
-            float frac = remaining / ChainQueue.DEFAULT_WINDOW;
-            frac = Math.min(1f, Math.max(0f, frac));
+            // 타이머 바
+            float frac = Math.min(1f, Math.max(0f, remaining / ChainQueue.DEFAULT_WINDOW));
             timerBar.size(width * frac, 2);
             timerBar.x = x;
             timerBar.y = y + height - 2;
-
-            bg.hardlight(0.1f, 0.7f, 0.5f);
         }
 
         @Override
         protected void onClick() {
             if (Dungeon.hero == null) return;
-            // 현재 공격 대상을 연계기에 전달 (없으면 null — 각 구현에서 처리)
             Dungeon.hero.activateFrontChain(Dungeon.hero.getAttackTarget());
         }
     }
