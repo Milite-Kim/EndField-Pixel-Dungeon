@@ -3240,7 +3240,7 @@ public class Hero extends Char {
 	public void checkChainTriggers(Char target) {
 		for (TeamOperator op : teamOperators) {
 			if (op.isReady() && op.chainCondition(this, target)) {
-				chainQueue.enqueue(op); // 이미 큐에 있으면 타이머만 갱신
+				chainQueue.enqueue(op, target); // 유발 타겟 캡처. 이미 큐에 있으면 갱신
 			}
 		}
 	}
@@ -3253,8 +3253,15 @@ public class Hero extends Char {
 	 * @return 발동 성공 여부 (큐가 비어있으면 false)
 	 */
 	public boolean activateFrontChain(Char target) {
-		TeamOperator op = chainQueue.consume();
-		if (op == null) return false;
+		ChainQueue.Entry entry = chainQueue.consume();
+		if (entry == null) return false;
+		TeamOperator op = entry.operator;
+
+		// 버튼 클릭 시점엔 Hero.attackTarget이 이미 null이므로,
+		// 넘어온 타겟이 유효하지 않으면 연계기 등록 시점에 캡처한 타겟을 사용한다.
+		if (target == null || !target.isAlive()) {
+			target = entry.target;
+		}
 
 		// 연계기 발동 얼굴 팝업
 		GameScene.showChainFacePopup(op);

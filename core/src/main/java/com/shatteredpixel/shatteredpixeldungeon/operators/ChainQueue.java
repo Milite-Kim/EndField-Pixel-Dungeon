@@ -6,6 +6,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.operators;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.watabou.utils.Bundle;
 
 import java.util.ArrayList;
@@ -45,10 +46,18 @@ public class ChainQueue {
         public final TeamOperator operator;
         /** 이 연계기가 만료되는 절대 게임 시간 (Actor.now() 기준) */
         public float expiresAt;
+        /**
+         * 연계기를 유발한 대상 (발동 시 피해 대상).
+         * 등록 시점에 캡처해 두지 않으면, 버튼을 누르는 시점엔
+         * Hero.attackTarget이 이미 null로 초기화되어 피해가 들어가지 않는다.
+         * 저장 시 위치(pos)로 직렬화한다.
+         */
+        public Char target;
 
-        Entry(TeamOperator op, float expiresAt) {
+        Entry(TeamOperator op, float expiresAt, Char target) {
             this.operator  = op;
             this.expiresAt = expiresAt;
+            this.target    = target;
         }
     }
 
@@ -63,24 +72,25 @@ public class ChainQueue {
      * 만료 시간 = Actor.now() + DEFAULT_WINDOW
      * 이미 큐에 있으면 해당 위치에서 만료 시간만 갱신한다.
      */
-    public void enqueue(TeamOperator op) {
-        enqueue(op, DEFAULT_WINDOW);
+    public void enqueue(TeamOperator op, Char target) {
+        enqueue(op, target, DEFAULT_WINDOW);
     }
 
     /**
      * 오퍼레이터의 연계기를 큐에 추가한다.
      * 만료 시간 = Actor.now() + window
-     * 이미 큐에 있으면 해당 위치에서 만료 시간만 갱신한다.
+     * 이미 큐에 있으면 해당 위치에서 만료 시간·타겟을 갱신한다.
      */
-    public void enqueue(TeamOperator op, float window) {
+    public void enqueue(TeamOperator op, Char target, float window) {
         float expiresAt = Actor.now() + window;
         for (Entry e : queue) {
             if (e.operator == op) {
                 e.expiresAt = expiresAt; // 현재 위치 유지, 만료 시간만 갱신
+                e.target    = target;    // 최신 유발 타겟으로 갱신
                 return;
             }
         }
-        queue.add(new Entry(op, expiresAt));
+        queue.add(new Entry(op, expiresAt, target));
     }
 
     /**
@@ -106,12 +116,13 @@ public class ChainQueue {
     }
 
     /**
-     * 큐 헤드를 꺼내 반환한다 (발동 시 호출).
+     * 큐 헤드 엔트리를 꺼내 반환한다 (발동 시 호출).
+     * 엔트리에는 발동 대상(target)이 포함된다.
      * null이면 큐가 비어 있음.
      */
-    public TeamOperator consume() {
+    public Entry consume() {
         if (queue.isEmpty()) return null;
-        return queue.remove(0).operator;
+        return queue.remove(0);
     }
 
     public boolean isEmpty() {
@@ -126,17 +137,22 @@ public class ChainQueue {
 
     private static final String ENTRY_CLASS  = "class";
     private static final String ENTRY_EXPIRY = "expiresAt";
+    private static final String ENTRY_TARGET = "target";
 
     public void storeInBundle(Bundle bundle) {
         int n = queue.size();
         String[] classNames = new String[n];
         float[]  expiries   = new float[n];
+        int[]    targets    = new int[n];
         for (int i = 0; i < n; i++) {
             classNames[i] = queue.get(i).operator.getClass().getName();
             expiries[i]   = queue.get(i).expiresAt;
+            Char t        = queue.get(i).target;
+            targets[i]    = (t != null) ? t.pos : -1;
         }
         bundle.put(ENTRY_CLASS,  classNames);
         bundle.put(ENTRY_EXPIRY, expiries);
+        bundle.put(ENTRY_TARGET, targets);
     }
 
     /**
@@ -146,14 +162,20 @@ public class ChainQueue {
         queue.clear();
         String[] classNames = bundle.getStringArray(ENTRY_CLASS);
         float[]  expiries   = bundle.getFloatArray(ENTRY_EXPIRY);
+        int[]    targets    = bundle.getIntArray(ENTRY_TARGET);
         if (classNames == null) return;
         for (int i = 0; i < classNames.length; i++) {
             float expiresAt = expiries[i];
             // 이미 만료된 엔트리는 복원하지 않는다
             if (expiresAt <= Actor.now()) continue;
+            // 타겟 위치 → Char 복원 (없거나 사라졌으면 null)
+            Char target = null;
+            if (targets != null && i < targets.length && targets[i] >= 0) {
+                target = Actor.findChar(targets[i]);
+            }
             for (TeamOperator op : teamOperators) {
                 if (op.getClass().getName().equals(classNames[i])) {
-                    queue.add(new Entry(op, expiresAt));
+                    queue.add(new Entry(op, expiresAt, target));
                     break;
                 }
             }
