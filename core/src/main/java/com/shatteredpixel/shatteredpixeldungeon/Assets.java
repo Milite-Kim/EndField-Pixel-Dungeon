@@ -351,10 +351,6 @@ public class Assets {
 		public static final String JINCHEONWOO_SPRITE    = "sprites/Chen_Standing.png";
 		public static final String FELIKA_SPRITE         = "sprites/Perlica_Standing.png";
 
-		/** 궁극기 컷씬 이미지 — 메인 일러스트와 별도로 제작. 미확정 시 null 처리. */
-		// TODO: 각 오퍼레이터 컷씬 에셋 추가 시 여기에 등록
-		public static final String ENDMINISTRATOR_CUTSCENE = null; // 미확정
-
 		/**
 		 * 연계기 얼굴 팝업 이미지 — 메인 일러스트의 얼굴 크롭 예정.
 		 * 정사각형 이미지. 미확정 시 null → 속성 색상 placeholder.

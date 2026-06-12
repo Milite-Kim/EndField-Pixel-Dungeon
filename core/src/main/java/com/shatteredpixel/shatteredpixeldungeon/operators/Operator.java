@@ -82,15 +82,6 @@ public abstract class Operator implements Bundlable {
     }
 
     /**
-     * 궁극기 컷씬 이미지 에셋 경로.
-     * 메인 일러스트와 별도로 오퍼레이터마다 고유 컷씬 이미지를 사용.
-     * 에셋 미확정 시 null 반환 → 컷씬 없이 즉시 궁극기 발동.
-     */
-    public String cutsceneAsset() {
-        return null;
-    }
-
-    /**
      * 연계기 발동 시 우상단에 표시할 얼굴 팝업 에셋 경로.
      * 메인 일러스트를 크롭한 정사각형 이미지 사용 예정.
      * 에셋 미확정 시 null 반환 → 속성 색상 placeholder 표시.

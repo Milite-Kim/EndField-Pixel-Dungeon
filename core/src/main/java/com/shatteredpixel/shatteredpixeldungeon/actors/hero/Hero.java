@@ -100,7 +100,6 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
-import com.shatteredpixel.shatteredpixeldungeon.effects.UltimateCutscene;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Dewdrop;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
@@ -2037,7 +2036,7 @@ public class Hero extends Char {
 		Char targetChar = Actor.findChar(targetCell);
 
 		if (activeUltimate.selfTarget()) {
-			return fireCutscenedUltimate(this, pos);
+			return fireUltimate(this, pos);
 		}
 
 		if (targetChar == null && !activeUltimate.canTargetCell()) {
@@ -2049,7 +2048,7 @@ public class Hero extends Char {
 		int dist = Dungeon.level.distance(pos, targetCell);
 
 		if (dist <= activeUltimate.range()) {
-			return fireCutscenedUltimate(targetChar, targetCell);
+			return fireUltimate(targetChar, targetCell);
 
 		} else if (activeUltimate.autoApproach()) {
 			if (fieldOfView[targetCell] && getCloser(targetCell)) {
@@ -2068,26 +2067,12 @@ public class Hero extends Char {
 	}
 
 	/**
-	 * 컷씬이 있으면 컷씬 → 궁극기, 없으면 즉시 궁극기 발동.
-	 * tickOperatorCooldowns() 포함. actUltimate() 내 공통 발동 경로.
+	 * 궁극기 발동 공통 경로. tickOperatorCooldowns() 포함. actUltimate()에서 호출.
 	 */
-	private boolean fireCutscenedUltimate(final Char target, final int cell) {
+	private boolean fireUltimate(final Char target, final int cell) {
 		tickOperatorCooldowns();
 		final boolean animated = activeUltimate.isAnimated();
 
-		if (activeMainOperator != null && activeMainOperator.cutsceneAsset() != null) {
-			// 컷씬이 있는 경우: 컷씬 종료 후 콜백으로 궁극기 실행
-			UltimateCutscene.show(activeMainOperator, () -> {
-				activeUltimate.use(Hero.this, target, cell);
-				if (!animated) {
-					Hero.this.spend(activeUltimate.castTime());
-					Hero.this.next();
-				}
-			});
-			return false; // 액터 턴 소모는 콜백에서 처리
-		}
-
-		// 컷씬 없는 경우: 기존 방식 유지
 		activeUltimate.use(this, target, cell);
 		if (animated) {
 			return false;

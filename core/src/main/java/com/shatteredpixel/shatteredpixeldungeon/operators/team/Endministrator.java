@@ -70,9 +70,6 @@ public class Endministrator extends TeamOperator {
     public String spriteSheet() { return Assets.Operators.ENDMINISTRATOR_SPRITE; }
 
     @Override
-    public String cutsceneAsset()  { return Assets.Operators.ENDMINISTRATOR_CUTSCENE; } // TODO: 에셋 확정 후 경로 지정
-
-    @Override
     public String chainFaceAsset() { return Assets.Operators.ENDMINISTRATOR_FACE; } // TODO: 에셋 확정 후 경로 지정
 
     @Override

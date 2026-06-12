@@ -1422,10 +1422,6 @@ public class GameScene extends PixelScene {
 		}
 	}
 
-	/** GameScene 최상단에 임의 Gizmo(오버레이, 컷씬 등)를 추가한다. */
-	public static void addToSceneFront(Gizmo g) {
-		if (scene != null) scene.addToFront(g);
-	}
 
 	/** 연계기 발동 시 우상단 얼굴 팝업을 표시한다. */
 	public static void showChainFacePopup(com.shatteredpixel.shatteredpixeldungeon.operators.Operator op) {
