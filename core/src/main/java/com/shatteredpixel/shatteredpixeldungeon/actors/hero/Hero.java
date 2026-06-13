@@ -1280,21 +1280,6 @@ public class Hero extends Char {
 
 		return actResult;
 	}
-
-	/**
-	 * 한 턴이 실제로 소비될 때 호출: 메인 배틀스킬/팀 연계기 쿨타임 차감 + 연계기 큐 만료 처리.
-	 * 동기 행동(이동 등)은 act()의 actResult 경로에서, 비동기 행동(공격)은
-	 * onAttackComplete()에서 각각 호출한다. 한 턴당 정확히 1회 호출됨.
-	 */
-	public void tickOperatorCooldowns() {
-		if (activeBattleSkill != null) {
-			activeBattleSkill.reduceCooldown();
-		}
-		for (TeamOperator op : teamOperators) {
-			op.reduceCooldown();
-		}
-		chainQueue.tick();
-	}
 	
 	public void busy() {
 		ready = false;
@@ -2088,7 +2073,11 @@ public class Hero extends Char {
 		return true;
 	}
 
-	/** 애니메이션 기반 궁극기에서 act()의 actResult 블록 대신 수동 호출 */
+	/**
+	 * 한 턴이 실제로 소비될 때 호출: 메인 배틀스킬/팀 연계기 쿨타임 차감 + 연계기 큐 만료 처리.
+	 * 동기 행동(이동 등)은 act()의 actResult 경로에서, 비동기 행동(공격)은 onAttackComplete()에서,
+	 * 애니메이션 기반 궁극기는 fireUltimate()에서 각각 호출한다. 한 턴당 정확히 1회.
+	 */
 	private void tickOperatorCooldowns() {
 		if (activeBattleSkill != null) activeBattleSkill.reduceCooldown();
 		for (TeamOperator op : teamOperators) op.reduceCooldown();
