@@ -127,19 +127,21 @@ public class OperatorSelectScene extends PixelScene {
         float portraitRowH = PORTRAIT_SIZE + 4f;
         float bottomH = NAME_BAR_H + portraitRowH + 4f;
 
-        // ── 일러스트 영역: 전체 너비 × 나머지 높이 ──────
+        // ── 일러스트 영역: 전체 너비 × (탭 아래 ~ 하단 UI 위) ──
+        // 상단 속성 탭과 겹치지 않도록 탭 영역(TAB_HEIGHT+2) 아래에서 시작한다.
+        float tabAreaH = TAB_HEIGHT + 2f;
         illusX = 0f;
-        illusY = 0f;
+        illusY = tabAreaH;
         illusW = W;
-        illusH = H - bottomH;
+        illusH = H - bottomH - illusY;
 
         illustrationBg = new ColorBlock(illusW, illusH, 0xFF1a1a2a);
-        illustrationBg.x = 0f;
-        illustrationBg.y = 0f;
+        illustrationBg.x = illusX;
+        illustrationBg.y = illusY;
         add(illustrationBg);
 
         // ── 일러스트 카메라 + Group ──────────────────
-        Point camP = Camera.main.cameraToScreen(0f, 0f);
+        Point camP = Camera.main.cameraToScreen(illusX, illusY);
         illusCamera = new Camera(camP.x, camP.y, (int)illusW, (int)illusH, defaultZoom);
         Camera.add(illusCamera);
 
@@ -153,9 +155,10 @@ public class OperatorSelectScene extends PixelScene {
         add(illustrationLabel);
 
         // ── 일러스트 하단 페이드 (이름 바와 자연스럽게 이어지도록) ──
-        ColorBlock bottomFade = new ColorBlock(W, Math.min(60f, illusH * 0.25f), 0xCC111820);
+        float fadeH = Math.min(60f, illusH * 0.25f);
+        ColorBlock bottomFade = new ColorBlock(W, fadeH, 0xCC111820);
         bottomFade.x = 0f;
-        bottomFade.y = illusH - bottomFade.height;
+        bottomFade.y = illusY + illusH - fadeH;
         add(bottomFade);
 
         // ── 속성 탭 (일러스트 위 오버레이, 상단) ─────────
@@ -209,7 +212,7 @@ public class OperatorSelectScene extends PixelScene {
         }
 
         // ── 이름 바 (일러스트 바로 아래) ────────────────
-        float nameBarY = illusH;
+        float nameBarY = illusY + illusH;
         ColorBlock nameBarBg = new ColorBlock(W, NAME_BAR_H, 0xEE1a2a3a);
         nameBarBg.x = 0f;
         nameBarBg.y = nameBarY;
@@ -383,7 +386,7 @@ public class OperatorSelectScene extends PixelScene {
         float nameCenterX = (Camera.main.width - btnProceed.width() - 8f) / 2f;
         nameLabel.setPos(
             nameCenterX - nameLabel.width() / 2f,
-            illusH + (NAME_BAR_H - nameLabel.height()) / 2f
+            illusY + illusH + (NAME_BAR_H - nameLabel.height()) / 2f
         );
         align(nameLabel);
 
