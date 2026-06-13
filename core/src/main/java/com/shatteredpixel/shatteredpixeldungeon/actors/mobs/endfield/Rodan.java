@@ -19,6 +19,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charging;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.TargetedCell;
+import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
 import com.shatteredpixel.shatteredpixeldungeon.items.Gold;
 import com.shatteredpixel.shatteredpixeldungeon.items.keys.WornKey;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
@@ -475,6 +476,10 @@ public class Rodan extends Mob {
         // 5층 열쇠 + 크레디트 드랍
         Dungeon.level.drop(new WornKey(Dungeon.depth), pos).sprite.drop();
         Dungeon.level.drop(new Gold(Random.NormalIntRange(50, 100)), pos).sprite.drop();
+
+        // 테스트 빌드 클리어: 보스 처치 시 부적 드랍 → 획득 시 승리 화면 (Amulet.doPickUp)
+        // (정식 빌드에서는 A5 위로 계속 진행하도록 이 드랍을 제거)
+        Dungeon.level.drop(new Amulet(), pos).sprite.drop();
 
         Buff.detach(this, Charging.class);
     }

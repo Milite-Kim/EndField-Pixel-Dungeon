@@ -194,6 +194,14 @@ public class Dungeon {
 	public static QuickSlot quickslot = new QuickSlot();
 	
 	public static int depth;
+
+	/**
+	 * 테스트 빌드 최종 깊이. 이 깊이(A5)에서는 더 아래로 하행할 수 없다.
+	 * A5 보스(로댄) 처치 → 부적 획득 → 승리로 런 종료가 정상 경로.
+	 * 정식 빌드 확장 시 이 값을 26으로 올리고 Rodan의 부적 드랍을 제거하면 된다.
+	 */
+	public static final int TEST_FINAL_DEPTH = 5;
+
 	//determines path the hero is on. Current uses:
 	// 0 is the default path
 	// 1 is for quest sub-floors

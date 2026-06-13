@@ -26,8 +26,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Bones;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Goo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rodan;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.levels.builders.Builder;
@@ -65,15 +65,15 @@ public class SewerBossLevel extends SewerLevel {
 			return;
 		}
 
-		boolean gooAlive = false;
+		boolean bossAlive = false;
 		for (Mob m : mobs){
-			if (m instanceof Goo) {
-				gooAlive = true;
+			if (m instanceof Rodan) {
+				bossAlive = true;
 				break;
 			}
 		}
 
-		if (gooAlive){
+		if (bossAlive){
 			Music.INSTANCE.end();
 		} else {
 			Music.INSTANCE.playTracks(SewerLevel.SEWER_TRACK_LIST, SewerLevel.SEWER_TRACK_CHANCES, false);

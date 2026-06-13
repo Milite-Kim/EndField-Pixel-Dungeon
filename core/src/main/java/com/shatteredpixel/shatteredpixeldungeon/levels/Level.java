@@ -568,10 +568,18 @@ public abstract class Level implements Bundlable {
 			return false;
 		}
 
+		boolean descending = transition.type == LevelTransition.Type.REGULAR_EXIT
+				|| transition.type == LevelTransition.Type.BRANCH_EXIT;
+
+		// 테스트 빌드 깊이 캡: A5에서는 더 아래로 하행 불가 (보스 처치 → 부적 획득으로 클리어)
+		if (descending && Dungeon.depth >= Dungeon.TEST_FINAL_DEPTH) {
+			GLog.w( Messages.get(Level.class, "test_build_floor_cap") );
+			return false;
+		}
+
 		beforeTransition();
 		InterlevelScene.curTransition = transition;
-		if (transition.type == LevelTransition.Type.REGULAR_EXIT
-				|| transition.type == LevelTransition.Type.BRANCH_EXIT) {
+		if (descending) {
 			InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
 		} else {
 			InterlevelScene.mode = InterlevelScene.Mode.ASCEND;
