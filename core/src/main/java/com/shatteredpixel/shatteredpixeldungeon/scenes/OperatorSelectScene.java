@@ -396,15 +396,16 @@ public class OperatorSelectScene extends PixelScene {
         if (path != null) {
             currentIllus = new Image(path);
 
-            // fill 스케일: 영역을 완전히 덮도록 (넘치는 부분은 카메라 클리핑)
+            // fit(contain) 스케일: 일러스트 전체가 잘리지 않고 영역 안에 들어가도록 축소.
+            // (영역보다 작으면 남는 공간은 illustrationBg/페이드로 채워짐)
             float scaleX = illusW / currentIllus.width;
             float scaleY = illusH / currentIllus.height;
-            float fillScale = Math.max(scaleX, scaleY);
-            currentIllus.scale.set(fillScale);
+            float fitScale = Math.min(scaleX, scaleY);
+            currentIllus.scale.set(fitScale);
 
             // 중앙 정렬 (illusCamera 좌표계 기준)
-            currentIllus.x = (illusW - currentIllus.width  * fillScale) / 2f;
-            currentIllus.y = (illusH - currentIllus.height * fillScale) / 2f;
+            currentIllus.x = (illusW - currentIllus.width  * fitScale) / 2f;
+            currentIllus.y = (illusH - currentIllus.height * fitScale) / 2f;
 
             illusGroup.add(currentIllus);
             illustrationLabel.visible = false;
