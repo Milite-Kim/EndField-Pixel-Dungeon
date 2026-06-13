@@ -316,7 +316,8 @@ public class TeamSelectScene extends PixelScene {
     private void updateInfo() {
         float ix = infoBg.x + 4f;
         float iy = infoBg.y + 4f;
-        float iw = infoBg.width - 8f;
+        // ColorBlock은 크기를 scale에 저장하므로 필드 width(=텍스처 1px)가 아닌 width() 메서드를 사용해야 함
+        float iw = infoBg.width() - 8f;
 
         if (selectedOp == null) {
             infoName.text("선택 안 함");
