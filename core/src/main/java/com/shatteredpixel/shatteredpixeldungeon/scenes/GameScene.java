@@ -1546,9 +1546,12 @@ public class GameScene extends PixelScene {
 		StyledButton restart = new StyledButton(Chrome.Type.GREY_BUTTON_TR, Messages.get(StartScene.class, "new"), 9){
 			@Override
 			protected void onClick() {
-				GamesInProgress.selectedClass = Dungeon.hero.heroClass;
+				// 엔픽던 시작 흐름으로 재시작 (SPD HeroSelectScene 대신 오퍼레이터 선택)
+				GamesInProgress.selectedClass = null;
+				GamesInProgress.selectedMainOp = null;
+				GamesInProgress.selectedTeamOp = null;
 				GamesInProgress.curSlot = GamesInProgress.firstEmpty();
-				ShatteredPixelDungeon.switchScene(HeroSelectScene.class);
+				ShatteredPixelDungeon.switchScene(OperatorSelectScene.class);
 			}
 
 			@Override
