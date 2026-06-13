@@ -168,6 +168,35 @@ public abstract class EndfieldZone extends Blob {
     }
 
     // ─────────────────────────────────────────────
+    // 조기 종료 (즉시 폭발)
+    // ─────────────────────────────────────────────
+
+    /**
+     * 지대를 즉시 종료시킨다. explosionDamage > 0 이면 현재 활성 칸 위 적에게
+     * 폭발 피해 + onExplode()를 발생시킨 뒤 지대를 비운다.
+     * 탕탕 궁극기 지속 중 배틀스킬 시전 시 등 "조기 종료" 트리거에서 호출.
+     */
+    public void detonate() {
+        if (cur == null || volume <= 0) return;
+        if (explosionDamage > 0) {
+            for (int c = 0; c < cur.length; c++) {
+                if (cur[c] > 0) {
+                    damageEnemyOn(c, explosionDamage, true);
+                }
+            }
+        }
+        fullyClear();
+    }
+
+    /** 레벨에 존재하는 해당 타입 지대를 즉시 종료시킨다(있을 때만). */
+    public static void detonate(Class<? extends EndfieldZone> type) {
+        Blob b = Dungeon.level.blobs.get(type);
+        if (b instanceof EndfieldZone) {
+            ((EndfieldZone) b).detonate();
+        }
+    }
+
+    // ─────────────────────────────────────────────
     // 저장/불러오기
     // ─────────────────────────────────────────────
 

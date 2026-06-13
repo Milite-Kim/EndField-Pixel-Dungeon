@@ -9,6 +9,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.BlizzardField;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.EndfieldZone;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -48,8 +50,17 @@ public class Tangtang extends TeamOperator {
     /** 연계기 냉기 피해 배율. TODO: 수치 확정 */
     private static final float CHAIN_MULT = 0.8f;
 
-    /** 궁극기 냉기 피해 배율 (범위 타격). TODO: 수치 확정 */
+    /** 궁극기 냉기 지대 매 턴 피해 배율. TODO: 수치 확정 */
     private static final float ULT_HIT_MULT = 1.5f;
+
+    /** 궁극기 냉기 지대 반경(2 = 5×5, 넓은 범위). TODO: 수치 확정 */
+    private static final int   ULT_ZONE_RADIUS    = 2;
+
+    /** 궁극기 냉기 지대 지속 턴. TODO: 수치 확정 */
+    private static final int   ULT_ZONE_DURATION  = 4;
+
+    /** 궁극기 냉기 지대 종료/조기종료 폭발 피해 배율. TODO: 수치 확정 */
+    private static final float ULT_EXPLOSION_MULT = 2.5f;
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
@@ -80,6 +91,9 @@ public class Tangtang extends TeamOperator {
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
+
+                // 궁극기 냉기 지대(냉기 폭풍) 지속 중이면 즉시 종료 → 폭발
+                EndfieldZone.detonate(BlizzardField.class);
 
                 // 기본 냉기 피해 + 냉기 부착
                 int dmg = Math.round(hero.damageRoll() * SKILL_MULT);
@@ -156,23 +170,20 @@ public class Tangtang extends TeamOperator {
             @Override public int maxCharge() { return 100; } // TODO: 수치 확정
             @Override public String name()   { return "냉기 폭풍"; }
             @Override public String description() {
-                return "시야 내 모든 적에게 냉기 피해(×" + ULT_HIT_MULT + ") + 와류 +1.\n" +
-                       "TODO: 냉기 피해 지대 지속 + 배틀스킬 시전 시 즉시 종료 — Blob 연동 후 구현";
+                return "자신 중심 " + (ULT_ZONE_RADIUS * 2 + 1) + "×" + (ULT_ZONE_RADIUS * 2 + 1) +
+                       " 냉기 폭풍 " + ULT_ZONE_DURATION + "턴 전개 (매 턴 ×" + ULT_HIT_MULT + " 냉기 피해) + 와류 +1.\n" +
+                       "종료 시 폭발(×" + ULT_EXPLOSION_MULT + "). 지속 중 배틀스킬 시전 시 즉시 종료(폭발).";
             }
 
             @Override public boolean selfTarget() { return true; }
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
-                // 시야 내 모든 적에게 냉기 피해
-                for (Char ch : Actor.chars()) {
-                    if (ch == hero || ch.alignment == Char.Alignment.ALLY) continue;
-                    if (!ch.isAlive()) continue;
-                    if (!hero.fieldOfView[ch.pos]) continue;
-
-                    int dmg = Math.round(hero.damageRoll() * ULT_HIT_MULT);
-                    ch.damage(dmg, hero, DamageType.COLD);
-                }
+                // 자신 중심 냉기 폭풍 지대 전개 (매 턴 냉기 피해, 종료/조기종료 시 폭발)
+                int tickDmg = Math.round(hero.damageRoll() * ULT_HIT_MULT);
+                int explDmg = Math.round(hero.damageRoll() * ULT_EXPLOSION_MULT);
+                EndfieldZone.summon(BlizzardField.class, hero.pos, ULT_ZONE_RADIUS,
+                        ULT_ZONE_DURATION, tickDmg, explDmg);
 
                 // 와류 +1
                 Whirlpool whirlpool = hero.buff(Whirlpool.class);
@@ -180,8 +191,6 @@ public class Tangtang extends TeamOperator {
                     whirlpool = Buff.affect(hero, Whirlpool.class);
                 }
                 whirlpool.addStack();
-
-                // TODO: 냉기 피해 지대 생성 (Blob 시스템 연동 후 구현)
             }
         };
     }

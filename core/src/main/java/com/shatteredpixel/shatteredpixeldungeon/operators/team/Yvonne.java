@@ -9,6 +9,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.EndfieldZone;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.FrostTrapZone;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Frozen;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -38,8 +40,17 @@ public class Yvonne extends TeamOperator {
     // 피해/수치 상수 (TODO: 수치 확정)
     // ─────────────────────────────────────────────
 
-    /** 배틀스킬 단일 타격 냉기 피해 배율. TODO: 수치 확정 */
+    /** 배틀스킬 꽁꽁이 매 턴 냉기 피해 배율. TODO: 수치 확정 */
     private static final float SKILL_MULT = 0.6f;
+
+    /** 배틀스킬 꽁꽁이 반경(1 = 3×3). TODO: 수치 확정 */
+    private static final int   SKILL_ZONE_RADIUS    = 1;
+
+    /** 배틀스킬 꽁꽁이 지속 턴. TODO: 수치 확정 */
+    private static final int   SKILL_ZONE_DURATION  = 3;
+
+    /** 배틀스킬 꽁꽁이 종료 폭발 냉기 피해 배율. TODO: 수치 확정 */
+    private static final float SKILL_EXPLOSION_MULT = 1.5f;
 
     /** 연계기 기본 냉기 피해 배율. TODO: 수치 확정 */
     private static final float CHAIN_BASE_MULT = 0.8f;
@@ -73,8 +84,10 @@ public class Yvonne extends TeamOperator {
             @Override public int baseCooldown() { return 5; } // TODO: 수치 확정
             @Override public String name()        { return "냉기 장치 설치"; }
             @Override public String description() {
-                return "지정 위치 3×3 범위 냉기 피해 + 냉기 부착.\n" +
-                       "TODO: 매 턴 충격파 + 종료 시 강제 동결 폭발";
+                return "지정 위치 " + (SKILL_ZONE_RADIUS * 2 + 1) + "×" + (SKILL_ZONE_RADIUS * 2 + 1) +
+                       " '꽁꽁이' " + SKILL_ZONE_DURATION + "턴 설치.\n" +
+                       "매 턴 냉기 충격파(×" + SKILL_MULT + "), 종료 시 폭발 → 냉기 피해(×" +
+                       SKILL_EXPLOSION_MULT + ") + 강제 동결.";
             }
 
             @Override public int range()          { return 5; } // 권총: 넓은 사거리
@@ -82,22 +95,11 @@ public class Yvonne extends TeamOperator {
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
-                // 3×3 범위(NEIGHBOURS9 = center + 8방향) 모든 적에게 냉기 피해 + 냉기 부착
-                for (int offset : PathFinder.NEIGHBOURS9) {
-                    int c = cell + offset;
-                    if (c < 0 || c >= Dungeon.level.length()) continue;
-
-                    Char ch = Actor.findChar(c);
-                    if (ch == null || ch == hero || ch.alignment == Char.Alignment.ALLY) continue;
-
-                    int dmg = Math.round(hero.damageRoll() * SKILL_MULT);
-                    ch.damage(dmg, hero, DamageType.COLD);
-
-                    if (ch.isAlive()) {
-                        ArtsAttachment.apply(ch, ArtsAttachment.ArtsType.CRYO, hero);
-                    }
-                }
-                // TODO: 장치 Actor 배치 → 매 턴 충격파 + n턴 후 폭발(강제 동결)
+                // 꽁꽁이 설치: 매 턴 냉기 충격파, 종료 시 폭발(냉기 피해 + 강제 동결)
+                int tickDmg = Math.round(hero.damageRoll() * SKILL_MULT);
+                int explDmg = Math.round(hero.damageRoll() * SKILL_EXPLOSION_MULT);
+                EndfieldZone.summon(FrostTrapZone.class, cell, SKILL_ZONE_RADIUS,
+                        SKILL_ZONE_DURATION, tickDmg, explDmg);
             }
         };
     }
