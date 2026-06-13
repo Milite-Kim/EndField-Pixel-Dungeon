@@ -9,6 +9,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.EndfieldZone;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.NatureZone;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsVulnerable;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -44,8 +46,17 @@ public class Gilberta extends TeamOperator {
     // 피해/수치 상수 (TODO: 수치 확정)
     // ─────────────────────────────────────────────
 
-    /** 배틀스킬 단일 타격 자연 피해 배율. TODO: 수치 확정 */
+    /** 배틀스킬 중력 특이점 매 턴 자연 피해 배율. TODO: 수치 확정 */
     private static final float SKILL_MULT = 0.6f;
+
+    /** 배틀스킬 중력 특이점 반경(1 = 3×3). TODO: 수치 확정 */
+    private static final int   SKILL_ZONE_RADIUS    = 1;
+
+    /** 배틀스킬 중력 특이점 지속 턴. TODO: 수치 확정 */
+    private static final int   SKILL_ZONE_DURATION  = 3;
+
+    /** 배틀스킬 중력 특이점 종료 폭발 자연 피해 배율. TODO: 수치 확정 */
+    private static final float SKILL_EXPLOSION_MULT = 1.0f;
 
     /** 연계기 자연 피해 배율. TODO: 수치 확정 */
     private static final float CHAIN_MULT = 1.0f;
@@ -82,8 +93,10 @@ public class Gilberta extends TeamOperator {
             @Override public int baseCooldown()  { return 5; } // TODO: 수치 확정
             @Override public String name()       { return "중력 특이점"; }
             @Override public String description() {
-                return "지정 위치 3×3 자연 피해 + 감속.\n" +
-                       "TODO: 지속 자연 피해 + 종료 시 폭발(자연 부착) — Blob 연동 후 구현";
+                return "지정 위치 " + (SKILL_ZONE_RADIUS * 2 + 1) + "×" + (SKILL_ZONE_RADIUS * 2 + 1) +
+                       " 중력 특이점 " + SKILL_ZONE_DURATION + "턴 생성.\n" +
+                       "매 턴 자연 피해(×" + SKILL_MULT + ") + 감속, 종료 시 폭발 → 자연 피해(×" +
+                       SKILL_EXPLOSION_MULT + ") + 자연 부착.";
             }
 
             @Override public int range()             { return 5; }
@@ -91,20 +104,11 @@ public class Gilberta extends TeamOperator {
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
-                for (int offset : PathFinder.NEIGHBOURS9) {
-                    int c = cell + offset;
-                    if (c < 0 || c >= Dungeon.level.length()) continue;
-                    Char ch = Actor.findChar(c);
-                    if (ch == null || ch == hero || ch.alignment == Char.Alignment.ALLY) continue;
-
-                    int dmg = Math.round(hero.damageRoll() * SKILL_MULT);
-                    ch.damage(dmg, hero, DamageType.NATURE);
-
-                    if (ch.isAlive()) {
-                        Buff.affect(ch, Cripple.class, Cripple.DURATION);
-                    }
-                }
-                // TODO: 중력 특이점 Actor/Blob 배치
+                // 중력 특이점 지대 생성: 매 턴 자연 피해 + 감속, 종료 시 폭발 + 자연 부착
+                int tickDmg = Math.round(hero.damageRoll() * SKILL_MULT);
+                int explDmg = Math.round(hero.damageRoll() * SKILL_EXPLOSION_MULT);
+                EndfieldZone.summon(NatureZone.class, cell, SKILL_ZONE_RADIUS,
+                        SKILL_ZONE_DURATION, tickDmg, explDmg);
                 gainArtsCharge();
             }
         };

@@ -7,6 +7,8 @@ package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.ColdZone;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.EndfieldZone;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charging;
@@ -49,6 +51,15 @@ public class Snowshine extends TeamOperator {
 
     /** 궁극기 냉기 피해 배율. TODO: 수치 확정 */
     private static final float ULT_MULT = 2.0f;
+
+    /** 궁극기 냉기 지대 반경 (1 = 3×3). TODO: 수치 확정 */
+    private static final int   ZONE_RADIUS    = 1;
+
+    /** 궁극기 냉기 지대 지속 턴. TODO: 수치 확정 */
+    private static final int   ZONE_DURATION  = 4;
+
+    /** 궁극기 냉기 지대 매 턴 피해 배율. TODO: 수치 확정 */
+    private static final float ZONE_TICK_MULT = 0.4f;
 
     // ─────────────────────────────────────────────
     // 오퍼레이터 기본 정보
@@ -125,12 +136,15 @@ public class Snowshine extends TeamOperator {
             @Override public String name()   { return "빙하 강타"; }
             @Override public String description() {
                 return "대량 냉기 피해(×" + ULT_MULT + ") + 냉기 부착.\n" +
-                       "TODO: 적 주변 냉기 피해 지대 생성 — Blob 시스템 연동 후 구현";
+                       "적 주변 " + (ZONE_RADIUS * 2 + 1) + "×" + (ZONE_RADIUS * 2 + 1) +
+                       " 냉기 지대 " + ZONE_DURATION + "턴 생성 (매 턴 ×" + ZONE_TICK_MULT + " 냉기 피해).";
             }
 
             @Override
             protected void activate(Hero hero, Char target, int cell) {
                 if (target == null || !target.isAlive()) return;
+
+                int tgtCell = target.pos;
 
                 int dmg = Math.round(hero.damageRoll() * ULT_MULT);
                 target.damage(dmg, hero, DamageType.COLD);
@@ -138,7 +152,10 @@ public class Snowshine extends TeamOperator {
                 if (target.isAlive()) {
                     ArtsAttachment.apply(target, ArtsAttachment.ArtsType.CRYO, hero);
                 }
-                // TODO: 적 주변 냉기 피해 지대(Blob) 생성
+
+                // 적 주변 냉기 피해 지대 생성 (대상 사망 여부와 무관하게 그 자리에 전개)
+                int tickDmg = Math.round(hero.damageRoll() * ZONE_TICK_MULT);
+                EndfieldZone.summon(ColdZone.class, tgtCell, ZONE_RADIUS, ZONE_DURATION, tickDmg, 0);
             }
         };
     }
