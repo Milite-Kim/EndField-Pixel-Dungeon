@@ -16,6 +16,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.shatteredpixel.shatteredpixeldungeon.windows.WndOperatorInfo;
 import com.watabou.glwrap.Texture;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Camera;
@@ -56,6 +57,13 @@ public class OperatorSelectScene extends PixelScene {
 
     // 이름 바 높이
     private static final float NAME_BAR_H = 24f;
+
+    // 일러스트 하단 그라데이션 (밴드 수 / 최종 알파)
+    private static final int   FADE_STEPS     = 12;
+    private static final float FADE_MAX_ALPHA = 0.85f;
+
+    // 이름 바 좌우 버튼 크기 (좌: 정보 / 우: 진행) — 대칭이라 이름이 화면 정중앙에 온다
+    private static final float SIDE_BTN_W = 50f;
 
     // 속성 탭 색상
     private static final int[] ATTR_COLORS = {
@@ -108,6 +116,7 @@ public class OperatorSelectScene extends PixelScene {
     private IconButton btnPrev;
     private IconButton btnNext;
     private StyledButton btnProceed;
+    private StyledButton btnInfo;
     private IconButton btnBack;
 
     @Override
@@ -155,12 +164,19 @@ public class OperatorSelectScene extends PixelScene {
         illustrationLabel.hardlight(0xCCFFCC);
         add(illustrationLabel);
 
-        // ── 일러스트 하단 페이드 (이름 바와 자연스럽게 이어지도록) ──
-        float fadeH = Math.min(60f, illusH * 0.25f);
-        ColorBlock bottomFade = new ColorBlock(W, fadeH, 0xCC111820);
-        bottomFade.x = 0f;
-        bottomFade.y = illusY + illusH - fadeH;
-        add(bottomFade);
+        // ── 일러스트 하단 그라데이션 (이름 바로 자연스럽게 이어지도록) ──
+        // ColorBlock은 단색이라 한 장만 깔면 경계가 뚜렷한 '검은 띠'가 된다.
+        // 얇은 밴드를 여러 장 쌓아 알파를 점증시켜 실제 그라데이션을 만든다.
+        float fadeH  = Math.min(40f, illusH * 0.20f);
+        float stepH  = fadeH / FADE_STEPS;
+        for (int i = 0; i < FADE_STEPS; i++) {
+            // +1f: 밴드 사이에 이음새(빈 줄)가 생기지 않도록 살짝 겹침
+            ColorBlock band = new ColorBlock(W, stepH + 1f, 0xFF111820);
+            band.x = 0f;
+            band.y = illusY + illusH - fadeH + i * stepH;
+            band.alpha((i + 1) / (float) FADE_STEPS * FADE_MAX_ALPHA);
+            add(band);
+        }
 
         // ── 속성 탭 (일러스트 위 오버레이, 상단) ─────────
         // 탭 배경 (반투명)
@@ -219,16 +235,32 @@ public class OperatorSelectScene extends PixelScene {
         nameBarBg.y = nameBarY;
         add(nameBarBg);
 
-        // 속성 색상 마커 (이름 바 좌측) — 흰색 기반 + hardlight로 색상 동적 교체
-        nameBarAttrMarker = new ColorBlock(3f, NAME_BAR_H - 4f, 0xFFFFFFFF);
-        nameBarAttrMarker.x = 6f;
-        nameBarAttrMarker.y = nameBarY + 2f;
+        // 속성 색상 마커 — 이름 바 좌측 가장자리 액센트 (정보 버튼과 겹치지 않게 flush)
+        nameBarAttrMarker = new ColorBlock(3f, NAME_BAR_H, 0xFFFFFFFF);
+        nameBarAttrMarker.x = 0f;
+        nameBarAttrMarker.y = nameBarY;
         add(nameBarAttrMarker);
 
-        // 오퍼레이터 이름 (이름 바 중앙)
+        // 오퍼레이터 이름 (화면 정중앙 — 좌우 버튼 폭이 같아 정확히 가운데 정렬)
         nameLabel = renderTextBlock("", 9);
         nameLabel.hardlight(Window.TITLE_COLOR);
         add(nameLabel);
+
+        float sideBtnH = NAME_BAR_H - 6f;
+        float sideBtnY = nameBarY + (NAME_BAR_H - sideBtnH) / 2f;
+
+        // ── 정보 버튼 (이름 바 좌측) — 스킬 정보 팝업 ──
+        btnInfo = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "정보") {
+            @Override
+            protected void onClick() {
+                showOperatorInfo();
+            }
+        };
+        btnInfo.icon(Icons.get(Icons.INFO));
+        btnInfo.setSize(SIDE_BTN_W, sideBtnH);
+        btnInfo.setPos(5f, sideBtnY);
+        btnInfo.textColor(Window.TITLE_COLOR);
+        add(btnInfo);
 
         // ── 진행 버튼 (이름 바 우측) ──────────────────
         btnProceed = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "진행") {
@@ -238,9 +270,8 @@ public class OperatorSelectScene extends PixelScene {
             }
         };
         btnProceed.icon(Icons.get(Icons.ENTER));
-        btnProceed.setSize(50, NAME_BAR_H - 6f);
-        btnProceed.setPos(W - btnProceed.width() - 4f,
-                          nameBarY + (NAME_BAR_H - btnProceed.height()) / 2f);
+        btnProceed.setSize(SIDE_BTN_W, sideBtnH);
+        btnProceed.setPos(W - SIDE_BTN_W - 5f, sideBtnY);
         btnProceed.textColor(Window.TITLE_COLOR);
         add(btnProceed);
 
@@ -281,14 +312,16 @@ public class OperatorSelectScene extends PixelScene {
         btnNext.setRect(portraitRowX + portraitTotalW + 2f, arrowY, 16, 16);
         add(btnNext);
 
-        // ── 뒤로가기 버튼 (좌상단, 탭 위에 오버레이) ──────
+        // ── 뒤로가기 버튼 (속성 탭 바로 아래, 일러스트 위 오버레이) ──
+        // 씬 추가 순서가 렌더 순서이므로, illusGroup보다 뒤에 추가된 이 버튼은
+        // 일러스트 위에 정상적으로 그려진다. (탭과 겹치지 않도록 탭 아래로 배치)
         btnBack = new IconButton(Icons.get(Icons.ARROW)) {
             @Override
             protected void onClick() {
                 onBackPressed();
             }
         };
-        btnBack.setRect(2f, (TAB_HEIGHT - 14f) / 2f + 1f, 16, 16);
+        btnBack.setRect(4f, tabAreaH + 4f, 16, 16);
         add(btnBack);
 
         // ── 초기 상태: 물리 탭 선택 ──────────────────
@@ -383,13 +416,17 @@ public class OperatorSelectScene extends PixelScene {
 
         // ── 이름 바 갱신 ────────────────────────────
         nameLabel.text(opName);
-        // 이름 바 중앙 정렬 (진행 버튼 왼쪽 공간)
-        float nameCenterX = (Camera.main.width - btnProceed.width() - 8f) / 2f;
+        // 좌(정보)·우(진행) 버튼 폭이 같으므로 화면 정중앙에 그대로 정렬한다
         nameLabel.setPos(
-            nameCenterX - nameLabel.width() / 2f,
+            (Camera.main.width - nameLabel.width()) / 2f,
             illusY + illusH + (NAME_BAR_H - nameLabel.height()) / 2f
         );
         align(nameLabel);
+
+        // 선택된 오퍼레이터가 없으면 정보 버튼 비활성
+        if (btnInfo != null) {
+            btnInfo.enable(selectedOpClass != null);
+        }
 
         nameBarAttrMarker.hardlight(attrColor);
 
@@ -465,6 +502,16 @@ public class OperatorSelectScene extends PixelScene {
     // ─────────────────────────────────────────────
     // 진행
     // ─────────────────────────────────────────────
+
+    /** 정보 버튼 → 선택된 오퍼레이터의 배틀스킬/연계기/궁극기 팝업 */
+    private void showOperatorInfo() {
+        if (selectedOpClass == null) return;
+        try {
+            add(new WndOperatorInfo(selectedOpClass.newInstance()));
+        } catch (Exception e) {
+            Game.reportException(e);
+        }
+    }
 
     private void onProceed() {
         if (selectedOpClass == null) return;

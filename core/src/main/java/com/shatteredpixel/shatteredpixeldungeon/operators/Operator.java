@@ -78,11 +78,11 @@ public abstract class Operator implements Bundlable {
      * 이 값은 "잘라낸 뒤 어느 부분을 보여줄지"를 결정한다.
      *   0.0 = 이미지 최상단 / 0.5 = 중앙 / 1.0 = 최하단
      *
-     * 전신 스플래시 아트는 보통 얼굴이 상단 1/3에 있으므로 기본값을 0.25로 둔다.
+     * 전신 스플래시 아트 기준 기본값 0.40 (얼굴~상체가 중앙에 오도록 약간 아래 구간을 노출).
      * 아트마다 구도가 달라 각 오퍼레이터에서 오버라이드해 미세조정하는 것을 권장한다.
      */
     public float illustrationAnchorY() {
-        return 0.25f;
+        return 0.40f;
     }
 
     /**
