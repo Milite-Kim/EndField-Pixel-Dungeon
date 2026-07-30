@@ -6,6 +6,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
@@ -69,6 +70,7 @@ public class Yvonne extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()              { return "이본"; }
+    @Override public String illustration()       { return Assets.Operators.YVONNE_ILLUS; }
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()    { return WeaponType.HANDGUN; }
     @Override public Attribute attribute()      { return Attribute.COLD; }

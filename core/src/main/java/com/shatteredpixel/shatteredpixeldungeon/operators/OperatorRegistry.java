@@ -107,8 +107,16 @@ public class OperatorRegistry {
     private static final List<Class<? extends Operator>> DEFAULT_UNLOCKED = new ArrayList<>();
 
     static {
-        DEFAULT_UNLOCKED.add(Endministrator.class);
-        DEFAULT_UNLOCKED.add(Felika.class);
+        // 테스트 빌드 로스터 — 스플래시 아트가 제작된 8명.
+        // 아트가 추가되는 대로 순차 확대 예정 (최종 목표: 25명 전원)
+        DEFAULT_UNLOCKED.add(Endministrator.class);  // 관리자
+        DEFAULT_UNLOCKED.add(Felika.class);          // 펠리카
+        DEFAULT_UNLOCKED.add(Jincheonwoo.class);     // 진천우
+        DEFAULT_UNLOCKED.add(Akekuri.class);         // 아케쿠리
+        DEFAULT_UNLOCKED.add(Estella.class);         // 에스텔라
+        DEFAULT_UNLOCKED.add(Gilberta.class);        // 질베르타
+        DEFAULT_UNLOCKED.add(Levatine.class);        // 레바테인
+        DEFAULT_UNLOCKED.add(Yvonne.class);          // 이본
     }
 
     // ─────────────────────────────────────────────

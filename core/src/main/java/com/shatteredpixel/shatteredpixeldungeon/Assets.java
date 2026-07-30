@@ -340,7 +340,19 @@ public class Assets {
 	}
 
 	public static class Operators {
+		/**
+		 * 오퍼레이터 선택 화면 스플래시 아트.
+		 * 전신 세로 구도(≈1:1) 기준이며, fill+crop + illustrationAnchorY()로 노출 구간을 조절한다.
+		 * 규격/제작 가이드: docs/엔픽던_스프라이트시스템.md (5-B절)
+		 */
 		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/endministrator.png";
+		public static final String AKEKURI_ILLUS        = "operators/illustrations/Akekuri.png";
+		public static final String JINCHEONWOO_ILLUS    = "operators/illustrations/Chen_Qianyu.png";
+		public static final String ESTELLA_ILLUS        = "operators/illustrations/Estella.png";
+		public static final String GILBERTA_ILLUS       = "operators/illustrations/Gilberta.png";
+		public static final String LEVATINE_ILLUS       = "operators/illustrations/Laevatain.png";
+		public static final String FELIKA_ILLUS         = "operators/illustrations/Perlica.png";
+		public static final String YVONNE_ILLUS         = "operators/illustrations/Yvonne.png";
 
 		/**
 		 * 인게임 스탠딩 스프라이트 — 64×64 단일 프레임.

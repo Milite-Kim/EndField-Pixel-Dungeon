@@ -65,6 +65,7 @@ public class Felika extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "펠리카"; }
+    @Override public String illustration()       { return Assets.Operators.FELIKA_ILLUS; }
     @Override public String spriteSheet()        { return Assets.Operators.FELIKA_SPRITE; }
     @Override public OperatorClass operatorClass() { return OperatorClass.CASTER; }
     @Override public WeaponType weaponType()     { return WeaponType.ARTS_UNIT; }

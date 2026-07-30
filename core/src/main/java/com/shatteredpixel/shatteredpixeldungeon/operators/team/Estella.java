@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
@@ -55,6 +56,7 @@ public class Estella extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "에스텔라"; }
+    @Override public String illustration()       { return Assets.Operators.ESTELLA_ILLUS; }
     @Override public OperatorClass operatorClass() { return OperatorClass.GUARD; }
     @Override public WeaponType weaponType()     { return WeaponType.POLEARM; }
     @Override public Attribute attribute()       { return Attribute.COLD; }
