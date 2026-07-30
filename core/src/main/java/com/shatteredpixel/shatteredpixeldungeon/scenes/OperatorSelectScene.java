@@ -16,6 +16,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.watabou.glwrap.Texture;
 import com.watabou.input.PointerEvent;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.ColorBlock;
@@ -396,16 +397,34 @@ public class OperatorSelectScene extends PixelScene {
         if (path != null) {
             currentIllus = new Image(path);
 
-            // fit(contain) 스케일: 일러스트 전체가 잘리지 않고 영역 안에 들어가도록 축소.
-            // (영역보다 작으면 남는 공간은 illustrationBg/페이드로 채워짐)
+            // 전신 스플래시 아트(≈1:1)를 넓고 낮은 영역(≈3:1)에 넣기 위해
+            // fill+crop 스케일 사용: 영역을 가득 채우고 넘치는 부분은 카메라가 클리핑.
+            // (fit으로 축소하면 좌우 여백이 크게 남고 축소율이 커져 디테일이 뭉개진다)
             float scaleX = illusW / currentIllus.width;
             float scaleY = illusH / currentIllus.height;
-            float fitScale = Math.min(scaleX, scaleY);
-            currentIllus.scale.set(fitScale);
+            float fillScale = Math.max(scaleX, scaleY);
+            currentIllus.scale.set(fillScale);
 
-            // 중앙 정렬 (illusCamera 좌표계 기준)
-            currentIllus.x = (illusW - currentIllus.width  * fitScale) / 2f;
-            currentIllus.y = (illusH - currentIllus.height * fitScale) / 2f;
+            float scaledW = currentIllus.width  * fillScale;
+            float scaledH = currentIllus.height * fillScale;
+
+            // 가로: 중앙 정렬 / 세로: 오퍼레이터별 앵커로 노출 구간 결정
+            //   anchorY 0 = 이미지 상단 노출, 0.5 = 중앙, 1 = 하단
+            float anchorY = 0.25f;
+            if (selectedOpClass != null) {
+                try {
+                    anchorY = selectedOpClass.newInstance().illustrationAnchorY();
+                } catch (Exception e) {
+                    // 기본값 유지
+                }
+            }
+            currentIllus.x = (illusW - scaledW) * 0.5f;
+            currentIllus.y = (illusH - scaledH) * anchorY;
+
+            // 비정수 배율 축소 시 최근접 필터로 픽셀이 뭉개지는 것을 방지 (일러스트 전용)
+            if (currentIllus.texture != null) {
+                currentIllus.texture.filter(Texture.LINEAR, Texture.LINEAR);
+            }
 
             illusGroup.add(currentIllus);
             illustrationLabel.visible = false;
