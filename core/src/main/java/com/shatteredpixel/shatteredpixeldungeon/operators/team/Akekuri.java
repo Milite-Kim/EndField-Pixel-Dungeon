@@ -6,6 +6,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
@@ -62,6 +63,7 @@ public class Akekuri extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "아케쿠리"; }
+    @Override public String illustration()       { return Assets.Operators.AKEKURI_ILLUS; }
     @Override public OperatorClass operatorClass() { return OperatorClass.VANGUARD; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.HEAT; }

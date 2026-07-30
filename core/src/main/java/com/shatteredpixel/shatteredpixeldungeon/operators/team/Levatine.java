@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsCorrosion;
@@ -71,6 +72,7 @@ public class Levatine extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "레바테인"; }
+    @Override public String illustration()       { return Assets.Operators.LEVATINE_ILLUS; }
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.HEAT; }
