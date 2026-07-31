@@ -12,7 +12,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.utils.Bundle;
 
 /**
- * 늑대의 발톱 (WolfClaw) — 로시(Rosi)의 배틀스킬 조건부 적 디버프.
+ * 늑대의 발톱 (WolfClaw) — 로시(Rossi)의 배틀스킬 조건부 적 디버프.
  *
  * [매 턴] 물리 피해(Dungeon.hero.damageRoll() × TICK_DMG_MULT)
  * [피해 증폭] 이 버프가 붙은 적이 받는 물리/열기 피해를 DMG_AMP_MULT 배 증가

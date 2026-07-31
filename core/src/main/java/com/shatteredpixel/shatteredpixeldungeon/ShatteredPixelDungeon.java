@@ -52,6 +52,23 @@ public class ShatteredPixelDungeon extends Game {
 				com.shatteredpixel.shatteredpixeldungeon.items.keys.WornKey.class,
 				"com.shatteredpixel.shatteredpixeldungeon.items.keys.SkeletonKey" );
 
+		// 엔픽던: 오퍼레이터 클래스명을 공식 영문 표기로 변경 (구 세이브 호환용 별칭)
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Perlica.class,    "Felika");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.ChenQianyu.class, "Jincheonwoo");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Wulfgard.class,   "Wolfguard");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Xaihi.class,      "Zaihe");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Catcher.class,    "Kachir");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.DaPan.class,      "Pan");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Lifeng.class,     "Yeofung");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Rossi.class,      "Rosi");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Laevatain.class,  "Levatine");
+		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Avywenna.class,   "Aviena");
+	}
+
+	/** 구 오퍼레이터 클래스명(단순명) → 현재 클래스 별칭 등록 */
+	private static void addOperatorAlias( Class<?> current, String oldSimpleName ) {
+		com.watabou.utils.Bundle.addAlias( current,
+				"com.shatteredpixel.shatteredpixeldungeon.operators.team." + oldSimpleName );
 	}
 	
 	@Override

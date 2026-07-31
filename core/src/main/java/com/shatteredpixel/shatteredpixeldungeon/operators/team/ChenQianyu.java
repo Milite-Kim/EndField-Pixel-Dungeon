@@ -25,7 +25,7 @@ import com.watabou.noosa.tweeners.Tweener;
 import com.watabou.utils.Callback;
 
 /**
- * 진천우 (Jincheonwoo)
+ * 진천우 (Chen Qianyu)
  *
  * 직군: 가드
  * 무기: 한손검
@@ -39,7 +39,7 @@ import com.watabou.utils.Callback;
  *             TODO: 피해 수치 확정
  *             TODO: 승급 — 도중 처치 시 주변 적으로 연장 / 처치 비례 충전 반환
  */
-public class Jincheonwoo extends TeamOperator {
+public class ChenQianyu extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해 배율 상수 (TODO: 수치 확정)
@@ -74,13 +74,13 @@ public class Jincheonwoo extends TeamOperator {
     public String name() { return "진천우"; }
 
     @Override
-    public String illustration() { return Assets.Operators.JINCHEONWOO_ILLUS; }
+    public String illustration() { return Assets.Operators.CHEN_QIANYU_ILLUS; }
 
     @Override
-    public String spriteSheet() { return Assets.Operators.JINCHEONWOO_SPRITE; }
+    public String spriteSheet() { return Assets.Operators.CHEN_QIANYU_SPRITE; }
 
     @Override
-    public String chainFaceAsset() { return Assets.Operators.JINCHEONWOO_FACE; } // TODO: 에셋 확정 후 경로 지정
+    public String chainFaceAsset() { return Assets.Operators.CHEN_QIANYU_FACE; } // TODO: 에셋 확정 후 경로 지정
 
     @Override
     public OperatorClass operatorClass() { return OperatorClass.GUARD; }
@@ -170,7 +170,7 @@ public class Jincheonwoo extends TeamOperator {
         }
 
         // 관통 이동: 진천우가 메인 오퍼레이터일 때만
-        if (hero.activeMainOperator instanceof Jincheonwoo) {
+        if (hero.activeMainOperator instanceof ChenQianyu) {
             penetrate(hero, target);
         }
     }

@@ -345,13 +345,13 @@ public class Assets {
 		 * 전신 세로 구도(≈1:1) 기준이며, fill+crop + illustrationAnchorY()로 노출 구간을 조절한다.
 		 * 규격/제작 가이드: docs/엔픽던_스프라이트시스템.md (5-B절)
 		 */
-		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/endministrator.png";
+		public static final String ENDMINISTRATOR_ILLUS = "operators/illustrations/Endministrator.png";
 		public static final String AKEKURI_ILLUS        = "operators/illustrations/Akekuri.png";
-		public static final String JINCHEONWOO_ILLUS    = "operators/illustrations/Chen_Qianyu.png";
+		public static final String CHEN_QIANYU_ILLUS    = "operators/illustrations/ChenQianyu.png";
 		public static final String ESTELLA_ILLUS        = "operators/illustrations/Estella.png";
 		public static final String GILBERTA_ILLUS       = "operators/illustrations/Gilberta.png";
-		public static final String LEVATINE_ILLUS       = "operators/illustrations/Laevatain.png";
-		public static final String FELIKA_ILLUS         = "operators/illustrations/Perlica.png";
+		public static final String LAEVATAIN_ILLUS       = "operators/illustrations/Laevatain.png";
+		public static final String PERLICA_ILLUS         = "operators/illustrations/Perlica.png";
 		public static final String YVONNE_ILLUS         = "operators/illustrations/Yvonne.png";
 
 		/**
@@ -359,9 +359,9 @@ public class Assets {
 		 * 모션 시트 제작 후에는 {이름}.png(가로 나열 프레임)로 확장 예정.
 		 * 자세한 내용: docs/엔픽던_스프라이트시스템.md
 		 */
-		public static final String ENDMINISTRATOR_SPRITE = "sprites/Endmistrator_Standing.png";
-		public static final String JINCHEONWOO_SPRITE    = "sprites/Chen_Standing.png";
-		public static final String FELIKA_SPRITE         = "sprites/Perlica_Standing.png";
+		public static final String ENDMINISTRATOR_SPRITE = "sprites/Endministrator_Standing.png";
+		public static final String CHEN_QIANYU_SPRITE    = "sprites/ChenQianyu_Standing.png";
+		public static final String PERLICA_SPRITE         = "sprites/Perlica_Standing.png";
 
 		/**
 		 * 연계기 얼굴 팝업 이미지 — 메인 일러스트의 얼굴 크롭 예정.
@@ -369,7 +369,7 @@ public class Assets {
 		 * TODO: 에셋 확정 후 경로 지정 (operators/faces/<name>.png 예정)
 		 */
 		public static final String ENDMINISTRATOR_FACE  = null; // 미확정
-		public static final String JINCHEONWOO_FACE      = null; // 미확정
+		public static final String CHEN_QIANYU_FACE      = null; // 미확정
 		public static final String POGRANICHNIK_FACE     = null; // 미확정
 		public static final String EMBER_FACE            = null; // 미확정
 		public static final String LASTLIGHT_FACE        = null; // 미확정

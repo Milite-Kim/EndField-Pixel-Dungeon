@@ -17,7 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 
 /**
- * 로시 (Rosi)
+ * 로시 (Rossi)
  *
  * 직군: 가드
  * 무기: 한손검
@@ -37,7 +37,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
  *   - 매 턴 물리 틱 피해(×WolfClaw.TICK_DMG_MULT)
  *   - 보유 중 물리/열기 피해 ×WolfClaw.DMG_AMP_MULT 증폭
  */
-public class Rosi extends TeamOperator {
+public class Rossi extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해 배율 상수 (TODO: 수치 확정)

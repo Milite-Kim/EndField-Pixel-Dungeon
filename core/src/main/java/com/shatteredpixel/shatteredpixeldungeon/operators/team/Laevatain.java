@@ -19,7 +19,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 레바테인 (Levatine)
+ * 레바테인 (Laevatain)
  *
  * 직군: 스트라이커
  * 무기: 한손검
@@ -46,7 +46,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  *           - 배틀스킬 1회 강화 준비
  *           TODO: 사거리 +1칸 — Hero 공격 범위 시스템 구현 후 추가
  */
-public class Levatine extends TeamOperator {
+public class Laevatain extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)
@@ -72,7 +72,7 @@ public class Levatine extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "레바테인"; }
-    @Override public String illustration()       { return Assets.Operators.LEVATINE_ILLUS; }
+    @Override public String illustration()       { return Assets.Operators.LAEVATAIN_ILLUS; }
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.HEAT; }

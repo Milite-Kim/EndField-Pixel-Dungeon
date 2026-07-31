@@ -24,7 +24,7 @@ import com.watabou.utils.Bundle;
  *   TODO: Hero 공격 범위 시스템 구현 후 연동 (현재 미적용)
  *
  * [연동 클래스]
- *   Levatine.java — 배틀스킬에서 이 버프의 skillEnhancedReady / DMG_MULT를 읽음
+ *   Laevatain.java — 배틀스킬에서 이 버프의 skillEnhancedReady / DMG_MULT를 읽음
  */
 public class LevatineUltimateBuff extends Buff {
 

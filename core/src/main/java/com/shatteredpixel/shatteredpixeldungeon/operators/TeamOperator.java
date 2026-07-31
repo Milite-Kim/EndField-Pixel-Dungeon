@@ -24,7 +24,7 @@ import com.watabou.utils.Bundle;
  *
  * 연계기 큐 타이머/순서는 Hero.chainQueue 에서 관리합니다.
  * 각 오퍼레이터는 이 클래스를 상속받아 구현합니다.
- * 예) Jincheonwoo extends TeamOperator
+ * 예) ChenQianyu extends TeamOperator
  */
 public abstract class TeamOperator extends Operator {
 

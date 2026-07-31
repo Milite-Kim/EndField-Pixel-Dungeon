@@ -17,7 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 
 /**
- * 자이히 (Zaihe)
+ * 자이히 (Xaihi)
  *
  * 직군: 서포터
  * 무기: 아츠유닛
@@ -34,7 +34,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
  * [충전 효과] 충전 전량 소모 → 소모량 비례 배틀스킬 쿨타임 감소
  *             TODO: 아츠유닛 충전 시스템 구현 후 연동
  */
-public class Zaihe extends TeamOperator {
+public class Xaihi extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)

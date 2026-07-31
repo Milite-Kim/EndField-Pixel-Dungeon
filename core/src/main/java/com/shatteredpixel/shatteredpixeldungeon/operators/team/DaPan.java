@@ -14,7 +14,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 판 (Pan)
+ * 판 (Da Pan)
  *
  * 직군: 스트라이커
  * 무기: 양손검
@@ -28,7 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  * ※ 포그라니치니크/관리자와 파티 구성 시 스택 유지 어려움 주의
  *    (연계기가 4스택을 강타로 전량 소모하므로 스택 재축적 전 다른 오퍼레이터가 소모하면 연계기 미발동)
  */
-public class Pan extends TeamOperator {
+public class DaPan extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해 배율 상수 (TODO: 수치 확정)

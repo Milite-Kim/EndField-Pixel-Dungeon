@@ -19,7 +19,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 카치르 (Kachir)
+ * 카치르 (Catcher)
  *
  * 직군: 디펜더
  * 무기: 양손검
@@ -33,7 +33,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  *
  * ※ 차지 패턴 중단 불가 / 쉴드로 맞딜 or 회피 선택
  */
-public class Kachir extends TeamOperator {
+public class Catcher extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)

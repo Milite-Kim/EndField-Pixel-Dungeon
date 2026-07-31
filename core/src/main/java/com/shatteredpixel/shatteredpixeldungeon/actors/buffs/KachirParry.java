@@ -11,7 +11,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 
 /**
- * 카치르(Kachir)의 배틀스킬로 Hero에게 부여되는 패링 버프 (1회용).
+ * 카치르(Catcher)의 배틀스킬로 Hero에게 부여되는 패링 버프 (1회용).
  *
  * 다음 물리 공격을 완전 차단(100%)하고 카운터어택 실행:
  *   → 물리 피해(×COUNTER_MULT) + 방어불능 스택 1개 추가

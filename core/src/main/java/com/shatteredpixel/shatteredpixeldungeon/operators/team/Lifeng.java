@@ -17,7 +17,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 여풍 (Yeofung)
+ * 여풍 (Lifeng)
  *
  * 직군: 가드
  * 무기: 장병기
@@ -39,7 +39,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  *
  * TODO: 모든 피해 수치 확정
  */
-public class Yeofung extends TeamOperator {
+public class Lifeng extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해 배율 상수 (TODO: 수치 확정)

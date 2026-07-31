@@ -18,7 +18,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 아비웨나 (Aviena)
+ * 아비웨나 (Avywenna)
  *
  * 직군: 스트라이커
  * 무기: 장병기
@@ -36,7 +36,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  *
  * [궁극기]   전기 피해 + 강력한 썬더랜스 1개 부착
  */
-public class Aviena extends TeamOperator {
+public class Avywenna extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)

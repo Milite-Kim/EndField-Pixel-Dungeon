@@ -35,7 +35,7 @@ import com.watabou.utils.Bundle;
  * [연동 클래스]
  *   - Char.java → damage() 내부에서 HitCounter.increment(this) 호출
  *   - Akekuri.java → chainCondition에서 isThresholdJustHit() 확인
- *   - Aviena.java  → chainCondition에서 isFirstHitJust() 확인
+ *   - Avywenna.java  → chainCondition에서 isFirstHitJust() 확인
  *
  * 이 버프는 자동 생성·영구 지속 (적이 살아있는 동안).
  * 적 사망 시 detach는 Buff 기본 동작에 의해 자동 처리.

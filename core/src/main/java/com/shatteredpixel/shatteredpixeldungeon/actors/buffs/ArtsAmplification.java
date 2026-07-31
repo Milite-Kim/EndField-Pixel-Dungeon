@@ -16,7 +16,7 @@ import com.watabou.utils.Bundle;
  * 플레이어 팀이 가하는 아츠(열기/냉기/자연/전기) 피해를 AMP_MULT 배 증폭한다.
  * → Char.damage()에서 type.isArts() && src == Dungeon.hero 일 때 적용.
  *
- * 자이히(Zaihe)의 지원 결정체(강력한 일격 시) 및 궁극기(냉기·자연 증폭)에서 부여한다.
+ * 자이히(Xaihi)의 지원 결정체(강력한 일격 시) 및 궁극기(냉기·자연 증폭)에서 부여한다.
  * 재부여 시 지속 시간이 갱신된다(중첩 없음).
  *
  * NOTE: 안탈(AntalAmplificationBuff)이 전기·열기 한정 증폭인 것과 달리,

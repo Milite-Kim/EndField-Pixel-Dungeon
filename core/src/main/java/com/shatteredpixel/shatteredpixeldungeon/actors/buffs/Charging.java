@@ -16,7 +16,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
  *   차지 시작 시: Charging.startCharge(enemy);
  *   차지 종료 시: Buff.detach(enemy, Charging.class);
  *
- * 카치르(Kachir)의 연계기 조건 '적 차지 시작 시'가 이 버프를 감지한다.
+ * 카치르(Catcher)의 연계기 조건 '적 차지 시작 시'가 이 버프를 감지한다.
  */
 public class Charging extends Buff {
 

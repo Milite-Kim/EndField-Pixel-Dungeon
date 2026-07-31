@@ -22,7 +22,7 @@ import com.watabou.utils.Random;
 import java.util.ArrayList;
 
 /**
- * 펠리카 (Felika)
+ * 펠리카 (Perlica)
  *
  * 직군: 캐스터
  * 무기: 아츠유닛
@@ -42,7 +42,7 @@ import java.util.ArrayList;
  *
  * ※ 첫 번째 던전 시작 시 팀 오퍼레이터 기본 보유 예정
  */
-public class Felika extends TeamOperator {
+public class Perlica extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)
@@ -65,8 +65,8 @@ public class Felika extends TeamOperator {
     // ─────────────────────────────────────────────
 
     @Override public String name()               { return "펠리카"; }
-    @Override public String illustration()       { return Assets.Operators.FELIKA_ILLUS; }
-    @Override public String spriteSheet()        { return Assets.Operators.FELIKA_SPRITE; }
+    @Override public String illustration()       { return Assets.Operators.PERLICA_ILLUS; }
+    @Override public String spriteSheet()        { return Assets.Operators.PERLICA_SPRITE; }
     @Override public OperatorClass operatorClass() { return OperatorClass.CASTER; }
     @Override public WeaponType weaponType()     { return WeaponType.ARTS_UNIT; }
     @Override public Attribute attribute()       { return Attribute.ELECTRIC; }

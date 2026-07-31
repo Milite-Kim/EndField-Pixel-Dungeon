@@ -16,7 +16,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.TeamOperator;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
 
 /**
- * 울프가드 (Wolfguard)
+ * 울프가드 (Wulfgard)
  *
  * 직군: 캐스터
  * 무기: 권총
@@ -30,7 +30,7 @@ import com.shatteredpixel.shatteredpixeldungeon.operators.Ultimate;
  *             효과: 열기 피해 + 열기 부착
  * [궁극기]   열기 피해(×ULT_MULT) + 강제 연소(Combustion, 3스택 기준)
  */
-public class Wolfguard extends TeamOperator {
+public class Wulfgard extends TeamOperator {
 
     // ─────────────────────────────────────────────
     // 피해/수치 상수 (TODO: 수치 확정)

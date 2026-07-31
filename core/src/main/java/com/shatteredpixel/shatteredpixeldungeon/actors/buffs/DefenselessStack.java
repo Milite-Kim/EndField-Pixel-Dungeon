@@ -78,7 +78,7 @@ public class DefenselessStack extends Buff {
     /**
      * 물리 이상을 적에게 적용한다.
      * heavyMult: HEAVY_ATTACK 발동 시 사용할 배율 (기본값 = HEAVY_ATTACK_DMG_MULT).
-     *            판(Pan)처럼 기본보다 높은 강타 배율이 필요한 오퍼레이터가 이 버전을 호출.
+     *            판(Da Pan)처럼 기본보다 높은 강타 배율이 필요한 오퍼레이터가 이 버전을 호출.
      *
      * @param enemy    대상 적
      * @param type     물리 이상 종류
@@ -172,7 +172,7 @@ public class DefenselessStack extends Buff {
     /**
      * 강타 발동 피해 배율 (소모 스택 1개당 damageRoll 기준).
      * 스택이 많을수록 강해지는 주력 딜링기. TODO: 수치 확정
-     * public — 판(Pan) 등 이 배율을 기준으로 보정값을 계산하는 오퍼레이터가 참조.
+     * public — 판(Da Pan) 등 이 배율을 기준으로 보정값을 계산하는 오퍼레이터가 참조.
      */
     public static final float HEAVY_ATTACK_DMG_MULT = 1.5f;
 
