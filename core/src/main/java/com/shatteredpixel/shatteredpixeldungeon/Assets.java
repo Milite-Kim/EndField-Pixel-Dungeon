@@ -274,6 +274,9 @@ public class Assets {
 		public static final String AMULET   = "sprites/amulet.png";
 
 		public static final String RAT      = "sprites/rat.png";
+
+		// 엔드필드 몬스터 스프라이트 (22×16 프레임)
+		public static final String ORIGINIUM_BUG = "sprites/OriginiumBug.png";
 		public static final String BRUTE    = "sprites/brute.png";
 		public static final String SPINNER  = "sprites/spinner.png";
 		public static final String DM300    = "sprites/dm300.png";

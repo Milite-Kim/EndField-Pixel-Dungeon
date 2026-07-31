@@ -12,7 +12,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.RatSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.OriginiumBugSprite;
 import com.watabou.utils.Random;
 
 /**
@@ -21,12 +21,12 @@ import com.watabou.utils.Random;
  * HP 8 / ATK 40 / 명중 8 / 회피 2 / 방어 1 all / EXP 2 / maxLvl 5
  * 특수 패턴 없음. 공격속성: 물리.
  *
- * TODO: 전용 스프라이트, 수치 최종 확정
+ * TODO: 수치 최종 확정
  */
 public class OriginiumSlug extends Mob {
 
     {
-        spriteClass = RatSprite.class; // TODO: 전용 스프라이트
+        spriteClass = OriginiumBugSprite.class;
         HP = HT      = 8;
         defenseSkill = 2;
         EXP          = 2;
