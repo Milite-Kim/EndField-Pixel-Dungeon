@@ -20,6 +20,8 @@ package com.shatteredpixel.shatteredpixeldungeon.sprites;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.operators.Operator;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonWallsTilemap;
 import com.watabou.noosa.TextureFilm;
 
 /**
@@ -85,5 +87,80 @@ public class OperatorSprite extends HeroSprite {
 		} else {
 			die();
 		}
+	}
+
+	// ─────────────────────────────────────────────
+	// 벽 오버행 가림 회피 (skipCells)
+	// ─────────────────────────────────────────────
+	//
+	// DungeonWallsTilemap은 '남쪽 칸이 벽/문이면 그 칸에 오버행을 그리는' 방식이며,
+	// walls 레이어가 mobs 레이어보다 나중에 그려진다.
+	//   · 캐릭터 남쪽의 벽 → 캐릭터 칸에 오버행 → 하단부가 가려짐 (의도된 깊이 표현, 유지해야 함)
+	//   · 캐릭터 북쪽의 벽 → 16px 스프라이트는 침범하지 않아 원래 문제 없음
+	//
+	// 그러나 오퍼레이터 스프라이트는 64×64라 머리가 북쪽 칸까지 뻗어,
+	// '뒤에 있어야 할' 북쪽 벽에 머리가 잘린다.
+	//
+	// 레이어 순서를 뒤집으면 남쪽 벽의 하단 가림까지 잃으므로,
+	// SPD가 자체 대형 스프라이트(CrystalSpireSprite / FungalCoreSprite)에 쓰는 방식 그대로
+	// **머리가 침범하는 북쪽 칸의 벽 렌더링만 선택적으로 생략**한다.
+	// → 북쪽 벽에 안 잘리면서 남쪽 벽의 하단 가림은 그대로 유지된다.
+
+	/** 머리가 침범하는 북쪽 칸 수. 실제 캐릭터 몸체(약 32px = 2타일) 기준. */
+	private static final int WALL_SKIP_ROWS = 2;
+
+	/** 현재 skipCells를 적용해 둔 기준 위치 (-1 = 미적용) */
+	private int wallSkipAnchor = -1;
+
+	@Override
+	public void update() {
+		super.update();
+		updateWallSkip();
+	}
+
+	/** 위치·가시성 변화에 맞춰 북쪽 칸 벽 생략을 갱신한다. */
+	private void updateWallSkip() {
+		int desired = (ch != null && visible && curAnim != die) ? ch.pos : -1;
+		if (desired == wallSkipAnchor) return;
+
+		clearWallSkip();
+		if (desired >= 0) applyWallSkip(desired);
+		wallSkipAnchor = desired;
+	}
+
+	private void applyWallSkip(int pos) {
+		if (Dungeon.level == null) return;
+		int w = Dungeon.level.width();
+		for (int i = 1; i <= WALL_SKIP_ROWS; i++) {
+			int cell = pos - i * w;
+			if (cell < 0) break;
+			DungeonWallsTilemap.skipCells.add(cell);
+			GameScene.updateMap(cell);
+		}
+	}
+
+	private void clearWallSkip() {
+		if (wallSkipAnchor < 0 || Dungeon.level == null) return;
+		int w = Dungeon.level.width();
+		for (int i = 1; i <= WALL_SKIP_ROWS; i++) {
+			int cell = wallSkipAnchor - i * w;
+			if (cell < 0) break;
+			DungeonWallsTilemap.skipCells.remove(cell);
+			GameScene.updateMap(cell);
+		}
+	}
+
+	@Override
+	public void die() {
+		clearWallSkip();
+		wallSkipAnchor = -1;
+		super.die();
+	}
+
+	@Override
+	public void destroy() {
+		clearWallSkip();
+		wallSkipAnchor = -1;
+		super.destroy();
 	}
 }
