@@ -3266,10 +3266,16 @@ public class Hero extends Char {
 		// 연계기 발동 얼굴 팝업
 		GameScene.showChainFacePopup(op);
 
+		// 쿨타임을 발동 '전에' 초기화한다.
+		// activateChain() 내부에서 물리 이상/아츠 부착을 적용하면 그 즉시
+		// DefenselessStack.apply() 등이 checkChainTriggers()를 재호출하는데,
+		// 이때 아직 쿨타임이 0이면 방금 발동한 연계기가 자기 조건을 다시 만족시켜
+		// 큐에 재등록된다(진천우: LAUNCH 적용 → '방어불능 스택 보유' 조건 재충족).
+		op.resetCooldown();
+
 		chainActivationContext = true;
 		op.activateChain(this, target);
 		chainActivationContext = false;
-		op.resetCooldown();
 
 		// 연계기 발동 시 궁극기 충전
 		if (activeUltimate != null) {

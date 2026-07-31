@@ -22,6 +22,8 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.Game;
+import com.watabou.noosa.Group;
+import com.watabou.noosa.Image;
 import com.watabou.noosa.PointerArea;
 import com.watabou.input.PointerEvent;
 
@@ -51,6 +53,15 @@ public class TeamSelectScene extends PixelScene {
     private static final int CELL_GAP      = 3;
     private static final int TAB_HEIGHT    = 16;
     private static final int INFO_MIN_W    = 120;
+
+    /** 뒤로가기 버튼이 차지하는 좌상단 폭 — 속성 탭은 이만큼 오른쪽에서 시작한다 */
+    private static final float BACK_BTN_W  = 22f;
+
+    /** 정보 패널 헤더(이름 + 스탠딩 스프라이트) 높이 */
+    private static final float INFO_HEADER_H = 68f;
+
+    /** 스탠딩 스프라이트 규격 (64×64 단일 프레임) */
+    private static final float SPRITE_SIZE = 64f;
 
     // ─── 속성 탭 ──────────────────────────────────
     private static final Operator.Attribute[] ATTRS = Operator.Attribute.values();
@@ -82,6 +93,9 @@ public class TeamSelectScene extends PixelScene {
     private RenderedTextBlock infoChainName;
     private RenderedTextBlock infoChainDesc;
     private ColorBlock infoBg;
+
+    /** 선택된 오퍼레이터의 스탠딩 스프라이트 표시 그룹 (헤더 우측) */
+    private Group spriteGroup;
 
     private IconButton btnBack;
     private StyledButton btnProceed;
@@ -118,9 +132,11 @@ public class TeamSelectScene extends PixelScene {
         visibleRows = (int)(gridH / (CELL_SIZE + CELL_GAP));
 
         // ── 속성 탭 ───────────────────────────────
-        float tabAreaW = gridW;
+        // 좌상단 뒤로가기 버튼과 겹치지 않도록 BACK_BTN_W 만큼 오른쪽에서 시작.
+        // (오른쪽 끝은 그리드 우측 경계와 그대로 맞춘다)
+        float tabAreaW = gridW - BACK_BTN_W;
         float tabW     = (tabAreaW - (ATTRS.length - 1) * 2f) / ATTRS.length;
-        float tabStartX = gridX;
+        float tabStartX = gridX + BACK_BTN_W;
 
         for (int i = 0; i < ATTRS.length; i++) {
             final Operator.Attribute attr = ATTRS[i];
@@ -164,10 +180,14 @@ public class TeamSelectScene extends PixelScene {
         infoName.hardlight(Window.TITLE_COLOR);
         add(infoName);
 
-        // 구분선
+        // 스탠딩 스프라이트 전용 그룹 (헤더 우측) — 선택 변경 시 내용만 교체
+        spriteGroup = new Group();
+        add(spriteGroup);
+
+        // 구분선 (헤더 아래)
         ColorBlock divider = new ColorBlock(infoW - 8f, 1, 0xFF556655);
         divider.x = infoX + 4f;
-        divider.y = contentY + 20f;
+        divider.y = contentY + INFO_HEADER_H;
         add(divider);
 
         infoChainName = renderTextBlock(7);
@@ -319,27 +339,49 @@ public class TeamSelectScene extends PixelScene {
         // ColorBlock은 크기를 scale에 저장하므로 필드 width(=텍스처 1px)가 아닌 width() 메서드를 사용해야 함
         float iw = infoBg.width() - 8f;
 
+        // 이전 스탠딩 스프라이트 제거
+        spriteGroup.clear();
+
+        // 연계기 영역 시작 y (구분선 아래 고정)
+        float chainY = infoBg.y + INFO_HEADER_H + 4f;
+
         if (selectedOp == null) {
             infoName.text("선택 안 함");
             infoName.maxWidth((int) iw);
             infoName.setPos(ix, iy);
             align(infoName);
 
-            infoChainName.text("");
-            infoChainDesc.text("");
+            // RenderedTextBlock.text("")는 내부적으로 재빌드를 건너뛰어
+            // 이전 글자가 화면에 남는다. 따라서 visible로 숨긴다.
+            infoChainName.visible = false;
+            infoChainDesc.visible = false;
             return;
         }
 
         try {
             TeamOperator op = (TeamOperator) selectedOp.newInstance();
+
             infoName.text(op.name());
             infoName.maxWidth((int) iw);
             infoName.setPos(ix, iy);
             align(infoName);
 
+            // ── 스탠딩 스프라이트 (헤더 우측) ──
+            // TODO: 대기 모션 시트 제작 후 정지 이미지 → 애니메이션으로 교체
+            String sheet = op.spriteSheet();
+            if (sheet != null) {
+                Image spr = new Image(sheet);
+                spr.x = infoBg.x + infoBg.width() - SPRITE_SIZE - 4f;
+                spr.y = infoBg.y + 2f;
+                spriteGroup.add(spr);
+            }
+
+            infoChainName.visible = true;
+            infoChainDesc.visible = true;
+
             infoChainName.text(op.chainName());
             infoChainName.maxWidth((int) iw);
-            infoChainName.setPos(ix, infoName.bottom() + 8f);
+            infoChainName.setPos(ix, chainY);
             align(infoChainName);
 
             infoChainDesc.text(op.chainDescription());
