@@ -80,6 +80,7 @@ public class Gilberta extends TeamOperator {
 
     @Override public String name()               { return "질베르타"; }
     @Override public String illustration()       { return Assets.Operators.GILBERTA_ILLUS; }
+    @Override public String spriteSheet()         { return Assets.Operators.GILBERTA_SPRITE; }
     @Override public float illustrationAnchorY() { return 0.30f; }
     @Override public OperatorClass operatorClass() { return OperatorClass.SUPPORTER; }
     @Override public WeaponType weaponType()     { return WeaponType.ARTS_UNIT; }

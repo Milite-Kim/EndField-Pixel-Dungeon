@@ -64,6 +64,7 @@ public class Akekuri extends TeamOperator {
 
     @Override public String name()               { return "아케쿠리"; }
     @Override public String illustration()       { return Assets.Operators.AKEKURI_ILLUS; }
+    @Override public String spriteSheet()         { return Assets.Operators.AKEKURI_SPRITE; }
     @Override public float illustrationAnchorY() { return 0.25f; }
     @Override public OperatorClass operatorClass() { return OperatorClass.VANGUARD; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }

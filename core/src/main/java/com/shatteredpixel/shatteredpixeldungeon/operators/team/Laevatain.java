@@ -73,6 +73,7 @@ public class Laevatain extends TeamOperator {
 
     @Override public String name()               { return "레바테인"; }
     @Override public String illustration()       { return Assets.Operators.LAEVATAIN_ILLUS; }
+    @Override public String spriteSheet()         { return Assets.Operators.LAEVATAIN_SPRITE; }
     @Override public OperatorClass operatorClass() { return OperatorClass.STRIKER; }
     @Override public WeaponType weaponType()     { return WeaponType.ONE_HANDED_SWORD; }
     @Override public Attribute attribute()       { return Attribute.HEAT; }

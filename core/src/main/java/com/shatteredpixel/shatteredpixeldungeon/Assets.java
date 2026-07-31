@@ -362,6 +362,11 @@ public class Assets {
 		public static final String ENDMINISTRATOR_SPRITE = "sprites/Endministrator_Standing.png";
 		public static final String CHEN_QIANYU_SPRITE    = "sprites/ChenQianyu_Standing.png";
 		public static final String PERLICA_SPRITE         = "sprites/Perlica_Standing.png";
+		public static final String AKEKURI_SPRITE         = "sprites/Akekuri_Standing.png";
+		public static final String ESTELLA_SPRITE         = "sprites/Estella_Standing.png";
+		public static final String GILBERTA_SPRITE        = "sprites/Gilberta_Standing.png";
+		public static final String LAEVATAIN_SPRITE       = "sprites/Laevatain_Standing.png";
+		public static final String YVONNE_SPRITE          = "sprites/Yvonne_Standing.png";
 
 		/**
 		 * 연계기 얼굴 팝업 이미지 — 메인 일러스트의 얼굴 크롭 예정.

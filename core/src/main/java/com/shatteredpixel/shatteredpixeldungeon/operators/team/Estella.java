@@ -57,6 +57,7 @@ public class Estella extends TeamOperator {
 
     @Override public String name()               { return "에스텔라"; }
     @Override public String illustration()       { return Assets.Operators.ESTELLA_ILLUS; }
+    @Override public String spriteSheet()         { return Assets.Operators.ESTELLA_SPRITE; }
     @Override public OperatorClass operatorClass() { return OperatorClass.GUARD; }
     @Override public WeaponType weaponType()     { return WeaponType.POLEARM; }
     @Override public Attribute attribute()       { return Attribute.COLD; }
