@@ -277,6 +277,7 @@ public class Assets {
 
 		// 엔드필드 몬스터 스프라이트 (22×16 프레임)
 		public static final String ORIGINIUM_BUG = "sprites/OriginiumBug.png";
+		public static final String RHODAGN       = "sprites/Rhodagn.png";   // 48×48 단일 프레임 (보스)
 		public static final String BRUTE    = "sprites/brute.png";
 		public static final String SPINNER  = "sprites/spinner.png";
 		public static final String DM300    = "sprites/dm300.png";

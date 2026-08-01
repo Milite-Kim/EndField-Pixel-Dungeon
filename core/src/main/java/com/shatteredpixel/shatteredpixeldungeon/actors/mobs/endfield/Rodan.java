@@ -25,7 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.keys.WornKey;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.BruteSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.RhodagnSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
@@ -105,7 +105,7 @@ public class Rodan extends Mob {
     private int     flameDir        = 0;  // 화염방사 주 방향 오프셋 (+1/-1/+W/-W)
 
     {
-        spriteClass  = BruteSprite.class; // TODO: 전용 스프라이트로 교체
+        spriteClass  = RhodagnSprite.class;
         HP = HT      = 120;
         defenseSkill = 10; // TODO: DB에 명중/회피 미정
         EXP          = 6;
