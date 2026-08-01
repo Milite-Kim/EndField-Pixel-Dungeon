@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DefenselessStack;
@@ -116,6 +117,15 @@ public class DaPan extends TeamOperator {
     public String chainDescription() {
         return "조건: 방어불능 4스택 시\n" +
                "물리 피해(" + CHAIN_MULT + "×) + 강타(배율 " + CHAIN_HEAVY_MULT + "×/스택, 기본 대비 +10%)";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.PHYSICAL_ABNORMALITY };
     }
 
     /**

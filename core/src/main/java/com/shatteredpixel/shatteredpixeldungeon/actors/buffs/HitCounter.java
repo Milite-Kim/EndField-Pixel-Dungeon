@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -95,7 +96,7 @@ public class HitCounter extends Buff {
         if (hitCount == 1) {
             firstHitContext = true;
             if (Dungeon.hero != null) {
-                Dungeon.hero.checkChainTriggers(target);
+                Dungeon.hero.checkChainTriggers(target, ChainTrigger.HIT_COUNT);
             }
             firstHitContext = false;
         }
@@ -105,7 +106,7 @@ public class HitCounter extends Buff {
             // context flag 패턴: checkChainTriggers 도중에만 true
             thresholdJustHit = true;
             if (Dungeon.hero != null) {
-                Dungeon.hero.checkChainTriggers(target);
+                Dungeon.hero.checkChainTriggers(target, ChainTrigger.HIT_COUNT);
             }
             thresholdJustHit = false;
         }

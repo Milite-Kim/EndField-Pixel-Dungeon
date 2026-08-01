@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
@@ -195,7 +196,7 @@ public class Arclight extends TeamOperator {
 
                     // 감전 소모 이벤트: 아크라이트 연계기 트리거
                     electricConsumedContext = true;
-                    hero.checkChainTriggers(target);
+                    hero.checkChainTriggers(target, ChainTrigger.ELECTRIC_CONSUMED);
                     electricConsumedContext = false;
                 }
             }
@@ -210,6 +211,15 @@ public class Arclight extends TeamOperator {
     @Override public String chainDescription() {
         return "조건: 감전 상태 or 감전 소모 시 (최대 " + MAX_CHARGES + "스택 사전 충전)\n" +
                "효과: 물리 피해(×" + CHAIN_MULT + ") + 궁극기 충전";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.ELECTRIC_CONSUMED, ChainTrigger.ARTS_ATTACH };
     }
 
     /**

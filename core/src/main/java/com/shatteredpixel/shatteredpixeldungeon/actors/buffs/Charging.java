@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -32,7 +33,7 @@ public class Charging extends Buff {
     public static void startCharge(Char enemy) {
         Buff.affect(enemy, Charging.class);
         if (Dungeon.hero != null) {
-            Dungeon.hero.checkChainTriggers(enemy);
+            Dungeon.hero.checkChainTriggers(enemy, ChainTrigger.ENEMY_CHARGE);
         }
     }
 

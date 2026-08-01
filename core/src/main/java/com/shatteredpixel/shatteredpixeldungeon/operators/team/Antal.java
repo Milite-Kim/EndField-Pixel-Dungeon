@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AntalAmplificationBuff;
@@ -146,6 +147,15 @@ public class Antal extends TeamOperator {
         return "조건: 대상에게 물리 이상 or 아츠 부착 부여 시\n" +
                "효과: 전기 피해(×" + CHAIN_MULT + ") + 트리거 반복\n" +
                "  (물리 이상이면 동일 이상 재부여, 아츠 부착이면 동일 속성 재부착)";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.PHYSICAL_ABNORMALITY, ChainTrigger.ARTS_ATTACH };
     }
 
     /**

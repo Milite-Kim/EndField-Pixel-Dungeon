@@ -10,6 +10,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -143,6 +144,15 @@ public class ChenQianyu extends TeamOperator {
         return "조건: 적 방어불능 스택 보유 시\n" +
                "효과: 물리 피해 + LAUNCH\n" +
                "진천우 메인 시 추가: 관통 이동";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.PHYSICAL_ABNORMALITY };
     }
 
     /** 연계기 조건: 적에게 방어불능 스택이 있을 때 */

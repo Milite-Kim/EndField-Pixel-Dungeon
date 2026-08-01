@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
@@ -140,6 +141,15 @@ public class Pogranichnik extends TeamOperator {
     public String chainDescription() {
         return "조건: 강타 or 갑옷파괴로 방어불능 스택 소모 시\n" +
                "효과: 소모 스택 비례 물리 피해 + 궁극기 충전";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.PHYSICAL_ABNORMALITY };
     }
 
     /**

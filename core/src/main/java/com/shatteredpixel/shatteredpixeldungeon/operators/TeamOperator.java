@@ -67,6 +67,29 @@ public abstract class TeamOperator extends Operator {
     public abstract boolean chainCondition(Hero hero, Char target);
 
     /**
+     * 이 연계기가 반응할 트리거 이벤트 목록.
+     *
+     * 연계기는 **조건이 발생하는 순간**에만 트리거되어야 한다.
+     * 여기에 선언하지 않은 이벤트에서는 {@link #chainCondition}이 아예 평가되지 않으므로,
+     * "적이 이미 방어불능 상태라서 기본 공격에도 계속 발동"하는 문제가 방지된다.
+     *
+     * {@code null}을 반환하면 모든 이벤트에 반응한다(구 동작). 신규 오퍼레이터는 반드시 선언할 것.
+     */
+    public ChainTrigger[] chainTriggers() {
+        return null;
+    }
+
+    /** 주어진 이벤트에 이 연계기가 반응하는지 여부. */
+    public final boolean respondsTo(ChainTrigger trigger) {
+        ChainTrigger[] triggers = chainTriggers();
+        if (triggers == null) return true;
+        for (ChainTrigger t : triggers) {
+            if (t == trigger) return true;
+        }
+        return false;
+    }
+
+    /**
      * 연계기 실제 효과.
      * 플레이어가 UI 버튼을 눌러 발동했을 때 호출됩니다.
      *

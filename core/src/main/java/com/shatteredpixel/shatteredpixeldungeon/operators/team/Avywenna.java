@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
@@ -122,6 +123,15 @@ public class Avywenna extends TeamOperator {
     @Override public String chainDescription() {
         return "조건: 최초 타격 시 or 전기 부착/감전 상태 적에게 강력한 일격 시\n" +
                "효과: 전기 피해(×" + CHAIN_MULT + ") + 썬더랜스 " + CHAIN_LANCE_COUNT + "개 부착";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.HIT_COUNT, ChainTrigger.FINISHING_BLOW };
     }
 
     /**

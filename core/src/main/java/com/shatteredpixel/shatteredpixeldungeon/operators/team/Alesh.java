@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
@@ -115,6 +116,15 @@ public class Alesh extends TeamOperator {
     @Override public String chainDescription() {
         return "조건: 적 아츠 상태이상 보유 OR 오리지늄 아츠 결정 소모 시\n" +
                "효과: 물리 피해 + 궁극기 충전 + " + (int)(CHAIN_ENHANCE_CHANCE*100) + "% 확률 강화 피해";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.ARTS_ATTACH, ChainTrigger.PHYSICAL_ABNORMALITY };
     }
 
     /**

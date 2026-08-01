@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.endfield.ColdZone;
@@ -104,6 +105,16 @@ public class Snowshine extends TeamOperator {
     @Override public String chainDescription() {
         return "조건: 적 차지 시작 시 OR Hero HP 30% 이하\n" +
                "효과: 쉴드 부여 (최대HP×" + (int)(SHIELD_RATIO*100) + "%) → 종료 시 잔여 쉴드 50% HP 회복";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * HP 30% 이하 안전망 조건이 있어 전투 중 주요 이벤트 전반에 반응한다.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.ENEMY_CHARGE, ChainTrigger.PHYSICAL_ABNORMALITY, ChainTrigger.ARTS_ATTACH, ChainTrigger.FINISHING_BLOW };
     }
 
     /**

@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArmorBreaked;
@@ -138,6 +139,15 @@ public class Lifeng extends TeamOperator {
         return "조건: 물리 취약 or 갑옷파괴 상태 적에게 메인의 강력한 일격 적중 시\n" +
                "효과: 물리 피해 + 메인에게 연타(FollowUp) 버프 부여\n" +
                "연타: 다음 배틀스킬/궁극기 피해 1회 추가";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.FINISHING_BLOW };
     }
 
     /**

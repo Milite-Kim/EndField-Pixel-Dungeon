@@ -10,6 +10,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
@@ -105,7 +106,7 @@ public class ArtsAttachment extends Buff {
         // 안탈 트리거 컨텍스트: checkChainTriggers 도중에만 non-null
         if (Dungeon.hero != null && enemy.isAlive()) {
             triggerContext = type;
-            Dungeon.hero.checkChainTriggers(enemy);
+            Dungeon.hero.checkChainTriggers(enemy, ChainTrigger.ARTS_ATTACH);
             triggerContext = null;
         }
     }

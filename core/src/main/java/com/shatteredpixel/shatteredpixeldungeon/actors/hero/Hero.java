@@ -21,6 +21,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Bones;
@@ -3209,7 +3210,7 @@ public class Hero extends Char {
 	 */
 	private void onFinishingBlowLanded(Char target) {
 		finishingBlowContext = true;
-		checkChainTriggers(target);
+		checkChainTriggers(target, ChainTrigger.FINISHING_BLOW);
 		finishingBlowContext = false;
 
 		// 강력한 일격 적중 시 궁극기 충전
@@ -3237,9 +3238,19 @@ public class Hero extends Char {
 	 *
 	 * @param target 이벤트가 발생한 대상 (없으면 null)
 	 */
-	public void checkChainTriggers(Char target) {
+	/**
+	 * 연계기 조건 체크.
+	 *
+	 * @param target  이벤트 대상
+	 * @param trigger 발생한 이벤트 종류. 각 오퍼레이터는 {@code chainTriggers()}로
+	 *                반응할 이벤트를 선언하며, 선언하지 않은 이벤트에서는 조건이 평가되지 않는다.
+	 *                → "조건 상태가 남아 있다는 이유로 무관한 행동에 재발동"하는 문제 방지.
+	 */
+	public void checkChainTriggers(Char target, ChainTrigger trigger) {
 		for (TeamOperator op : teamOperators) {
-			if (op.isReady() && op.chainCondition(this, target)) {
+			// 쿨타임 중 발생한 이벤트는 여기서 걸러지므로,
+			// 쿨타임이 끝난 뒤 과거 조건으로 뒤늦게 발동하는 일이 없다.
+			if (op.isReady() && op.respondsTo(trigger) && op.chainCondition(this, target)) {
 				chainQueue.enqueue(op, target); // 유발 타겟 캡처. 이미 큐에 있으면 갱신
 			}
 		}
@@ -3292,7 +3303,7 @@ public class Hero extends Char {
 		// 아군 연계기 적중 이벤트 — 관리자 등 반응 트리거
 		// lastChainActivator는 checkChainTriggers 내부 chainCondition 평가에만 사용
 		lastChainActivator = op;
-		checkChainTriggers(target);
+		checkChainTriggers(target, ChainTrigger.ALLY_CHAIN);
 		lastChainActivator = null;
 
 		return true;

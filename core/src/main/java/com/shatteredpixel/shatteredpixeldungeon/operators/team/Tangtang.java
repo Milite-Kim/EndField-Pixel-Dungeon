@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -130,6 +131,15 @@ public class Tangtang extends TeamOperator {
     @Override public String chainDescription() {
         return "조건: 적 냉기 부착 보유 시\n" +
                "효과: 냉기 피해 + 와류 +1 (Hero, 최대 " + Whirlpool.MAX_STACKS + ")";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.ARTS_ATTACH };
     }
 
     /**

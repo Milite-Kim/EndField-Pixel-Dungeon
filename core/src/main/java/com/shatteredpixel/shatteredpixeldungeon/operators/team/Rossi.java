@@ -5,6 +5,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.operators.team;
 
+import com.shatteredpixel.shatteredpixeldungeon.operators.ChainTrigger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ArtsAttachment;
@@ -135,6 +136,15 @@ public class Rossi extends TeamOperator {
         return "조건: 방어불능 스택 + 아츠 부착 동시 보유 시\n" +
                "물리 피해(" + CHAIN_MULT + "×) + 모든 아츠 부착 소모(침묵) → 방어불능 2스택 추가.\n" +
                "※ 아츠→방어불능 변환 브릿지";
+    }
+
+    /**
+     * 이 연계기가 반응하는 이벤트.
+     * 선언 외 이벤트에서는 chainCondition이 평가되지 않는다(무관한 행동에 재발동 방지).
+     */
+    @Override
+    public ChainTrigger[] chainTriggers() {
+        return new ChainTrigger[]{ ChainTrigger.PHYSICAL_ABNORMALITY, ChainTrigger.ARTS_ATTACH };
     }
 
     /**
