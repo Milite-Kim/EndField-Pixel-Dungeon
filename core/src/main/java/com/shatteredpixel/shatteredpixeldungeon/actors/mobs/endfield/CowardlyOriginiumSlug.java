@@ -15,7 +15,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.Berry;
 import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.MendingTrait;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.SnakeSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.CowardBugSprite;
 import com.watabou.utils.Random;
 
 /**
@@ -30,7 +30,7 @@ import com.watabou.utils.Random;
 public class CowardlyOriginiumSlug extends Mob {
 
     {
-        spriteClass  = SnakeSprite.class; // TODO: 전용 스프라이트
+        spriteClass  = CowardBugSprite.class;
         HP = HT      = 1;
         defenseSkill = 35; // 상시 회피 +35
         EXP          = 2;

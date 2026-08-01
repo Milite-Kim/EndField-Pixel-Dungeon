@@ -63,6 +63,11 @@ public class ShatteredPixelDungeon extends Game {
 		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Rossi.class,      "Rosi");
 		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Laevatain.class,  "Levatine");
 		addOperatorAlias(com.shatteredpixel.shatteredpixeldungeon.operators.team.Avywenna.class,   "Aviena");
+
+		// 엔픽던: 보스 클래스명을 공식 영문 표기로 변경 (구 세이브 호환용 별칭)
+		com.watabou.utils.Bundle.addAlias(
+				com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rhodagn.class,
+				"com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rodan" );
 	}
 
 	/** 구 오퍼레이터 클래스명(단순명) → 현재 클래스 별칭 등록 */

@@ -27,7 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rodan;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rhodagn;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.levels.builders.Builder;
@@ -67,7 +67,7 @@ public class SewerBossLevel extends SewerLevel {
 
 		boolean bossAlive = false;
 		for (Mob m : mobs){
-			if (m instanceof Rodan) {
+			if (m instanceof Rhodagn) {
 				bossAlive = true;
 				break;
 			}

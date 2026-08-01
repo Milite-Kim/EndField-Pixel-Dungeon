@@ -34,7 +34,7 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
 /**
- * 본 크러셔의 주먹 '로댄' (Rodan) — 4번 협곡 1계층(A5) 보스.
+ * 본 크러셔의 주먹 '로댄' (Rhodagn) — 4번 협곡 1계층(A5) 보스.
  *
  * ── 기본 수치 ─────────────────────────────
  *   HP    : 120
@@ -62,7 +62,7 @@ import com.watabou.utils.Random;
  *   HP ≤ 60 (50%) 시: ATK +20, 방어 +2, 포격 쿨타임 10턴으로 증가
  *   강렬한 포효 즉시 발동 (1회)
  */
-public class Rodan extends Mob {
+public class Rhodagn extends Mob {
 
     // ── 패턴 상태 상수 ──────────────────────
     private static final int PAT_NONE        = 0;

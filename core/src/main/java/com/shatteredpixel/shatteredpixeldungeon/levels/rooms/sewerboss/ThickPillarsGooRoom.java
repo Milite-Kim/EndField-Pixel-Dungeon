@@ -21,7 +21,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.levels.rooms.sewerboss;
 
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rodan;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.endfield.Rhodagn;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.levels.painters.Painter;
@@ -51,7 +51,7 @@ public class ThickPillarsGooRoom extends GooBossRoom {
 		
 		setupGooNest(level);
 		
-		Rodan boss = new Rodan();
+		Rhodagn boss = new Rhodagn();
 		boss.pos = level.pointToCell(center());
 		level.mobs.add( boss );
 	}
