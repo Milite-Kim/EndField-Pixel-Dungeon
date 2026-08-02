@@ -27,7 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
-import com.shatteredpixel.shatteredpixeldungeon.scenes.HeroSelectScene;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.OperatorSelectScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.RankingsScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.TitleScene;
@@ -79,9 +79,12 @@ public class WndGame extends Window {
 			addButton( curBtn = new RedButton( Messages.get(this, "start") ) {
 				@Override
 				protected void onClick() {
-					GamesInProgress.selectedClass = Dungeon.hero.heroClass;
+					// 엔픽던 시작 흐름으로 재시작 (SPD HeroSelectScene 대신 오퍼레이터 선택)
+					GamesInProgress.selectedClass = null;
+					GamesInProgress.selectedMainOp = null;
+					GamesInProgress.selectedTeamOp = null;
 					GamesInProgress.curSlot = GamesInProgress.firstEmpty();
-					ShatteredPixelDungeon.switchScene(HeroSelectScene.class);
+					ShatteredPixelDungeon.switchScene(OperatorSelectScene.class);
 				}
 			} );
 			curBtn.icon(Icons.get(Icons.ENTER));
