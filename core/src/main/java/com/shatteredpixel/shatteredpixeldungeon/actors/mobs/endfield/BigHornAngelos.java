@@ -14,7 +14,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.items.Gold;
-import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.MendingTrait;
+import com.shatteredpixel.shatteredpixeldungeon.items.traits.common.TurbidTrait;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GnollSprite;
 import com.watabou.utils.Random;
 
@@ -23,7 +23,7 @@ import com.watabou.utils.Random;
  *
  * HP 12 / ATK 60 / 명중 10 / 회피 4 / 방어 2 all / EXP 2 / maxLvl 8
  * 특수 패턴 없음. 공격속성: 물리.
- * 드랍: 혼탁기질(10%, MendingTrait 플레이스홀더) + 크레디트(50%)
+ * 드랍: 혼탁기질(10%) + 크레디트(50%)
  *
  * TODO: 전용 스프라이트, 수치 최종 확정, 혼탁기질 아이템 구현
  */
@@ -60,9 +60,9 @@ public class BigHornAngelos extends Mob {
     public void die(Object cause) {
         super.die(cause);
 
-        // 혼탁기질 10% (TODO: TurbidTrait 구현 후 교체)
+        // 혼탁기질 10%
         if (Random.Float() < 0.10f) {
-            Dungeon.level.drop(new MendingTrait(1), pos).sprite.drop();
+            Dungeon.level.drop(new TurbidTrait(), pos).sprite.drop();
         }
         // 크레디트 50%
         if (Random.Float() < 0.50f) {

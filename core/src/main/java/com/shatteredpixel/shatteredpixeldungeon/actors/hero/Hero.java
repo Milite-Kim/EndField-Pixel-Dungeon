@@ -3139,7 +3139,14 @@ public class Hero extends Char {
 		belongings.weapon = mainOp.startingWeapon();
 		belongings.weapon.identify();
 
-		// TODO: 기질(Disposition) 아이템 지급 (Phase 3)
+		// 시작 기질 장착 — 1티어 기본 기질(혼탁)
+		// 기질이 ATK의 주축(ATK_BASE는 10에 불과)이라, 이게 없으면 기본 공격이 사실상 무력하다.
+		com.shatteredpixel.shatteredpixeldungeon.items.traits.common.TurbidTrait startingTrait =
+				new com.shatteredpixel.shatteredpixeldungeon.items.traits.common.TurbidTrait();
+		startingTrait.identify();
+		belongings.trait = startingTrait;
+		startingTrait.activate(this);
+
 		// TODO: 오퍼레이터 고유 아이템 지급 (Phase 3)
 		// for (Item item : mainOp.startingItems()) { item.collect(); }
 
