@@ -46,8 +46,9 @@ public class HeroSprite extends CharSprite {
 	
 	private static TextureFilm tiers;
 	
-	private Animation fly;
-	private Animation read;
+	// OperatorSprite 등 하위 클래스가 자체 시트로 재정의할 수 있도록 protected.
+	protected Animation fly;
+	protected Animation read;
 
 	public HeroSprite() {
 		super();

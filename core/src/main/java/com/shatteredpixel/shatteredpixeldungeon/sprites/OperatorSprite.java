@@ -82,6 +82,15 @@ public class OperatorSprite extends HeroSprite {
 		operate = new Animation( 8, false );
 		operate.frames( film, 0, 0 );
 
+		// read는 HeroSprite.read()가 animCallback으로 onOperateComplete()를 호출하는 통로다.
+		// 여기서 채워두지 않으면 null인 채로 play(null) → 콜백이 영영 불리지 않아
+		// 주문서를 읽는 순간 영웅이 busy 상태로 굳고 게임 전체가 멈춘다. (2프레임 이상 필수)
+		read = new Animation( 8, false );
+		read.frames( film, 0, 0 );
+
+		fly = new Animation( 1, true );
+		fly.frames( film, 0 );
+
 		if (Dungeon.hero != null && Dungeon.hero.isAlive()) {
 			idle();
 		} else {
